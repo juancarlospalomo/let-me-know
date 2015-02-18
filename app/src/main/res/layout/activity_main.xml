@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.applilandia.letmeknow.views.Tile xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tileTask"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    letmeknow:footerPrimaryLine="PrimaryLine very very very long"
+    letmeknow:footerSecondaryLine="SecondaryLine"
+    letmeknow:footerIcon="@drawable/ic_alarm_off"
+    letmeknow:textContent="Content"/>
+
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="92dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="primary line"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="secondary line"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_launcher"/>
+
+</LinearLayout>-->
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- These are the colors for material design.
+    the values have been extracted from
+    <Android_SDK>\platforms\android-21\data\res\values\colors_material.xml -->
+<resources>
+    <color name="primary_material_dark">#ff212121</color>
+    <color name="primary_text_default_material_dark">#ffffffff</color>
+    <!-- White 50% -->
+    <color name="bright_foreground_disabled_material_dark">#80ffffff</color>
+    <color name="hint_foreground_material_dark">@color/bright_foreground_disabled_material_dark</color>
+    <!-- This is 40% alpha on the default accent color. -->
+    <color name="highlighted_text_material_dark">#6680cbc4</color>
+    <color name="link_text_material_dark">@color/material_deep_teal_200</color>
+    <color name="material_deep_teal_200">#ff80cbc4</color>
+</resources>

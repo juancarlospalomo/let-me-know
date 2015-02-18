@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppProductivityTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <!-- List attributes -->
+        <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
+        <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>
+        <item name="listPreferredItemPaddingTop">@dimen/list_primary_action_text_padding_top</item>
+        <item name="listPreferredItemPaddingBottom">@dimen/list_primary_action_text_padding_bottom</item>
+        <item name="listPreferredListItemAvatarHeight">@dimen/list_primary_action_avatar_height</item>
+        <item name="listPreferredListItemAvatarWidth">@dimen/list_primary_action_avatar_width</item>
+        <!-- Text styles are already defined for API 21 onwards-->
+        <!-- Touchable Metrics -->
+        <item name="touchableAssetLayoutHeight">@dimen/touchable_grid_metric</item>
+        <item name="touchableAssetLayoutWidth">@dimen/touchable_grid_metric</item>
+    </style>
+</resources>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tile attributes -->
+    <attr name="tileStyle" format="reference" />
+    <attr name="tileFooterHeight" format="dimension" />
+    <attr name="tileTextContentFamily" format="string" />
+    <attr name="tileTextContentSize" format="dimension" />
+    <attr name="tileIconSize" format="dimension" />
+    <attr name="tileContentBackground" format="reference|color" />
+    <attr name="tileFooterBackground" format="reference|color" />
+    <attr name="tileTextFooterPrimarySize" format="dimension" />
+    <attr name="tileTextFooterSecondarySize" format="dimension" />
+    <attr name="tileTextFooterPadding" format="dimension" />
+    <!--
+        attribute style for list components according to the
+        guidelines of material design.  This attributes comes from
+        material design styles
+    -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- List attributes -->
+    <!-- The preferred padding along the top edge of the text content in list items. -->
+    <attr name="listPreferredItemPaddingTop" format="dimension" />
+    <!-- The preferred padding along the bottom edge of the text content in list items. -->
+    <attr name="listPreferredItemPaddingBottom" format="dimension" />
+    <!-- The preferred TextAppearance for the secondary text of list items. -->
+    <attr name="textAppearanceListItemSecondary" format="reference" />
+    <!-- Height for the avatar in list row -->
+    <attr name="listPreferredListItemAvatarHeight" format="dimension" />
+    <!-- Width for the avatar in list row -->
+    <attr name="listPreferredListItemAvatarWidth" format="dimension" />
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- The most prominent text color. -->
+    <attr name="textColorPrimary" format="reference|color" />
+    <!-- Default font family. -->
+    <attr name="fontFamily" format="string" />
+    <!-- Color of hint text (displayed when the field is empty). -->
+    <attr name="textColorHint" format="reference|color" />
+    <!-- Color of highlighted text -->
+    <attr name="textColorHighlight" format="reference|color" />
+    <!-- Color of link text (URLs). -->
+    <attr name="textColorLink" format="reference|color" />
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- UI assets metrics -->
+    <!-- Height area -->
+    <attr name="touchableAssetLayoutHeight" format="dimension" />
+    <!-- Width area -->
+    <attr name="touchableAssetLayoutWidth" format="dimension" />
+
+    <!-- Attributes for Tile Custome View -->
+    <declare-styleable name="Tile">
+        <!-- Text for the Content section -->
+        <attr name="textContent" format="string" />
+        <attr name="footerPrimaryLine" format="string" />
+        <attr name="footerSecondaryLine" format="string" />
+        <attr name="footerIcon" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="TileAppearance">
+        <attr name="tileFooterHeight" />
+        <attr name="tileTextContentFamily" />
+        <attr name="tileTextContentSize" />
+        <attr name="tileIconSize" />
+        <attr name="tileContentBackground" />
+        <attr name="tileFooterBackground" />
+        <attr name="tileTextFooterPrimarySize" />
+        <attr name="tileTextFooterSecondarySize" />
+        <attr name="tileTextFooterPadding" />
+    </declare-styleable>
+
+</resources>

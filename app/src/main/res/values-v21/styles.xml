@@ -1,0 +1,13 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- styles replied from the styles default values.
+        Here, they only inherits from the Material Design styles
+        without override anything and add the new attributes -->
+    <style name="AppProductivityTheme.TextAppearance.Material.Subhead" parent="android:TextAppearance.Material.Subhead">
+        <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
+    </style>
+
+    <style name="AppProductivityTheme.TextAppearance.Material.Body1" parent="android:TextAppearance.Material.Body1">
+        <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
+    </style>
+    
+</resources>

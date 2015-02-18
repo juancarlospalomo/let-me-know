@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppProductivityTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <!-- Tile attributes -->
+        <item name="tileStyle">@style/Widget.Tile</item>
+
+        <item name="colorPrimary">@color/primary_material_dark</item>
+
+        <!-- List attributes -->
+        <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
+        <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>
+        <item name="listPreferredItemPaddingTop">@dimen/list_primary_action_text_padding_top</item>
+        <item name="listPreferredItemPaddingBottom">@dimen/list_primary_action_text_padding_bottom</item>
+        <item name="listPreferredListItemAvatarHeight">@dimen/list_primary_action_avatar_height</item>
+        <item name="listPreferredListItemAvatarWidth">@dimen/list_primary_action_avatar_width</item>
+        <!-- Text styles -->
+        <item name="textColorPrimary">@color/primary_text_material_dark</item>
+        <item name="textColorHint">@color/hint_foreground_material_dark</item>
+        <item name="textColorHighlight">@color/highlighted_text_material_dark</item>
+        <item name="textColorLink">@color/link_text_material_dark</item>
+        <!-- Touchable Metrics -->
+        <item name="touchableAssetLayoutHeight">@dimen/touchable_grid_metric</item>
+        <item name="touchableAssetLayoutWidth">@dimen/touchable_grid_metric</item>
+    </style>
+</resources>

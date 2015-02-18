@@ -1,8 +1,50 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="Widget" parent="@android:style/Widget" />
+
+    <style name="Widget.Tile">
+        <item name="tileFooterHeight">@dimen/tile_footer_height</item>
+        <item name="tileTextContentFamily">@string/font_family_body_1_material</item>
+        <item name="tileTextContentSize">@dimen/tile_content_text_size</item>
+        <item name="tileIconSize">@dimen/tile_icon_size</item>
+        <item name="tileContentBackground">@color/green</item>
+        <item name="tileFooterBackground">@color/white</item>
+        <item name="tileTextFooterPrimarySize">@dimen/tile_footer_text_primary_size</item>
+        <item name="tileTextFooterSecondarySize">@dimen/tile_footer_text_secondary_size</item>
+        <item name="tileTextFooterPadding">@dimen/tile_footer_text_padding</item>
+    </style>
+
+    <!-- Text styles replied from Material Design theme -->
+
+    <style name="AppProductivityTheme.TextAppearance" parent="android:TextAppearance" />
+
+    <style name="AppProductivityTheme.TextAppearance.Material">
+        <item name="android:textColor">?attr/textColorPrimary</item>
+        <item name="android:textColorHint">?attr/textColorHint</item>
+        <item name="android:textColorHighlight">?attr/textColorHighlight</item>
+        <item name="android:textColorLink">?attr/textColorLink</item>
+        <item name="android:textSize">@dimen/text_size_body_1_material</item>
+        <item name="fontFamily">@string/font_family_body_1_material</item>
+    </style>
+
+    <style name="AppProductivityTheme.TextAppearance.Material.Subhead">
+        <item name="android:textSize">@dimen/text_size_subhead_material</item>
+        <item name="fontFamily">@string/font_family_subhead_material</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
+        <!-- New attribute to set the padding to text with avatar, text and icon -->
+        <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
+    </style>
+
+    <style name="AppProductivityTheme.TextAppearance.Material.Body1">
+        <item name="android:textSize">@dimen/text_size_body_1_material</item>
+        <item name="fontFamily">@string/font_family_body_1_material</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
+        <!-- New attribute to set the padding to text with avatar, text and icon -->
+        <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
     </style>
 
 </resources>
