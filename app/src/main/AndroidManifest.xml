@@ -15,6 +15,20 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:authorities="com.applilandia.letmeknow"
+            android:name=".data.TaskProvider" />
+
+        <receiver android:name=".receiver.BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".services.BootService" />
+
+        <service android:name=".services.AlarmService" />
+
     </application>
 
 </manifest>
