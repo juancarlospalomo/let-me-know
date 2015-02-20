@@ -39,6 +39,11 @@ public class TaskContract {
         //Date & time for the task
         public static final String COLUMN_TARGET_DATE_TIME = "target_datetime";
 
+        /**
+         *Alias for fields if they are needed
+         */
+        public static final String ALIAS_ID = TABLE_NAME + "_" + _ID;
+
         //Uri functions to manage the parameters
 
         /**

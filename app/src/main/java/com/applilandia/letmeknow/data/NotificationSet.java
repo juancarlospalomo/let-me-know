@@ -10,6 +10,7 @@ import android.support.v4.app.NotificationManagerCompat;
 
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.receiver.AlarmReceiver;
 
@@ -29,7 +30,7 @@ public class NotificationSet extends DbSet<Notification> {
     }
 
     @Override
-    public long create(Notification notification) {
+    public long create(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
         values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , Dates.castToDatabaseFormat(notification.dateTime));
@@ -41,14 +42,14 @@ public class NotificationSet extends DbSet<Notification> {
             if (alarm.create((int)rowId, notification.dateTime)) {
                 mContext.getContentResolver().notifyChange(TaskContract.NotificationEntry.CONTENT_URI, null);
             } else {
-                //TODO: raise exception
+                throw new AlarmException("alarm couldn't be created");
             }
         }
         return rowId;
     }
 
     @Override
-    public int update(Notification notification) {
+    public int update(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
         values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , Dates.castToDatabaseFormat(notification.dateTime));
@@ -66,7 +67,7 @@ public class NotificationSet extends DbSet<Notification> {
             if (alarm.create(notification._id, notification.dateTime)) {
                 mContext.getContentResolver().notifyChange(TaskContract.NotificationEntry.CONTENT_URI, null);
             } else {
-                //TODO: raise exception
+                throw new AlarmException("Alarm couldn't be created");
             }
         }
         return rowsAffected;

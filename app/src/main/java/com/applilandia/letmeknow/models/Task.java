@@ -13,6 +13,7 @@ import java.util.List;
 public class Task implements IValidatable {
     //Max size constraint for name field
     private static final int NAME_MAX_SIZE = 50;
+
     /**
      * Enum for stating the task status
      */
@@ -43,8 +44,41 @@ public class Task implements IValidatable {
     //Type task. This field isn't persisted in database
     public TypeTask typeTask;
     //List of notifications for the task
-    public List<Notification> notifications;
+    private List<Notification> mNotifications;
 
+    /**
+     * Add a notification to the list of them
+     * @param notification to add
+     */
+    public void addNotification(Notification notification) {
+        if (mNotifications == null) {
+            mNotifications = new ArrayList<Notification>();
+        }
+        mNotifications.add(notification);
+    }
+
+    /**
+     * Return the current notifications list
+     * @return list of notifications
+     */
+    public List<Notification> getNotifications() {
+        return mNotifications;
+    }
+
+    /**
+     * find out if any notification exists
+     * @return true if it has some notification
+     */
+    public boolean hasNotifications() {
+        return  ((mNotifications!=null) && ((mNotifications.size()>0)));
+    }
+
+    /**
+     * compare if the current task is equal to the one passed as parameter
+     *
+     * @param other task object to compare with
+     * @return true if both tasks are equal
+     */
     @Override
     public boolean equals(Object other) {
         if (other instanceof Task) {
@@ -59,6 +93,11 @@ public class Task implements IValidatable {
         }
     }
 
+    /**
+     * Validate the task entity constraints
+     *
+     * @return list of validation errors o null
+     */
     @Override
     public List<ValidationResult> validate() {
         List<ValidationResult> result = new ArrayList<ValidationResult>();
@@ -69,12 +108,12 @@ public class Task implements IValidatable {
                 result.add(new ValidationResult("name", ValidationResult.ValidationCode.GreaterThanRange));
             }
         }
-        if (targetDatetime!=null) {
+        if (targetDatetime != null) {
             if (targetDatetime.compareTo(new Date()) < 0) {
                 result.add(new ValidationResult("targetDateTime", ValidationResult.ValidationCode.LessThanRange));
             }
         }
-        if (result.size()==0) {
+        if (result.size() == 0) {
             result = null;
         }
         return result;

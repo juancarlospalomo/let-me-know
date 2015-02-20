@@ -8,6 +8,7 @@ import com.applilandia.letmeknow.data.HistorySet;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
+import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.History;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -49,8 +50,6 @@ public class testEntitiesSet extends AndroidTestCase {
         Task task = generateTaskEntity("task 1", new Date());
         TaskSet taskSet = new TaskSet(mContext);
         long taskId = taskSet.create(task);
-        taskSet.endWork(true);
-
         assertTrue(taskId > 0);
 
         if (taskId > 0) {
@@ -81,7 +80,12 @@ public class testEntitiesSet extends AndroidTestCase {
                     Notification.TypeNotification.FiveMinutesBefore,
                     Notification.TypeStatus.Pending);
             NotificationSet notificationSet = new NotificationSet(mContext, taskSet.getUnitOfWork());
-            long id = notificationSet.create(notification);
+            long id = 0;
+            try {
+                id = notificationSet.create(notification);
+            } catch (AlarmException e) {
+                e.printStackTrace();
+            }
             if (id > 0) {
                 taskSet.endWork(true);
                 Cursor cursor = mContext.getContentResolver().query(TaskContract.NotificationEntry.setUriNotificationId(id),
@@ -111,7 +115,6 @@ public class testEntitiesSet extends AndroidTestCase {
         HistorySet historySet = new HistorySet(mContext);
         long id = historySet.create(history);
         if (id > 0) {
-            historySet.endWork(true);
             Cursor cursor = mContext.getContentResolver().query(TaskContract.HistoryEntry.CONTENT_URI,
                     null, TaskContract.HistoryEntry._ID + "=?",
                     new String[]{String.valueOf(id)}, null);

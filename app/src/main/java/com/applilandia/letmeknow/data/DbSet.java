@@ -36,9 +36,9 @@ public abstract class DbSet<Entity> {
         return mUnitOfWork;
     }
 
-    public abstract long create(Entity entity);
+    public abstract long create(Entity entity) throws Exception;
 
-    public abstract int update(Entity entity);
+    public abstract int update(Entity entity) throws Exception;
 
     public abstract boolean delete(Entity entity);
 

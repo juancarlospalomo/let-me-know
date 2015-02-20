@@ -47,12 +47,13 @@ public class TaskProvider extends ContentProvider {
         //Filter
         String selection = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=?";
         //Columns
-        String[] projection = new String[]{TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID,
+        String[] projection = new String[]{TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + " AS " + TaskContract.TaskEntry.ALIAS_ID,
                 TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME,
                 TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME,
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry._ID,
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_DATE_TIME,
-                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS};
+                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS,
+                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TYPE};
         //Task identifier value condition
         String[] args = new String[]{String.valueOf(id)};
 

@@ -25,7 +25,7 @@ public final class Dates {
                 Locale.getDefault());
         try {
             date = dateFormat.parse(formattedDate);
-        } catch (ParseException e) {
+        } catch (NullPointerException|ParseException e) {
             e.printStackTrace(); //TODO
             date = null;
         }
@@ -46,13 +46,39 @@ public final class Dates {
     /**
      * Add a number of days to a given date
      * @param date date
-     * @param number number of days to add
+     * @param number number of days to add (if it is negative, they will be subtracted)
      * @return date object
      */
     public static Date addDays(Date date, int number) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.DAY_OF_MONTH, number);
+        return calendar.getTime();
+    }
+
+    /**
+     * Add a number of minutes to a given date
+     * @param date date
+     * @param minutes minutes to add (if it is negative, they will be subtracted)
+     * @return date object
+     */
+    public static Date addMinutes(Date date, int minutes) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, minutes);
+        return calendar.getTime();
+    }
+
+    /**
+     * Add a number of hours to a given date
+     * @param date date
+     * @param hours hours to add (if it is negative, they will be subtracted)
+     * @return date object
+     */
+    public static Date addHour(Date date, int hours) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR, hours);
         return calendar.getTime();
     }
 

@@ -26,32 +26,58 @@ public class UnitOfWork {
     }
 
     public void commit() {
-        if (mDatabase.inTransaction()) {
-            mDatabase.setTransactionSuccessful();
-            mDatabase.endTransaction();
+        if (!mWorkStarted) {
+            throw new UnsupportedOperationException("not available without a started work");
+        } else {
+            if (mDatabase.inTransaction()) {
+                mDatabase.setTransactionSuccessful();
+                mDatabase.endTransaction();
+            }
+            mDatabase.close();
+            mWorkStarted = false;
         }
-        mDatabase.close();
-        mWorkStarted = false;
     }
 
     public void rollback() {
-        if (mDatabase.inTransaction()) {
-            mDatabase.endTransaction();
+        if (!mWorkStarted) {
+            throw new UnsupportedOperationException("not available without a started work");
+        } else {
+            if (mDatabase.inTransaction()) {
+                mDatabase.endTransaction();
+            }
+            mDatabase.close();
+            mWorkStarted = false;
         }
-        mDatabase.close();
-        mWorkStarted = false;
     }
 
     public long add(String table, String nullColumnHack, ContentValues values) {
-        return mDatabase.insert(table, nullColumnHack, values);
+        long rowId = mDatabase.insert(table, nullColumnHack, values);
+        if (!mWorkStarted) {
+            //It is not inside a transaction, we already close the database.
+            //If not, it must be confirmed or roll backed manually
+            mDatabase.close();
+        }
+        return rowId;
     }
 
     public int update(String table, ContentValues values, String where, String[] args) {
-        return mDatabase.update(table, values, where, args);
+        int rowsAffected = mDatabase.update(table, values, where, args);
+        if (!mWorkStarted) {
+            //It is not inside a transaction, we already close the database.
+            //If not, it must be confirmed or roll backed manually
+            mDatabase.close();
+        }
+        return  rowsAffected;
     }
 
     public int delete(String table, String where, String[] args) {
-        return mDatabase.delete(table, where, args);
+        int rowsAffected = mDatabase.delete(table, where, args);
+        if (!mWorkStarted) {
+            //It is not inside a transaction, we already close the database.
+            //If not, it must be confirmed or roll backed manually
+            mDatabase.close();
+        }
+        return rowsAffected;
     }
 
 }

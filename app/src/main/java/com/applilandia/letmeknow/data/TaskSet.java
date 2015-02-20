@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 
 import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.exceptions.AlarmException;
+import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 
 /**
@@ -24,7 +26,30 @@ public class TaskSet extends DbSet<Task> {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
         values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(task.targetDatetime));
+        if (task.hasNotifications()) initWork();
         long rowId = mUnitOfWork.add(TaskContract.TaskEntry.TABLE_NAME, null, values);
+        if (rowId > 0) {
+            if (task.hasNotifications()) {
+                long id = 0;
+                NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
+                for (Notification notification : task.getNotifications()) {
+                    notification.taskId = (int) rowId;
+                    try {
+                        id = notificationSet.create(notification);
+                    } catch (AlarmException e) {
+                        id = -1;
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+                if (id < 0) {
+                    endWork(false);
+                    rowId = 0;
+                } else {
+                    endWork(true);
+                }
+            }
+        }
         if (rowId > 0) {
             mContext.getContentResolver().notifyChange(TaskContract.TaskEntry.CONTENT_URI, null);
         }
