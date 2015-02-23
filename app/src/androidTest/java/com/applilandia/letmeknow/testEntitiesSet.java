@@ -3,7 +3,7 @@ package com.applilandia.letmeknow;
 import android.database.Cursor;
 import android.test.AndroidTestCase;
 
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.HistorySet;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
@@ -13,6 +13,7 @@ import com.applilandia.letmeknow.models.History;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -20,10 +21,10 @@ import java.util.Date;
  */
 public class testEntitiesSet extends AndroidTestCase {
 
-    private Task generateTaskEntity(String name, Date date) {
+    private Task generateTaskEntity(String name, LocalDate date) {
         Task task = new Task();
         task.name = name;
-        task.targetDatetime = date;
+        task.targetDateTime = date;
         return task;
     }
 
@@ -38,7 +39,7 @@ public class testEntitiesSet extends AndroidTestCase {
         return notification;
     }
 
-    private History generateHistoryEntity(String name, Date targetDate, Date completedDate) {
+    private History generateHistoryEntity(String name, LocalDate targetDate, LocalDate completedDate) {
         History history = new History();
         history.name = name;
         history.targetDate = targetDate;
@@ -47,21 +48,24 @@ public class testEntitiesSet extends AndroidTestCase {
     }
 
     public void testCreateTask() {
-        Task task = generateTaskEntity("task 1", new Date());
+        Task task = generateTaskEntity("task 1", new LocalDate());
         TaskSet taskSet = new TaskSet(mContext);
         long taskId = taskSet.create(task);
         assertTrue(taskId > 0);
 
         if (taskId > 0) {
-            //To remove the seconds
-            task.targetDatetime = Dates.getDate(Dates.castToDatabaseFormat(task.targetDatetime));
             Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.setUriTaskId(taskId),
                     null, null, null, null);
             assertFalse(cursor == null);
             if (cursor != null) {
                 assertEquals(1, cursor.getCount());
                 cursor.moveToFirst();
-                Date date = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                LocalDate date = null;
+                try {
+                    date = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 String taskName = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
                 Task retTask = generateTaskEntity(taskName, date);
                 assertEquals(task, retTask);
@@ -71,7 +75,7 @@ public class testEntitiesSet extends AndroidTestCase {
     }
 
     public void testCreateNotification() {
-        Task task = generateTaskEntity("task 1", new Date());
+        Task task = generateTaskEntity("task 1", new LocalDate());
         TaskSet taskSet = new TaskSet(mContext);
         taskSet.initWork();
         long taskId = taskSet.create(task);
@@ -94,12 +98,15 @@ public class testEntitiesSet extends AndroidTestCase {
                     assertEquals(1, cursor.getCount());
                     cursor.moveToFirst();
                     taskId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TASK_ID));
-                    Date date = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME)));
+                    LocalDate date = null;
+                    try {
+                        date = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME)));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                     Notification.TypeNotification type = Notification.TypeNotification.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TYPE)));
                     Notification.TypeStatus status = Notification.TypeStatus.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_STATUS)));
-                    Notification retNotification = generateNotificationEntity(taskId, date, type, status);
-                    //To remove the seconds
-                    notification.dateTime = Dates.getDate(Dates.castToDatabaseFormat(notification.dateTime));
+                    Notification retNotification = generateNotificationEntity(taskId, date.getDateTime(), type, status);
                     assertEquals(notification, retNotification);
                 }
             } else {
@@ -111,7 +118,7 @@ public class testEntitiesSet extends AndroidTestCase {
     }
 
     public void testCreateHistory() {
-        History history = generateHistoryEntity("task history 1", new Date(), Dates.addDays(new Date(), 1));
+        History history = generateHistoryEntity("task history 1", new LocalDate(), new LocalDate().addDays(1));
         HistorySet historySet = new HistorySet(mContext);
         long id = historySet.create(history);
         if (id > 0) {
@@ -122,12 +129,19 @@ public class testEntitiesSet extends AndroidTestCase {
                 assertEquals(1, cursor.getCount());
                 cursor.moveToFirst();
                 String taskName = cursor.getString(cursor.getColumnIndex(TaskContract.HistoryEntry.COLUMN_TASK_NAME));
-                Date targetDate = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME)));
-                Date completedDate = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME)));
+                LocalDate targetDate = null;
+                try {
+                    targetDate = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                LocalDate completedDate = null;
+                try {
+                    completedDate = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 History retHistory = generateHistoryEntity(taskName, targetDate, completedDate);
-                //To remove the seconds from the original object
-                history.targetDate = Dates.getDate(Dates.castToDatabaseFormat(history.targetDate));
-                history.completedDate = Dates.getDate(Dates.castToDatabaseFormat(history.completedDate));
                 assertEquals(history, retHistory);
             }
         } else {

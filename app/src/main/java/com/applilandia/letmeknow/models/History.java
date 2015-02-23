@@ -1,6 +1,6 @@
 package com.applilandia.letmeknow.models;
 
-import java.util.Date;
+import com.applilandia.letmeknow.cross.LocalDate;
 
 /**
  * Created by JuanCarlos on 18/02/2015.
@@ -11,9 +11,9 @@ public class History {
     //Task name
     public String name;
     //Task target date;
-    public Date targetDate;
+    public LocalDate targetDate;
     //The date when the task was actually completed
-    public Date completedDate;
+    public LocalDate completedDate;
 
     @Override
     public boolean equals(Object other) {

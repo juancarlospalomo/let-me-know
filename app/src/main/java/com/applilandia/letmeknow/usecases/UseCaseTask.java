@@ -3,13 +3,14 @@ package com.applilandia.letmeknow.usecases;
 import android.content.Context;
 import android.database.Cursor;
 
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.cross.Settings;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class UseCaseTask {
                 Notification notification = new Notification();
                 notification.type = Notification.TypeNotification.FiveMinutesBefore;
                 notification.status = Notification.TypeStatus.Pending;
-                notification.dateTime = Dates.addMinutes(task.targetDatetime, -5);
+                notification.dateTime = task.targetDateTime.addMinutes(-5).getDateTime();
                 task.addNotification(notification);
             }
         }
@@ -68,19 +69,23 @@ public class UseCaseTask {
             task = new Task();
             task._id = cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry.ALIAS_ID));
             task.name = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
-            task.targetDatetime = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
-            while (!cursor.isAfterLast()) {
-                int notificationId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry._ID));
-                if (notificationId > 0) {
-                    Notification notification = new Notification();
-                    notification._id = notificationId;
-                    notification.dateTime = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME)));
-                    notification.taskId = id;
-                    notification.status = Notification.TypeStatus.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_STATUS)));
-                    notification.type = Notification.TypeNotification.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TYPE)));
-                    task.addNotification(notification);
+            try {
+                task.targetDateTime = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                while (!cursor.isAfterLast()) {
+                    int notificationId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry._ID));
+                    if (notificationId > 0) {
+                        Notification notification = new Notification();
+                        notification._id = notificationId;
+                        notification.dateTime = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME))).getDateTime();
+                        notification.taskId = id;
+                        notification.status = Notification.TypeStatus.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_STATUS)));
+                        notification.type = Notification.TypeNotification.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TYPE)));
+                        task.addNotification(notification);
+                    }
+                    cursor.moveToNext();
                 }
-                cursor.moveToNext();
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
         }
         cursor.close();
@@ -104,7 +109,11 @@ public class UseCaseTask {
                 Task task = new Task();
                 task._id = cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry._ID));
                 task.name = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
-                task.targetDatetime = Dates.getDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                try {
+                    task.targetDateTime = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 result.add(task);
                 cursor.moveToNext();
             }

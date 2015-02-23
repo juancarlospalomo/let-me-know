@@ -2,8 +2,6 @@ package com.applilandia.letmeknow.data;
 
 import android.content.ContentValues;
 import android.content.Context;
-
-import com.applilandia.letmeknow.cross.Dates;
 import com.applilandia.letmeknow.models.History;
 
 /**
@@ -23,8 +21,8 @@ public class HistorySet extends DbSet<History> {
     public long create(History history) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.HistoryEntry.COLUMN_TASK_NAME, history.name);
-        values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(history.targetDate));
-        values.put(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME, Dates.castToDatabaseFormat(history.completedDate));
+        values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, history.targetDate.toString());
+        values.put(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME, history.completedDate.toString());
         long rowId = mUnitOfWork.add(TaskContract.HistoryEntry.TABLE_NAME, null, values);
         if (rowId > 0) {
             mContext.getContentResolver().notifyChange(TaskContract.HistoryEntry.CONTENT_URI, null);
@@ -36,8 +34,8 @@ public class HistorySet extends DbSet<History> {
     public int update(History history) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.HistoryEntry.COLUMN_TASK_NAME, history.name);
-        values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(history.targetDate));
-        values.put(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME, Dates.castToDatabaseFormat(history.completedDate));
+        values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, history.targetDate.toString());
+        values.put(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME, history.completedDate.toString());
 
         String where = TaskContract.HistoryEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(history._id)};

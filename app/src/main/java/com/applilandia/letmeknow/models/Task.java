@@ -2,8 +2,9 @@ package com.applilandia.letmeknow.models;
 
 import android.text.TextUtils;
 
+import com.applilandia.letmeknow.cross.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public class Task implements IValidatable {
     //task name
     public String name;
     //Date & time when the task has to be carried out
-    public Date targetDatetime;
+    public LocalDate targetDateTime;
     //Type task. This field isn't persisted in database
     public TypeTask typeTask;
     //List of notifications for the task
@@ -83,7 +84,7 @@ public class Task implements IValidatable {
     public boolean equals(Object other) {
         if (other instanceof Task) {
             if ((this.name.equals(((Task) other).name)) &&
-                    (this.targetDatetime.equals(((Task) other).targetDatetime))) {
+                    (this.targetDateTime.equals(((Task) other).targetDateTime))) {
                 return true;
             } else {
                 return false;
@@ -108,8 +109,8 @@ public class Task implements IValidatable {
                 result.add(new ValidationResult("name", ValidationResult.ValidationCode.GreaterThanRange));
             }
         }
-        if (targetDatetime != null) {
-            if (targetDatetime.compareTo(new Date()) < 0) {
+        if (targetDateTime != null) {
+            if (targetDateTime.compareTo(new LocalDate()) < 0) {
                 result.add(new ValidationResult("targetDateTime", ValidationResult.ValidationCode.LessThanRange));
             }
         }

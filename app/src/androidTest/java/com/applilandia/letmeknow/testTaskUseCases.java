@@ -3,14 +3,13 @@ package com.applilandia.letmeknow;
 import android.database.Cursor;
 import android.test.AndroidTestCase;
 
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,7 +21,7 @@ public class testTaskUseCases extends AndroidTestCase {
     private int createTaskWithoutNotification() {
         Task task = new Task();
         task.name = "task without notification";
-        task.targetDatetime = new Date();
+        task.targetDateTime = new LocalDate();
 
         TaskSet taskSet = new TaskSet(mContext);
         return (int) taskSet.create(task);
@@ -31,7 +30,7 @@ public class testTaskUseCases extends AndroidTestCase {
     public void testShouldCreateTaskWithDefaultNotifications() {
         Task task = new Task();
         task.name = "task shouldcreatetask use case";
-        task.targetDatetime = Dates.addDays(new Date(), 1);
+        task.targetDateTime.addDays(1);
 
         UseCaseTask useCaseTask = new UseCaseTask(mContext);
         int taskId = useCaseTask.createTask(task);
@@ -52,15 +51,15 @@ public class testTaskUseCases extends AndroidTestCase {
         Task task = new Task();
         task.name = "task with notifications";
         //Take the current date without seconds
-        task.targetDatetime = Dates.getDate(Dates.getCurrentDateTime());
+        task.targetDateTime = new LocalDate();
         //add a notification
         Notification notification = new Notification();
-        notification.dateTime = Dates.addHour(task.targetDatetime, -1);
+        notification.dateTime = task.targetDateTime.addHours(-1).getDateTime();
         notification.type = Notification.TypeNotification.OneHourBefore;
         notification.status = Notification.TypeStatus.Pending;
         task.addNotification(notification);
         notification = new Notification();
-        notification.dateTime = Dates.addDays(task.targetDatetime, -7);
+        notification.dateTime = task.targetDateTime.addDays(-7).getDateTime();
         notification.type = Notification.TypeNotification.OneWeekBefore;
         notification.status = Notification.TypeStatus.Pending;
         task.addNotification(notification);

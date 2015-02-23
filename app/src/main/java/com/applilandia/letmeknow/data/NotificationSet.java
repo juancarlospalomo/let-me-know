@@ -9,7 +9,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
 import com.applilandia.letmeknow.R;
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.receiver.AlarmReceiver;
@@ -33,7 +33,7 @@ public class NotificationSet extends DbSet<Notification> {
     public long create(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
-        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , Dates.castToDatabaseFormat(notification.dateTime));
+        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , new LocalDate(notification.dateTime).toString());
         values.put(TaskContract.NotificationEntry.COLUMN_STATUS , notification.status.getValue());
         values.put(TaskContract.NotificationEntry.COLUMN_TYPE, notification.type.getValue());
         long rowId = mUnitOfWork.add(TaskContract.NotificationEntry.TABLE_NAME, null, values);
@@ -52,7 +52,7 @@ public class NotificationSet extends DbSet<Notification> {
     public int update(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
-        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , Dates.castToDatabaseFormat(notification.dateTime));
+        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , new LocalDate(notification.dateTime).toString());
         values.put(TaskContract.NotificationEntry.COLUMN_TYPE, notification.type.getValue());
         values.put(TaskContract.NotificationEntry.COLUMN_STATUS , notification.status.getValue());
 

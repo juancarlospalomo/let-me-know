@@ -4,9 +4,11 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.database.Cursor;
 
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
+
+import java.text.ParseException;
 
 /**
  * Created by JuanCarlos on 20/02/2015.
@@ -48,8 +50,12 @@ public class BootService extends IntentService {
                 String dateTime = cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME));
                 int notificationId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry._ID));
                 NotificationSet.Alarm alarm = new NotificationSet(this).new Alarm();
-                if (!alarm.create(notificationId, Dates.getDate(dateTime))) {
-                    //TODO: trace log
+                try {
+                    if (!alarm.create(notificationId, new LocalDate(dateTime).getDateTime())) {
+                        //TODO: trace log
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
                 alarm = null;
                 cursor.moveToNext();

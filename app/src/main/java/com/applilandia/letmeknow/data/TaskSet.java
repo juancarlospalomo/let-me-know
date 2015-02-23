@@ -3,7 +3,6 @@ package com.applilandia.letmeknow.data;
 import android.content.ContentValues;
 import android.content.Context;
 
-import com.applilandia.letmeknow.cross.Dates;
 import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -25,7 +24,7 @@ public class TaskSet extends DbSet<Task> {
     public long create(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(task.targetDatetime));
+        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
         if (task.hasNotifications()) initWork();
         long rowId = mUnitOfWork.add(TaskContract.TaskEntry.TABLE_NAME, null, values);
         if (rowId > 0) {
@@ -60,8 +59,7 @@ public class TaskSet extends DbSet<Task> {
     public int update(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(task.targetDatetime));
-
+        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
         String where = TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(task._id)};
 

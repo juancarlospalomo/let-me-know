@@ -3,12 +3,9 @@ package com.applilandia.letmeknow;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
-
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskDbHelper;
-
-import java.util.Date;
 
 /**
  * Created by JuanCarlos on 19/02/2015.
@@ -36,7 +33,7 @@ public class testDb extends AndroidTestCase {
     static ContentValues createTaskAllValues() {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Task 2");
-        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, Dates.castToDatabaseFormat(new Date()));
+        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, new LocalDate().toString());
         return values;
     }
 

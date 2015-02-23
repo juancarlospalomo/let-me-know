@@ -2,11 +2,10 @@ package com.applilandia.letmeknow;
 
 import android.test.AndroidTestCase;
 
-import com.applilandia.letmeknow.cross.Dates;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.models.ValidationResult;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,7 +34,7 @@ public class testValidation extends AndroidTestCase {
         assertTrue(validationResults == null);
         //Task empty and date less than right now
         task.name = "";
-        task.targetDatetime = Dates.addDays(new Date(), -1);
+        task.targetDateTime = new LocalDate().addDays(-1);
         validationResults = task.validate();
         assertTrue(validationResults.size() == 2);
         expectedValidationResult = new ValidationResult("name", ValidationResult.ValidationCode.Empty);
@@ -46,7 +45,7 @@ public class testValidation extends AndroidTestCase {
         assertEquals(expectedValidationResult, resultValidationResult);
         //Ok data
         task.name = "task create";
-        task.targetDatetime = Dates.addDays(new Date(), 1);
+        task.targetDateTime = new LocalDate().addDays(1);
         validationResults = task.validate();
         assertTrue(validationResults == null);
     }
