@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    style="@style/AppProductivityTheme.ActivityLayout"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <EditText android:id="@+id/editTextTaskName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <ImageView android:id="@+id/imageViewAccept"
+            android:layout_width="@dimen/touchable_grid_metric"
+            android:layout_height="@dimen/touchable_grid_metric"
+            android:padding="@dimen/padding_action_icon"
+            android:src="@drawable/ic_mic_on"/>
+
+    </LinearLayout>
+
+    <ProgressBar android:id="@+id/progressActivityMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_gravity="center"
+        style="?android:attr/progressBarStyleLarge" />
+
+    <GridView android:id="@+id/gridTiles"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/grid_spacing"
+        android:horizontalSpacing="@dimen/grid_spacing"
+        android:verticalSpacing="@dimen/grid_spacing"
+        android:numColumns="2"/>
+
+</LinearLayout>

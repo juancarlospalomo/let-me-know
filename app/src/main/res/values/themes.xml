@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppProductivityTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <!-- Toolbar styles-->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        
         <!-- Tile attributes -->
         <item name="tileStyle">@style/Widget.Tile</item>
 
@@ -21,5 +26,8 @@
         <!-- Touchable Metrics -->
         <item name="touchableAssetLayoutHeight">@dimen/touchable_grid_metric</item>
         <item name="touchableAssetLayoutWidth">@dimen/touchable_grid_metric</item>
+        <!-- Navigation Drawer -->
+        <item name="textDrawerItemColor">@color/text_drawer_item</item>
+
     </style>
 </resources>

@@ -18,6 +18,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -44,6 +45,7 @@ public class Tile extends LinearLayout {
 
     /**
      * default constructor
+     *
      * @param context
      */
     public Tile(Context context) {
@@ -52,6 +54,7 @@ public class Tile extends LinearLayout {
 
     /**
      * Constructor with attributes
+     *
      * @param context
      * @param attrs
      */
@@ -275,15 +278,16 @@ public class Tile extends LinearLayout {
 
         /**
          * When Content is clicked on
+         *
          * @param v
          */
         @Override
         public void onClick(final View v) {
             final ObjectAnimator objectAnimator = ObjectAnimator.ofInt(Tile.this, "ContentBackgroundColor",
-                    R.attr.selectableItemBackground);
+                    R.attr.tileSelectableItemBackground);
             objectAnimator.setEvaluator(new ArgbEvaluator());
             objectAnimator.setDuration(500);
-            objectAnimator.setInterpolator(new LinearInterpolator(mContext, null));
+            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
             objectAnimator.reverse();
             objectAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -432,14 +436,17 @@ public class Tile extends LinearLayout {
          * Add the icon to the footer
          */
         private void addIcon() {
-            LinearLayout.LayoutParams layoutParams = new LayoutParams((int) mIconSize, LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams layoutParams = new LayoutParams((int) mIconSize, (int) mIconSize);
             layoutParams.gravity = Gravity.CENTER;
             mIcon.setLayoutParams(layoutParams);
+            int padding = (int)getResources().getDimension(R.dimen.padding_action_icon);
+            mIcon.setPadding(padding, padding, padding, padding);
             addView(mIcon);
         }
 
         /**
          * Set text to the primary line
+         *
          * @param value text
          */
         public void setPrimaryLine(String value) {
@@ -448,6 +455,7 @@ public class Tile extends LinearLayout {
 
         /**
          * Set text to the secondary line
+         *
          * @param value text
          */
         public void setSecondaryLine(String value) {
@@ -456,6 +464,7 @@ public class Tile extends LinearLayout {
 
         /**
          * Set the icon resource
+         *
          * @param resId
          */
         public void setIcon(int resId) {
@@ -480,6 +489,7 @@ public class Tile extends LinearLayout {
         /**
          * Save the handler to send the onClick event and
          * set the onClick handler for icon
+         *
          * @param l
          */
         public void setIconOnClickListener(OnClickListener l) {
@@ -528,6 +538,7 @@ public class Tile extends LinearLayout {
 
         /**
          * Set the background color for the whole text layout
+         *
          * @param color color number
          */
         public void setTextBackgroundColor(int color) {
@@ -537,6 +548,7 @@ public class Tile extends LinearLayout {
 
         /**
          * get the background color from the text layout
+         *
          * @return color number
          */
         public int getTextBackgroundColor() {
@@ -550,6 +562,7 @@ public class Tile extends LinearLayout {
 
         /**
          * set the color background for the icon
+         *
          * @param color color number
          */
         public void setIconBackgroundColor(int color) {
@@ -558,6 +571,7 @@ public class Tile extends LinearLayout {
 
         /**
          * get the color background from the icon
+         *
          * @return color number
          */
         public int getIconBackgroundColor() {

@@ -37,15 +37,13 @@ public class TaskProvider extends ContentProvider {
      * @param id local task identifier
      * @return Cursor
      */
-    private Cursor getTaskWithNotifications(int id) {
+    private Cursor getTasksWithNotifications(int id) {
         SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
         //Build join
         sqLiteQueryBuilder.setTables(TaskContract.TaskEntry.TABLE_NAME + " LEFT JOIN " +
                 TaskContract.NotificationEntry.TABLE_NAME + " ON " + TaskContract.TaskEntry.TABLE_NAME + "." +
                 TaskContract.TaskEntry._ID + "=" + TaskContract.NotificationEntry.TABLE_NAME + "." +
                 TaskContract.NotificationEntry.COLUMN_TASK_ID);
-        //Filter
-        String selection = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=?";
         //Columns
         String[] projection = new String[]{TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + " AS " + TaskContract.TaskEntry.ALIAS_ID,
                 TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME,
@@ -54,10 +52,29 @@ public class TaskProvider extends ContentProvider {
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_DATE_TIME,
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS,
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TYPE};
-        //Task identifier value condition
+        //Task identifier value condition if id != 0
+        //Filter
+        String selection = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(id)};
 
         return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(), projection, selection, args, null, null, null);
+    }
+
+    private Cursor getTasks(String selection, String[] args, String orderBy) {
+        SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
+        sqLiteQueryBuilder.setTables(TaskContract.TaskEntry.TABLE_NAME + " LEFT JOIN " +
+                TaskContract.NotificationEntry.TABLE_NAME + " ON " + TaskContract.TaskEntry.TABLE_NAME + "." +
+                TaskContract.TaskEntry._ID + "=" + TaskContract.NotificationEntry.TABLE_NAME + "." +
+                TaskContract.NotificationEntry.COLUMN_TASK_ID);
+
+        String[] fields = new String[]{TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID,
+                TaskContract.TaskEntry.COLUMN_TASK_NAME, TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME,
+                "Count(" + TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry._ID + ") AS " + TaskContract.TaskEntry.ALIAS_NOTIFICATION_COUNT};
+
+        String groupBy = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "," +
+                TaskContract.TaskEntry.COLUMN_TASK_NAME + "," + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME;
+
+        return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(), fields, selection, args, groupBy, null, orderBy);
     }
 
     /**
@@ -89,13 +106,12 @@ public class TaskProvider extends ContentProvider {
 
         switch (code) {
             case TASK:
-                cursor = mDbHelper.getReadableDatabase().query(TaskContract.TaskEntry.TABLE_NAME,
-                        projection, selection, selectionArgs, null, null, sortOrder);
+                cursor = getTasks(selection, selectionArgs, sortOrder);
                 break;
 
             case TASK_WITH_NOTIFICATIONS:
                 int taskId = TaskContract.TaskEntry.getUriTaskId(uri);
-                cursor = getTaskWithNotifications(taskId);
+                cursor = getTasksWithNotifications(taskId);
                 break;
 
             case NOTIFICATION:

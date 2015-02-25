@@ -32,7 +32,7 @@ public class testValidation extends AndroidTestCase {
         task.name = "task equal to fifty characters, so it has to be ok";
         validationResults = task.validate();
         assertTrue(validationResults == null);
-        //Task empty and date less than right now
+        //Task empty and date less than date now
         task.name = "";
         task.targetDateTime = new LocalDate().addDays(-1);
         validationResults = task.validate();

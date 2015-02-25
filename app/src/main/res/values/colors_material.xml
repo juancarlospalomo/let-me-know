@@ -12,4 +12,14 @@
     <color name="highlighted_text_material_dark">#6680cbc4</color>
     <color name="link_text_material_dark">@color/material_deep_teal_200</color>
     <color name="material_deep_teal_200">#ff80cbc4</color>
+    <!-- Navigation drawer -->
+    <color name="text_drawer_item">#E5000000</color>
+    <!-- Widget.Tile -->
+    <color name="touch_feedback">#F5F5F5</color>
+    <!-- Tiles Content Background-->
+    <color name="tile_expired_content_background">#EF5350</color>
+    <color name="tile_today_content_background">#26A69A</color>
+    <color name="tile_future_content_background">#42A5F5</color>
+    <color name="tile_anytime_content_background">#D4E157</color>
+
 </resources>

@@ -5,7 +5,7 @@
 <resources>
     <!-- Tile dimensions -->
     <dimen name="tile_footer_height">68dp</dimen>
-    <dimen name="tile_content_text_size">20sp</dimen>
+    <dimen name="tile_content_text_size">30sp</dimen>
     <dimen name="tile_icon_size">48dp</dimen>
     <dimen name="tile_footer_text_primary_size">16sp</dimen>
     <dimen name="tile_footer_text_secondary_size">12sp</dimen>
@@ -13,7 +13,6 @@
     <!-- overwritten -->
     <dimen name="text_size_body_1_material">14sp</dimen>
     <dimen name="text_size_subhead_material">16sp</dimen>
-
     <!-- Text padding left for list row primary action with avatar, text and icon -->
     <dimen name="list_primary_action_text_avatar_text">72dp</dimen>
     <dimen name="list_primary_action_text_padding_top">20dp</dimen>
@@ -23,4 +22,9 @@
     <dimen name="list_primary_action_avatar_width">56dp</dimen>
     <!-- Touchable grid metrics -->
     <dimen name="touchable_grid_metric">48dp</dimen>
+    <!-- Navigation drawer -->
+    <dimen name="drawer_item_horizontal_padding">16dp</dimen>
+    <dimen name="drawer_item_height">48dp</dimen>
+    <dimen name="drawer_icon_size">48dp</dimen>
+    <dimen name="drawer_item_text_left_padding">8dp</dimen>
 </resources>

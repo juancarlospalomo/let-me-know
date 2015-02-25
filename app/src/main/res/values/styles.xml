@@ -16,9 +16,17 @@
         <item name="tileTextFooterPrimarySize">@dimen/tile_footer_text_primary_size</item>
         <item name="tileTextFooterSecondarySize">@dimen/tile_footer_text_secondary_size</item>
         <item name="tileTextFooterPadding">@dimen/tile_footer_text_padding</item>
+        <item name="tileSelectableItemBackground">@color/touch_feedback</item>
     </style>
 
     <!-- Text styles replied from Material Design theme -->
+
+    <style name="AppProductivityTheme.ActivityLayout">
+        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+    </style>
 
     <style name="AppProductivityTheme.TextAppearance" parent="android:TextAppearance" />
 
@@ -45,6 +53,24 @@
         <item name="android:textColor">?attr/textColorPrimary</item>
         <!-- New attribute to set the padding to text with avatar, text and icon -->
         <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
+    </style>
+
+    <!-- Styles for Navigation Drawer -->
+    <style name="AppProductivityTheme.NavigationDrawerItem">
+        <item name="android:paddingRight">@dimen/drawer_item_horizontal_padding</item>
+        <item name="android:layout_height">@dimen/drawer_item_height</item>
+    </style>
+
+    <style name="AppProductivityTheme.NavigationDrawerItem.IconDrawer">
+        <item name="android:layout_marginLeft">@dimen/drawer_item_horizontal_padding</item>
+    </style>
+
+    <style name="AppProductivityTheme.NavigationDrawerItem.TextDrawerItem">
+        <item name="android:textSize">@dimen/text_size_body_1_material</item>
+        <item name="fontFamily">@string/font_family_title_material</item>
+        <item name="android:textColor">?attr/textDrawerItemColor</item>
+        <item name="android:paddingLeft">@dimen/drawer_item_text_left_padding</item>
+        <item name="android:layout_gravity">left</item>
     </style>
 
 </resources>

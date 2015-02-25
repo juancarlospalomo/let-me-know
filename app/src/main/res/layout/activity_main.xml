@@ -1,42 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<com.applilandia.letmeknow.views.Tile xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/tileTask"
-    android:layout_width="200dp"
-    android:layout_height="wrap_content"
-    letmeknow:footerPrimaryLine="PrimaryLine very very very long"
-    letmeknow:footerSecondaryLine="SecondaryLine"
-    letmeknow:footerIcon="@drawable/ic_alarm_off"
-    letmeknow:textContent="Content"/>
-
-<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="92dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+    <android.support.v7.widget.Toolbar android:id="@+id/taskToolBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary">
+    </android.support.v7.widget.Toolbar>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="primary line"/>
+    <android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!-- the main content view -->
+        <FrameLayout android:id="@+id/content_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="secondary line"/>
+        <ListView android:id="@+id/left_drawer"
+            android:layout_width="@dimen/drawer_layout_width"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            android:background="@android:color/white">
+        </ListView>
 
-    </LinearLayout>
+    </android.support.v4.widget.DrawerLayout>
 
-    <ImageView
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_launcher"/>
+</LinearLayout>
 
-</LinearLayout>-->
+
+
+
 

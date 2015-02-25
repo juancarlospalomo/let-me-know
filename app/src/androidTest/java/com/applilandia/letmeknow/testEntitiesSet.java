@@ -5,10 +5,8 @@ import android.test.AndroidTestCase;
 
 import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.HistorySet;
-import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
-import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.History;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -72,49 +70,6 @@ public class testEntitiesSet extends AndroidTestCase {
             }
         }
 
-    }
-
-    public void testCreateNotification() {
-        Task task = generateTaskEntity("task 1", new LocalDate());
-        TaskSet taskSet = new TaskSet(mContext);
-        taskSet.initWork();
-        long taskId = taskSet.create(task);
-        if (taskId > 0) {
-            Notification notification = generateNotificationEntity(taskId, new Date(),
-                    Notification.TypeNotification.FiveMinutesBefore,
-                    Notification.TypeStatus.Pending);
-            NotificationSet notificationSet = new NotificationSet(mContext, taskSet.getUnitOfWork());
-            long id = 0;
-            try {
-                id = notificationSet.create(notification);
-            } catch (AlarmException e) {
-                e.printStackTrace();
-            }
-            if (id > 0) {
-                taskSet.endWork(true);
-                Cursor cursor = mContext.getContentResolver().query(TaskContract.NotificationEntry.setUriNotificationId(id),
-                        null, null, null, null);
-                if (cursor != null) {
-                    assertEquals(1, cursor.getCount());
-                    cursor.moveToFirst();
-                    taskId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TASK_ID));
-                    LocalDate date = null;
-                    try {
-                        date = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME)));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    Notification.TypeNotification type = Notification.TypeNotification.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TYPE)));
-                    Notification.TypeStatus status = Notification.TypeStatus.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_STATUS)));
-                    Notification retNotification = generateNotificationEntity(taskId, date.getDateTime(), type, status);
-                    assertEquals(notification, retNotification);
-                }
-            } else {
-                taskSet.endWork(false);
-            }
-        } else {
-            taskSet.endWork(false);
-        }
     }
 
     public void testCreateHistory() {

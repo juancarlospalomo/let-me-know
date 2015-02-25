@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">LetMeKnow</string>
+    <!-- Text for Tiles -->
+    <string-array name="text_tile_content">
+        <item>EXPIRED</item>
+        <item>TODAY</item>
+        <item>FUTURE</item>
+        <item>ANY TIME</item>
+    </string-array>
+    <string-array name="text_defaults_primary_line">
+        <item>Last expired task</item>
+        <item>Next today task</item>
+        <item>Next future task</item>
+        <item>Last entered task</item>
+    </string-array>
+    <string name="text_date_label">Date</string>
+    <string name="text_tomorrow">Tomorrow</string>
+    <string name="text_yesterday">Yesterday</string>
+
+    <!-- Text for Navigation Drawer -->
+    <string name="drawer_open">drawer open</string>
+    <string name="drawer_close">drawer close</string>
+    <string name="menu_settings">Settings</string>
+
+
+
 </resources>

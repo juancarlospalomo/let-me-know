@@ -24,7 +24,11 @@ public class TaskSet extends DbSet<Task> {
     public long create(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
+        if (task.targetDateTime!=null) {
+            values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
+        } else {
+            values.putNull(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);
+        }
         if (task.hasNotifications()) initWork();
         long rowId = mUnitOfWork.add(TaskContract.TaskEntry.TABLE_NAME, null, values);
         if (rowId > 0) {
@@ -59,7 +63,11 @@ public class TaskSet extends DbSet<Task> {
     public int update(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
+        if (task.targetDateTime!=null) {
+            values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
+        } else {
+            values.putNull(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);
+        }
         String where = TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(task._id)};
 

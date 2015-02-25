@@ -36,6 +36,9 @@ public class Task implements IValidatable {
         }
     }
 
+    //It has the current notifications stored in database for the task
+    private int mCurrentNotificationsCount = 0;
+
     //Local identifier for the task
     public int _id;
     //task name
@@ -48,7 +51,24 @@ public class Task implements IValidatable {
     private List<Notification> mNotifications;
 
     /**
+     * Set the current existing notifications in database for this task
+     * @param value current notifications number
+     */
+    public void setCurrentNotificationsCount(int value) {
+        mCurrentNotificationsCount = value;
+    }
+
+    /**
+     * Return the number of notifications in database for this task
+     * @return
+     */
+    public int getCurrentNotificationsCount() {
+        return mCurrentNotificationsCount;
+    }
+
+    /**
      * Add a notification to the list of them
+     *
      * @param notification to add
      */
     public void addNotification(Notification notification) {
@@ -59,7 +79,15 @@ public class Task implements IValidatable {
     }
 
     /**
+     * Set notifications list to null
+     */
+    public void removeNotifications() {
+        mNotifications = null;
+    }
+
+    /**
      * Return the current notifications list
+     *
      * @return list of notifications
      */
     public List<Notification> getNotifications() {
@@ -68,10 +96,36 @@ public class Task implements IValidatable {
 
     /**
      * find out if any notification exists
+     *
      * @return true if it has some notification
      */
     public boolean hasNotifications() {
-        return  ((mNotifications!=null) && ((mNotifications.size()>0)));
+        return ((mNotifications != null) && ((mNotifications.size() > 0)));
+    }
+
+    /**
+     * Return if the current TypeTask is equal to another one
+     * @param other
+     * @return
+     */
+    private boolean areTypeTaskEquals(TypeTask other) {
+        if ((typeTask == null) && (other == null)) {
+            return true;
+        } else {
+            if (typeTask == null) {
+                return false;
+            } else {
+                if (other == null) {
+                    return false;
+                } else {
+                    if (!typeTask.equals(other)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -83,9 +137,23 @@ public class Task implements IValidatable {
     @Override
     public boolean equals(Object other) {
         if (other instanceof Task) {
-            if ((this.name.equals(((Task) other).name)) &&
-                    (this.targetDateTime.equals(((Task) other).targetDateTime))) {
-                return true;
+            //Both targetDateTime could be null
+            boolean bothAreNull = ((this.targetDateTime == null) && (((Task) other).targetDateTime == null));
+            if (this.name.equals(((Task) other).name)) {
+                if (bothAreNull) {
+                    return true;
+                } else {
+                    boolean someIsNull = ((this.targetDateTime == null) || (((Task) other).targetDateTime == null));
+                    if (someIsNull) {
+                        return false;
+                    } else {
+                        if (this.targetDateTime.equals(((Task) other).targetDateTime)) {
+                            return areTypeTaskEquals(((Task) other).typeTask);
+                        } else {
+                            return false;
+                        }
+                    }
+                }
             } else {
                 return false;
             }

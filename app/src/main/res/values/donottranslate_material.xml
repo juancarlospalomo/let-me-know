@@ -4,4 +4,5 @@
 <resources>
     <string name="font_family_body_1_material">sans-serif</string>
     <string name="font_family_subhead_material">sans-serif</string>
+    <string name="font_family_title_material">sans-serif-medium</string>
 </resources>

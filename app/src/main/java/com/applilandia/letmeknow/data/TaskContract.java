@@ -43,6 +43,7 @@ public class TaskContract {
          *Alias for fields if they are needed
          */
         public static final String ALIAS_ID = TABLE_NAME + "_" + _ID;
+        public static final String ALIAS_NOTIFICATION_COUNT = "notif_count";
 
         //Uri functions to manage the parameters
 
@@ -64,7 +65,6 @@ public class TaskContract {
         public static Uri setUriTaskId(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-
     }
 
     /**

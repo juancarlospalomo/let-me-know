@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.applilandia.letmeknow.views.Tile xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tileTask"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    letmeknow:footerPrimaryLine=""
+    letmeknow:footerSecondaryLine="@string/text_date_label"
+    letmeknow:footerIcon="@drawable/ic_alarm_off"
+    letmeknow:textContent="" />
