@@ -1,5 +1,20 @@
 <resources>
     <string name="app_name">LetMeKnow</string>
+    <!-- Activity titles -->
+    <string name="title_activity_settings">Settings</string>
+    <!-- Settings Key -->
+    <string name="key_trigger_daily_time" translatable="false">prefDailyTime</string>
+    <string name="key_trigger_daily_notification" translatable="false">prefDaily</string>
+    <string name="key_create_default_notification" translatable="false">prefDefNot</string>
+    <!-- Settings Titles -->
+    <string name="title_notification_group">NOTIFICATION</string>
+    <string name="title_trigger_daily_time">Daily time</string>
+    <string name="title_trigger_daily_notification">Daily notification</string>
+    <string name="title_create_default_notification">Create default notification</string>
+    <!-- Settings Summary -->
+    <string name="summary_trigger_daily_time">Time when daily notification is raised</string>
+    <string name="summary_trigger_daily_notification">Trigger notification with the day tasks</string>
+    <string name="summary_create_default_notification">Create default notification when a task is created with time</string>
     <!-- Text for Tiles -->
     <string-array name="text_tile_content">
         <item>EXPIRED</item>
@@ -21,7 +36,4 @@
     <string name="drawer_open">drawer open</string>
     <string name="drawer_close">drawer close</string>
     <string name="menu_settings">Settings</string>
-
-
-
 </resources>

@@ -1,6 +1,7 @@
 package com.applilandia.letmeknow;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -16,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.applilandia.letmeknow.fragments.HomeFragment;
 
@@ -86,7 +86,8 @@ public class MainActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case DrawerListAdapter.SETTINGS_INDEX:
-                        Toast.makeText(MainActivity.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                        startActivity(intent);
                         break;
                 }
             }

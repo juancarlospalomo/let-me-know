@@ -152,6 +152,20 @@ public class NotificationSet extends DbSet<Notification> {
         }
 
         /**
+         * Create a daily repetitive alarm
+         * @param timeInMillis time in milliseconds when the Alarm has to be triggered
+         */
+        public void create(long timeInMillis) {
+            AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(mContext, AlarmReceiver.class);
+            intent.putExtra(NOTIFICATION_ID, 0);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, timeInMillis,
+                    AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
+
+        /**
          * Cancel an alarm for a notification
          *
          * @param notificationId = notification identifier

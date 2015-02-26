@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/title_notification_group">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/key_trigger_daily_notification"
+            android:summary="@string/summary_trigger_daily_notification"
+            android:title="@string/title_trigger_daily_notification" />
+
+        <com.applilandia.letmeknow.fragments.TimePreference
+            android:defaultValue="09:00"
+            android:key="@string/key_trigger_daily_time"
+            android:summary="@string/summary_trigger_daily_time"
+            android:title="@string/title_trigger_daily_time" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/key_create_default_notification"
+            android:summary="@string/summary_create_default_notification"
+            android:title="@string/title_create_default_notification" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

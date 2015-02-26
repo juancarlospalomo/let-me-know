@@ -36,6 +36,9 @@ public class AlarmService extends IntentService {
                 if (id!=0) {
                     NotificationSet notificationSet = new NotificationSet(this);
                     notificationSet.send(id);
+                } else {
+                    //It is a daily notification
+                    //TODO: Generate notification
                 }
             }
         }

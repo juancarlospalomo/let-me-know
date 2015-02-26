@@ -63,5 +63,7 @@ public class BootService extends IntentService {
         }
         //Always close the cursor
         cursor.close();
+
+        //TODO: Restore daily alarm if it is activated
     }
 }
