@@ -10,11 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.Toolbar android:id="@+id/taskToolBar"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/taskToolBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
-            android:background="?attr/colorPrimary">
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize">
 
             <Spinner
                 android:id="@+id/spinnerTypeTasks"
@@ -22,12 +23,13 @@
                 android:layout_height="wrap_content"></Spinner>
         </android.support.v7.widget.Toolbar>
 
-        <com.applilandia.letmeknow.views.FloatingActionButton android:id="@+id/fab_add_task"
+        <com.applilandia.letmeknow.views.FloatingActionButton
+            android:id="@+id/fab_add_task"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_gravity="top|end"
-            android:layout_marginTop="26dp"
             android:layout_marginRight="16dp"
+            android:layout_marginTop="26dp"
             android:background="@drawable/fab_background"
             android:padding="16dp"
             android:src="@drawable/ic_add" />
@@ -37,6 +39,13 @@
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></FrameLayout>
+        android:layout_height="wrap_content">
+
+        <com.applilandia.letmeknow.views.SnackBar
+            android:id="@+id/snackBarTasks"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/snack_bar_single_line_height"
+            android:layout_gravity="bottom" />
+    </FrameLayout>
 
 </LinearLayout>

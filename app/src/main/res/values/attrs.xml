@@ -90,12 +90,14 @@
         <attr name="validationView"/>
     </declare-styleable>
 
-
     <declare-styleable name="validationView">
         <attr name="android:textAppearance"/>
         <attr name="android:layout_height"/>
     </declare-styleable>
 
-
+    <!-- SnackBar Styles -->
+    <attr name="snackBarStyle" format="reference"/>
+    <attr name="snackBarText" format="reference"/>
+    <attr name="snackBarAction" format="reference"/>
 
 </resources>

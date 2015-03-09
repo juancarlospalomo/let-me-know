@@ -19,6 +19,8 @@ import android.widget.TextView;
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Task;
+import com.applilandia.letmeknow.usecases.UseCaseTask;
+import com.applilandia.letmeknow.views.SnackBar;
 
 import java.util.List;
 
@@ -185,8 +187,8 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          * @param position: position from the Dataset to be showed
          */
         @Override
-        public void onBindViewHolder(TaskAdapter.ViewHolder holder, int position) {
-            Task task = mTaskList.get(position);
+        public void onBindViewHolder(final TaskAdapter.ViewHolder holder, final int position) {
+            final Task task = mTaskList.get(position);
             if (task.getCurrentNotificationsCount() > 0) {
                 holder.mAvatarView.setImageResource(R.drawable.ic_alarm_on);
             } else {
@@ -195,11 +197,31 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             holder.mIconView.setImageResource(R.drawable.ic_check_off);
             holder.mTextPrimaryText.setText(task.name);
             if (task.targetDateTime != null) {
-                holder.mTextSecondaryText.setVisibility(View.GONE);
+                holder.mTextSecondaryText.setVisibility(View.VISIBLE);
                 holder.mTextSecondaryText.setText(task.targetDateTime.getDisplayFormat(getActivity()));
             } else {
-                holder.mTextPrimaryText.setVisibility(View.GONE);
+                holder.mTextSecondaryText.setVisibility(View.GONE);
             }
+            holder.mIconView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.mIconView.setImageResource(R.drawable.ic_check_on);
+                    SnackBar snackBar = (SnackBar) getActivity().findViewById(R.id.snackBarTasks);
+                    snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
+                        @Override
+                        public void onClose() {
+                            UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                            if (useCaseTask.setTaskAsCompleted(task)) {
+                                //Remove it from Recycler View
+                                mTaskList.remove(position);
+                                notifyItemRemoved(position);
+                                notifyItemRangeRemoved(position, mTaskList.size());
+                            }
+                        }
+                    });
+                    snackBar.show(R.string.snack_bar_task_completed_text);
+                }
+            });
 
         }
 

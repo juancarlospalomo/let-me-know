@@ -6,8 +6,10 @@ import android.text.TextUtils;
 
 import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.cross.Settings;
+import com.applilandia.letmeknow.data.HistorySet;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
+import com.applilandia.letmeknow.models.History;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 
@@ -394,6 +396,31 @@ public class UseCaseTask {
             }
         }
         return typeTask;
+    }
+
+    /**
+     * Set a task as completed
+     *
+     * @param task Task entity to set as completed
+     * @return true if the task was marked as completed correctly
+     */
+    public boolean setTaskAsCompleted(Task task) {
+        boolean result = false;
+        History history = new History();
+        history.name = task.name;
+        history.targetDate = task.targetDateTime;
+        history.completedDate = new LocalDate();
+        HistorySet historySet = new HistorySet(mContext);
+        historySet.initWork();
+        long historyId = historySet.create(history);
+        if (historyId > 0) {
+            //It was created in history
+            TaskSet taskSet = new TaskSet(mContext, historySet.getUnitOfWork());
+            result = taskSet.delete(task);
+        } else {
+        }
+        historySet.endWork(result);
+        return result;
     }
 
 }
