@@ -12,6 +12,8 @@ import com.applilandia.letmeknow.models.Task;
  */
 public class TaskSet extends DbSet<Task> {
 
+    private final static String LOG_TAG = TaskSet.class.getSimpleName();
+
     public TaskSet(Context context) {
         super(context);
     }
@@ -24,7 +26,7 @@ public class TaskSet extends DbSet<Task> {
     public long create(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        if (task.targetDateTime!=null) {
+        if (task.targetDateTime != null) {
             values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
         } else {
             values.putNull(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);
@@ -35,14 +37,17 @@ public class TaskSet extends DbSet<Task> {
             if (task.hasNotifications()) {
                 long id = 0;
                 NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
-                for (Notification notification : task.getNotifications()) {
-                    notification.taskId = (int) rowId;
-                    try {
-                        id = notificationSet.create(notification);
-                    } catch (AlarmException e) {
-                        id = -1;
-                        e.printStackTrace();
-                        break;
+                for (int index = 0; index < Notification.TypeNotification.values().length; index++) {
+                    Notification notification = task.getNotifications().get(index);
+                    if (notification != null) {
+                        notification.taskId = (int) rowId;
+                        try {
+                            id = notificationSet.create(notification);
+                        } catch (AlarmException e) {
+                            id = -1;
+                            e.printStackTrace();
+                            break;
+                        }
                     }
                 }
                 if (id < 0) {
@@ -63,7 +68,7 @@ public class TaskSet extends DbSet<Task> {
     public int update(Task task) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
-        if (task.targetDateTime!=null) {
+        if (task.targetDateTime != null) {
             values.put(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME, task.targetDateTime.toString());
         } else {
             values.putNull(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);

@@ -73,4 +73,26 @@
         <item name="android:layout_gravity">left</item>
     </style>
 
+    <style name="Widget.Button" parent="@android:style/Widget.Button">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">@color/accent_material_light</item>
+    </style>
+
+    <!-- Validation Field View styles -->
+    <style name="Widget.ValidationField">
+        <item name="validationView">?attr/validationView</item>
+        <item name="background">@android:color/darker_gray</item>
+    </style>
+
+    <style name="Widget.TextValidationAppearance">
+        <item name="android:textSize">12sp</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@android:color/holo_red_light</item>
+    </style>
+
+    <style name="Widget.ValidationView" parent="@android:style/Widget.TextView">
+        <item name="android:textAppearance">?attr/textValidationAppearance</item>
+        <item name="android:layout_height">16dp</item>
+    </style>
+
 </resources>

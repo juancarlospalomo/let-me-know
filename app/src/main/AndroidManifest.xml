@@ -38,6 +38,18 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.applilandia.letmeknow.MainActivity" />
         </activity>
+        <activity
+            android:name=".TaskListActivity"
+            android:label="@string/title_activity_task_list"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.applilandia.letmeknow.MainActivity" />
+        </activity>
+        <activity
+            android:name=".TaskActivity"
+            android:label="@string/title_activity_task" >
+        </activity>
     </application>
 
 </manifest>

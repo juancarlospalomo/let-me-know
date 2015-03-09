@@ -1,6 +1,7 @@
 package com.applilandia.letmeknow.models;
 
 import android.text.TextUtils;
+import android.util.SparseArray;
 
 import com.applilandia.letmeknow.cross.LocalDate;
 
@@ -34,6 +35,10 @@ public class Task implements IValidatable {
         public int getValue() {
             return mValue;
         }
+
+        public static TypeTask map(int value) {
+            return values()[value];
+        }
     }
 
     //It has the current notifications stored in database for the task
@@ -48,10 +53,11 @@ public class Task implements IValidatable {
     //Type task. This field isn't persisted in database
     public TypeTask typeTask;
     //List of notifications for the task
-    private List<Notification> mNotifications;
+    private SparseArray<Notification> mNotifications;
 
     /**
      * Set the current existing notifications in database for this task
+     *
      * @param value current notifications number
      */
     public void setCurrentNotificationsCount(int value) {
@@ -60,6 +66,7 @@ public class Task implements IValidatable {
 
     /**
      * Return the number of notifications in database for this task
+     *
      * @return
      */
     public int getCurrentNotificationsCount() {
@@ -73,9 +80,42 @@ public class Task implements IValidatable {
      */
     public void addNotification(Notification notification) {
         if (mNotifications == null) {
-            mNotifications = new ArrayList<Notification>();
+            mNotifications = new SparseArray<>();
         }
-        mNotifications.add(notification);
+        LocalDate notificationDateTime = new LocalDate(targetDateTime);
+        if (notification.type == Notification.TypeNotification.FiveMinutesBefore) {
+            notificationDateTime.addMinutes(-5);
+        }
+        if (notification.type == Notification.TypeNotification.OneHourBefore) {
+            notificationDateTime.addHours(-1);
+        }
+        if (notification.type == Notification.TypeNotification.OneDayBefore) {
+            notificationDateTime.addDays(-1);
+        }
+        if (notification.type == Notification.TypeNotification.OneWeekBefore) {
+            notificationDateTime.addDays(-7);
+        }
+        notification.dateTime = notificationDateTime.getDateTime();
+        mNotifications.put(notification.type.getValue(), notification);
+    }
+
+    /**
+     * Return the notification which type is passed
+     *
+     * @param typeNotification
+     * @return Notification or null
+     */
+    public Notification getNotification(Notification.TypeNotification typeNotification) {
+        return mNotifications.get(typeNotification.getValue());
+    }
+
+    /**
+     * Set the element in the array to null
+     *
+     * @param typeNotification type of notification to remove
+     */
+    public void removeNotification(Notification.TypeNotification typeNotification) {
+        mNotifications.remove(typeNotification.getValue());
     }
 
     /**
@@ -90,7 +130,7 @@ public class Task implements IValidatable {
      *
      * @return list of notifications
      */
-    public List<Notification> getNotifications() {
+    public SparseArray<Notification> getNotifications() {
         return mNotifications;
     }
 
@@ -104,7 +144,36 @@ public class Task implements IValidatable {
     }
 
     /**
+     * Find out if a type of notification is allowed according to the task target date.
+     * If target date - previous time for notification is less than current date time it isn't allowed
+     *
+     * @param typeNotification
+     * @return true if the notification is allowed
+     */
+    public boolean isNotificationAllowed(Notification.TypeNotification typeNotification) {
+        boolean isAllowed = false;
+        LocalDate notificationDateTime = new LocalDate(targetDateTime);
+        if (typeNotification == Notification.TypeNotification.FiveMinutesBefore) {
+            notificationDateTime.addMinutes(-5);
+        }
+        if (typeNotification == Notification.TypeNotification.OneHourBefore) {
+            notificationDateTime.addHours(-1);
+        }
+        if (typeNotification == Notification.TypeNotification.OneDayBefore) {
+            notificationDateTime.addDays(-1);
+        }
+        if (typeNotification == Notification.TypeNotification.OneWeekBefore) {
+            notificationDateTime.addDays(-7);
+        }
+        if (notificationDateTime.compareTo(new LocalDate()) >= 0) {
+            isAllowed = true;
+        }
+        return isAllowed;
+    }
+
+    /**
      * Return if the current TypeTask is equal to another one
+     *
      * @param other
      * @return
      */

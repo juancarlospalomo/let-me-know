@@ -2,12 +2,92 @@
     <!-- styles replied from the styles default values.
         Here, they only inherits from the Material Design styles
         without override anything and add the new attributes -->
+    <style name="Widget" parent="@android:style/Widget" />
+
+    <style name="Widget.Tile">
+        <item name="tileFooterHeight">@dimen/tile_footer_height</item>
+        <item name="tileTextContentFamily">@string/font_family_body_1_material</item>
+        <item name="tileTextContentSize">@dimen/tile_content_text_size</item>
+        <item name="tileIconSize">@dimen/tile_icon_size</item>
+        <item name="tileContentBackground">@color/green</item>
+        <item name="tileFooterBackground">@color/white</item>
+        <item name="tileTextFooterPrimarySize">@dimen/tile_footer_text_primary_size</item>
+        <item name="tileTextFooterSecondarySize">@dimen/tile_footer_text_secondary_size</item>
+        <item name="tileTextFooterPadding">@dimen/tile_footer_text_padding</item>
+        <item name="tileSelectableItemBackground">@color/touch_feedback</item>
+    </style>
+
+    <!-- Text styles replied from Material Design theme -->
+
+    <style name="AppProductivityTheme.ActivityLayout">
+        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+    </style>
+
+    <style name="AppProductivityTheme.TextAppearance" parent="android:TextAppearance" />
+
+    <style name="AppProductivityTheme.TextAppearance.Material">
+        <item name="android:textColor">?attr/textColorPrimary</item>
+        <item name="android:textColorHint">?attr/textColorHint</item>
+        <item name="android:textColorHighlight">?attr/textColorHighlight</item>
+        <item name="android:textColorLink">?attr/textColorLink</item>
+        <item name="android:textSize">@dimen/text_size_body_1_material</item>
+        <item name="fontFamily">@string/font_family_body_1_material</item>
+    </style>
+
     <style name="AppProductivityTheme.TextAppearance.Material.Subhead" parent="android:TextAppearance.Material.Subhead">
+        <item name="android:textSize">@dimen/text_size_subhead_material</item>
+        <item name="android:fontFamily">@string/font_family_subhead_material</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
+        <!-- New attribute to set the padding to text with avatar, text and icon -->
         <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
     </style>
 
     <style name="AppProductivityTheme.TextAppearance.Material.Body1" parent="android:TextAppearance.Material.Body1">
+        <!-- New attribute to set the padding to text with avatar, text and icon -->
         <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
     </style>
-    
+
+    <!-- Styles for Navigation Drawer -->
+    <style name="AppProductivityTheme.NavigationDrawerItem">
+        <item name="android:paddingRight">@dimen/drawer_item_horizontal_padding</item>
+        <item name="android:layout_height">@dimen/drawer_item_height</item>
+    </style>
+
+    <style name="AppProductivityTheme.NavigationDrawerItem.IconDrawer">
+        <item name="android:layout_marginLeft">@dimen/drawer_item_horizontal_padding</item>
+    </style>
+
+    <style name="AppProductivityTheme.NavigationDrawerItem.TextDrawerItem">
+        <item name="android:textSize">@dimen/text_size_body_1_material</item>
+        <item name="android:fontFamily">@string/font_family_title_material</item>
+        <item name="android:textColor">?attr/textDrawerItemColor</item>
+        <item name="android:paddingLeft">@dimen/drawer_item_text_left_padding</item>
+        <item name="android:layout_gravity">left</item>
+    </style>
+
+    <style name="Widget.Button" parent="@android:style/Widget.Button">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">@color/accent_material_light</item>
+    </style>
+
+    <!-- Validation Field View styles -->
+    <style name="Widget.ValidationField">
+        <item name="validationView">?attr/validationView</item>
+        <item name="background">@android:color/darker_gray</item>
+    </style>
+
+    <style name="Widget.TextValidationAppearance">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@android:color/holo_red_light</item>
+    </style>
+
+    <style name="Widget.ValidationView" parent="@android:style/Widget.TextView">
+        <item name="android:textAppearance">?attr/textValidationAppearance</item>
+        <item name="android:layout_height">16dp</item>
+    </style>
+
 </resources>

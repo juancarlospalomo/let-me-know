@@ -13,48 +13,35 @@ import com.applilandia.letmeknow.usecases.UseCaseTask;
 import java.util.List;
 
 /**
- * Created by JuanCarlos on 24/02/2015.
- * Async Task Loader for getting the tasks summary
+ * Created by JuanCarlos on 27/02/2015.
  */
-public class SummaryLoader extends AsyncTaskLoader<List<Task>> {
-
-    private static final String LOG_TAG = SummaryLoader.class.getSimpleName();
+public class TaskLoader extends AsyncTaskLoader<List<Task>> {
 
     private Context mContext;
+    private Task.TypeTask mTypeTask;
     private List<Task> mTaskList;
-    private ContentObserver mObserver; //Observer to be notified when a change occurs
+    private TaskObserver mObserver;
 
-    public SummaryLoader(Context context) {
+    public TaskLoader(Context context, Task.TypeTask typeTask) {
         super(context);
         mContext = context;
+        mTypeTask = typeTask;
         mObserver = new TaskObserver(new Handler());
         mContext.getContentResolver().registerContentObserver(TaskContract.TaskEntry.CONTENT_URI,
                 true, mObserver);
     }
 
-    /**
-     * Async Task Loader
-     * @return Summary List of Tasks
-     */
     @Override
     public List<Task> loadInBackground() {
         UseCaseTask useCaseTask = new UseCaseTask(mContext);
-        List<Task> result = useCaseTask.getTaskSummary();
-        return result;
+        mTaskList = useCaseTask.getTasksByType(mTypeTask);
+        return mTaskList;
     }
 
-    /**
-     * Called when there is new data to deliver to the client.  The
-     * super class will take care of delivering it
-     * @param data list to be delivered
-     */
     @Override
     public void deliverResult(List<Task> data) {
         if (isReset()) {
-            // The Loader has been reset; ignore the result and invalidate the data.
-            if (data!=null) {
-                onReleaseResources(data);
-            }
+            onReleaseResources(data);
             return;
         }
         // Hold a reference to the old data so it doesn't get garbage collected.
@@ -62,30 +49,19 @@ public class SummaryLoader extends AsyncTaskLoader<List<Task>> {
         List<Task> oldList = mTaskList;
         mTaskList = data;
         if (isStarted()) {
-            // If the Loader is in a started state, deliver the results to the
-            // client. The superclass method does this for us.
+            //Deliver result to the client as the loader is in started state
             super.deliverResult(data);
-        }
-        // Invalidate the old data as we don't need it any more
-        if (oldList!=null && oldList!=data) {
-            mTaskList = null;
         }
     }
 
-    /**
-     * Handle the request to start the loader
-     */
     @Override
     protected void onStartLoading() {
         if (mTaskList != null) {
-            // Deliver any previously loaded data immediately.
             deliverResult(mTaskList);
         }
         if (takeContentChanged() || mTaskList == null) {
-            // When the observer detects a change, it should call onContentChanged()
-            // on the Loader, which will cause the next call to takeContentChanged()
-            // to return true. If this is ever the case (or if the current data is
-            // null), we force a new load.
+            //If the content changed (we know this by the Observer) or
+            //data have not been loaded yet, start the load
             forceLoad();
         }
     }
@@ -100,31 +76,19 @@ public class SummaryLoader extends AsyncTaskLoader<List<Task>> {
         cancelLoad();
     }
 
-    /**
-     * Manages the request to reset the loader
-     */
-    @Override
-    protected void onReset() {
-        // Ensure the loader has been stopped.
-        onStopLoading();
-        // At this point we can release the resources.
-        if (mTaskList != null) {
-            onReleaseResources(mTaskList);
-        }
-    }
-
-    /**
-     * Manage the request to cancel the loader
-     * @param data List of Tasks loaded
-     */
     @Override
     public void onCanceled(List<Task> data) {
-        // Attempt to cancel the current asynchronous load.
-        super.onCanceled(mTaskList);
-
-        // The load has been canceled, so we should release the resources
-        // associated with 'data'.
+        //Attempt to cancel the asynchronous load
+        super.onCanceled(data);
+        //Release resources
         onReleaseResources(data);
+    }
+
+    @Override
+    protected void onReset() {
+        //ensure the loader has been stopped
+        onStopLoading();
+        mContext.getContentResolver().unregisterContentObserver(mObserver);
     }
 
     /**
@@ -133,7 +97,6 @@ public class SummaryLoader extends AsyncTaskLoader<List<Task>> {
      */
     protected void onReleaseResources(List<Task> data) {
         data.clear();
-        mTaskList = null;
         //Unregister the observer to avoid GC doesn't eliminate the class object
         mContext.getContentResolver().unregisterContentObserver(mObserver);
     }

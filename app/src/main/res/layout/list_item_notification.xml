@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/listPreferredItemHeight"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:background="@drawable/list_row_background">
+
+    <TextView android:id="@+id/textViewNotificationType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceListItem"
+        android:layout_gravity="center"
+        android:layout_weight="1" />
+
+    <ImageView android:id="@+id/imageViewCheck"
+        android:layout_width="@dimen/touchable_grid_metric"
+        android:layout_height="@dimen/touchable_grid_metric"
+        android:layout_gravity="center"
+        android:padding="@dimen/padding_action_icon"/>
+
+</LinearLayout>

@@ -13,7 +13,9 @@
         <EditText android:id="@+id/editTextTaskName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:inputType="textCapSentences"
+            android:hint="@string/hint_edit_text_task_name"/>
 
         <ImageView android:id="@+id/imageViewAccept"
             android:layout_width="@dimen/touchable_grid_metric"

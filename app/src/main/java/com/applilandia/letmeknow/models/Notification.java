@@ -9,10 +9,10 @@ import java.util.Date;
 public class Notification {
 
     public enum TypeNotification {
-        FiveMinutesBefore(1),
-        OneHourBefore(2),
-        OneDayBefore(3),
-        OneWeekBefore(4);
+        FiveMinutesBefore(0),
+        OneHourBefore(1),
+        OneDayBefore(2),
+        OneWeekBefore(3);
 
         private int mValue = 0;
 
@@ -30,9 +30,9 @@ public class Notification {
          * @return enum value
          */
         public static TypeNotification map(int value) {
-            //As the first number starts with 1
-            //and the array starts by 0, we must to take the before item in the array
-            return values()[value - 1];
+            //As the first number starts with 0
+            //we have only to return the position belonging to value in the array
+            return values()[value];
         }
 
     }

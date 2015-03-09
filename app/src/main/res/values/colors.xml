@@ -5,4 +5,8 @@
     <color name="blue">#0000ff</color>
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+    <color name="fab_color_1">@color/action_color</color>
+    <color name="fab_color_2">@color/action_pressed_color</color>
+    <color name="action_color">#ff7080</color>
+    <color name="action_pressed_color">#ff9090</color>
 </resources>

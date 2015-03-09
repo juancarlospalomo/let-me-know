@@ -127,6 +127,30 @@ public class LocalDate implements Comparable<LocalDate> {
         mTime = String.format("%02d:%02d", hour, minute);
     }
 
+    /**
+     * Return the hour of day
+     * @return hour
+     */
+    public int getHour() {
+        if (!isTimeNull()) {
+            String[] values = mTime.split(":");
+            return Integer.parseInt(values[0]);
+        }
+        throw new RuntimeException("Time is not well formatted");
+    }
+
+    /**
+     * Return the minute part
+     * @return minutes of one hour
+     */
+    public int getMinute() {
+        if (!isTimeNull()) {
+            String[] values = mTime.split(":");
+            return Integer.parseInt(values[1]);
+        }
+        throw new RuntimeException("Time is not well formatted");
+    }
+
     public String getTime() {
         return mTime;
     }
@@ -366,6 +390,19 @@ public class LocalDate implements Comparable<LocalDate> {
         }
 
         return result;
+    }
+
+    /**
+     * Format a date as MEDIUM in the default locale
+     * @return String containing the date formatted
+     */
+    public String getDisplayFormatDate() {
+        java.text.DateFormat formatter = SimpleDateFormat.getDateInstance(java.text.DateFormat.MEDIUM, Locale.getDefault());
+        return formatter.format(getDateTime());
+    }
+
+    public String getDisplayFormatTime(Context context) {
+        return DateFormat.getTimeFormat(context).format(getDateTime());
     }
 
     /**

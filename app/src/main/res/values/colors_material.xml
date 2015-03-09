@@ -22,4 +22,9 @@
     <color name="tile_future_content_background">#42A5F5</color>
     <color name="tile_anytime_content_background">#D4E157</color>
 
+    <!-- Button states colors -->
+    <color name="button_flat_text_normal">@color/primary_dark_material_light</color>
+    <color name="button_flat_text_disabled">#42000000</color>
+
+
 </resources>

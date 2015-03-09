@@ -1,23 +1,32 @@
 package com.applilandia.letmeknow.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.TaskListActivity;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.loaders.SummaryLoader;
 import com.applilandia.letmeknow.models.Task;
+import com.applilandia.letmeknow.models.ValidationResult;
+import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.Tile;
 
 import java.util.List;
@@ -28,16 +37,26 @@ import java.util.List;
  */
 public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Task>> {
 
+    private final static String LOG_TAG = HomeFragment.class.getSimpleName();
+
     private final static int LOADER_SUMMARY = 1;
+
+    private final static int REQUEST_CODE_EXPIRED_TASKS = 1;
+    private final static int REQUEST_CODE_TODAY_TASKS = 2;
+    private final static int REQUEST_CODE_FUTURE_TASKS = 3;
+    private final static int REQUEST_CODE_ANYTIME_TASKS = 4;
 
     private ProgressBar mProgressBar;
     private GridView mGridView;
     private GridTilesAdapter mAdapter; //Adapter for linking to GridView
+    private EditText mEditTextTask;
+    private ImageView mImageViewActionIcon; //Microphone or Accept
 
     /**
      * Creates and returns the view hierarchy associated with the fragment
-     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment,
-     * @param container If non-null, this is the parent view that the fragment's UI should be attached to
+     *
+     * @param inflater           The LayoutInflater object that can be used to inflate any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's UI should be attached to
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here
      * @return
      */
@@ -48,6 +67,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     /**
      * Tells the fragment that its activity has completed its own Activity.onCreated()
+     *
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state
      */
     @Override
@@ -60,6 +80,16 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         //Get views objects
         mGridView = (GridView) view.findViewById(R.id.gridTiles);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressActivityMain);
+        mEditTextTask = (EditText) view.findViewById(R.id.editTextTaskName);
+        mEditTextTask.addTextChangedListener(new EditTaskWatcher());
+        mImageViewActionIcon = (ImageView) view.findViewById(R.id.imageViewAccept);
+        mImageViewActionIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enterCreateTaskAction();
+            }
+        });
+        //Init the loader manager to start loading
         getLoaderManager().initLoader(LOADER_SUMMARY, null, this);
     }
 
@@ -68,18 +98,78 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
      */
     private void hideSoftKeyboard() {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-/*
-        final InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
-*/
     }
 
+    /**
+     * Using the UseCases layer, creates a task
+     */
+    private void createTask(LocalDate date) {
+        //Create task including date, although it can be null
+        Task task = new Task();
+        task.name = mEditTextTask.getText().toString();
+        task.targetDateTime = date;
+        List<ValidationResult> validationResults = task.validate();
+        if (validationResults == null) {
+            UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+            if (useCaseTask.createTask(task)>0) {
+                mEditTextTask.setText("");
+            } else {
+                //TODO: Show Error Dialog
+            }
+        } else {
+            for(ValidationResult validationResult : validationResults) {
+                switch (validationResult.member) {
+                    case "name":
+                        mEditTextTask.setError(getString(R.string.error_task_name_greater_than_max));
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Start the action to create task, calling to a Date Dialog
+     */
+    private void enterCreateTaskAction() {
+        if (mEditTextTask.getText().length() > 0) {
+            //Manual enter
+            DateDialogFragment dateDialogFragment = new DateDialogFragment();
+            dateDialogFragment.setOnDateDialogListener(new DateDialogFragment.OnDateDialogListener() {
+                @Override
+                public void onOk(LocalDate date) {
+                    createTask(date);
+                }
+
+                @Override
+                public void onCancel() {
+                    //Create task without date
+                    createTask(null);
+                }
+            });
+            dateDialogFragment.show(getFragmentManager(), "dateDialog");
+
+        }
+    }
+
+    /**
+     * Called by the loader manager when a loader is created or restarted
+     *
+     * @param id   loader id
+     * @param args arguments
+     * @return Loader of List of Tasks
+     */
     @Override
     public Loader<List<Task>> onCreateLoader(int id, Bundle args) {
         mProgressBar.setVisibility(View.VISIBLE);
         return new SummaryLoader(getActivity());
     }
 
+    /**
+     * Called from the LoaderManager when the loader delivers the list
+     *
+     * @param loader loader
+     * @param data   data delivered by the loader
+     */
     @Override
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
         if (loader.getId() == LOADER_SUMMARY) {
@@ -89,6 +179,22 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         mProgressBar.setVisibility(View.GONE);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_EXPIRED_TASKS:
+                Toast.makeText(getActivity(), "expired", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(getActivity(), String.valueOf(requestCode), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Loader is getting reset
+     *
+     * @param loader
+     */
     @Override
     public void onLoaderReset(Loader<List<Task>> loader) {
         if (loader.getId() == LOADER_SUMMARY) {
@@ -135,7 +241,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
         @Override
         public long getItemId(int position) {
-            if (mTaskList.get(position)!=null) {
+            if (mTaskList.get(position) != null) {
                 return mTaskList.get(position)._id;
             } else {
                 //TODO: Remove Log
@@ -145,7 +251,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             ViewHolder viewHolder;
 
             if (convertView == null) {
@@ -166,7 +272,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 if ((task.targetDateTime != null) && (!task.targetDateTime.isNull())) {
                     viewHolder.tile.setFooterSecondaryLine(task.targetDateTime.getDisplayFormat(getActivity()));
                 }
-                if (task.getCurrentNotificationsCount()>0) {
+                if (task.getCurrentNotificationsCount() > 0) {
                     viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_on);
                 } else {
                     viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_off);
@@ -178,7 +284,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             viewHolder.tile.setContentOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity(), "tile", Toast.LENGTH_SHORT).show();
+                    showTasksList(position);
                 }
             });
             viewHolder.tile.setFooterTextOnClickListener(new View.OnClickListener() {
@@ -197,8 +303,34 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             return convertView;
         }
 
+        private void showTasksList(int position) {
+            Intent intent = new Intent(getActivity(), TaskListActivity.class);
+            switch (position) {
+                case INDEX_TILE_EXPIRED:
+                    intent.putExtra(TaskListActivity.EXTRA_TYPE_TASK, Task.TypeTask.Expired.getValue());
+                    startActivityForResult(intent, REQUEST_CODE_EXPIRED_TASKS);
+                    break;
+
+                case INDEX_TILE_TODAY:
+                    intent.putExtra(TaskListActivity.EXTRA_TYPE_TASK, Task.TypeTask.Today.getValue());
+                    startActivityForResult(intent, REQUEST_CODE_TODAY_TASKS);
+                    break;
+
+                case INDEX_TILE_FUTURE:
+                    intent.putExtra(TaskListActivity.EXTRA_TYPE_TASK, Task.TypeTask.Future.getValue());
+                    startActivityForResult(intent, REQUEST_CODE_FUTURE_TASKS);
+                    break;
+
+                case INDEX_TILE_ANYTIME:
+                    intent.putExtra(TaskListActivity.EXTRA_TYPE_TASK, Task.TypeTask.AnyTime.getValue());
+                    startActivityForResult(intent, REQUEST_CODE_ANYTIME_TASKS);
+                    break;
+            }
+        }
+
         /**
          * Returns the color according to the required tile position
+         *
          * @param position position in the adapter
          * @return color
          */
@@ -218,5 +350,29 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         }
     }
 
+    /**
+     * Class to watch the Task EditText to change the UI actions according
+     * to its content.  If content is empty, microphone is visible else accept icon
+     */
+    private class EditTaskWatcher implements TextWatcher {
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (s.toString().length() == 0) {
+                //It´s empty
+                mImageViewActionIcon.setImageResource(R.drawable.ic_mic_on);
+            } else {
+                mImageViewActionIcon.setImageResource(R.drawable.ic_action_check);
+            }
+        }
+    }
 
 }

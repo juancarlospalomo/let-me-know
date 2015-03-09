@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.applilandia.letmeknow.TaskListActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar android:id="@+id/taskToolBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:background="?attr/colorPrimary">
+
+            <Spinner
+                android:id="@+id/spinnerTypeTasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"></Spinner>
+        </android.support.v7.widget.Toolbar>
+
+        <com.applilandia.letmeknow.views.FloatingActionButton android:id="@+id/fab_add_task"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="26dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/fab_background"
+            android:padding="16dp"
+            android:src="@drawable/ic_add" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></FrameLayout>
+
+</LinearLayout>

@@ -29,6 +29,8 @@
     <attr name="listPreferredListItemAvatarHeight" format="dimension" />
     <!-- Width for the avatar in list row -->
     <attr name="listPreferredListItemAvatarWidth" format="dimension" />
+    <!-- Size for the right icon in list View -->
+    <attr name="listPreferredListItemIconSize" format="dimension" />
     <!-- +++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- The most prominent text color. -->
     <attr name="textColorPrimary" format="reference|color" />
@@ -70,5 +72,30 @@
         <attr name="tileTextFooterSecondarySize" />
         <attr name="tileTextFooterPadding" />
     </declare-styleable>
+
+    <!-- Validation Field View attributes -->
+    <attr name="validationFieldStyle" format="reference" />
+    <attr name="validationView" format="reference"/>
+    <attr name="textValidationAppearance" format="reference"/>
+    <attr name="validationAppearance" format="reference"/>
+
+    <declare-styleable name="ValidationField">
+        <attr name="hint" format="string"/>
+        <attr name="background"/>
+        <attr name="android:inputType"/>
+        <attr name="viewType">
+            <enum name="EditText" value="0"/>
+            <enum name="TextView" value="1"/>
+        </attr>
+        <attr name="validationView"/>
+    </declare-styleable>
+
+
+    <declare-styleable name="validationView">
+        <attr name="android:textAppearance"/>
+        <attr name="android:layout_height"/>
+    </declare-styleable>
+
+
 
 </resources>

@@ -2,6 +2,8 @@
     <string name="app_name">LetMeKnow</string>
     <!-- Activity titles -->
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_task_list">Task List</string>
+    <string name="title_activity_task">Task</string>
     <!-- Settings Key -->
     <string name="key_trigger_daily_time" translatable="false">prefDailyTime</string>
     <string name="key_trigger_daily_notification" translatable="false">prefDaily</string>
@@ -36,4 +38,36 @@
     <string name="drawer_open">drawer open</string>
     <string name="drawer_close">drawer close</string>
     <string name="menu_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="hint_edit_text_task_name">Task Name</string>
+
+    <!-- Validation Error Messages -->
+    <string name="error_task_name_greater_than_max">max length is 50</string>
+    <string name="error_task_name_empty">empty not allowed</string>
+    <string name="error_task_date_less_than_today">Lowest value is today</string>
+    <string name="error_task_time_less_than_today">Lowest value is now</string>
+
+    <!-- Values for Task Type Spinner -->
+    <string-array name="type_task_array">
+        <item>All</item>
+        <item>Expired</item>
+        <item>Today</item>
+        <item>Future</item>
+        <item>AnyTime</item>
+    </string-array>
+
+    <!-- Task Activity -->
+    <string name="hint_edit_task_date">Date</string>
+    <string name="hint_edit_task_time">Time</string>
+    <string name="button_ok">Ok</string>
+
+    <!-- Type Notifications Array -->
+    <string-array name="type_notifications_array">
+        <item>5 minutes before</item>
+        <item>1 hour before</item>
+        <item>1 day before</item>
+        <item>1 week before</item>
+    </string-array>
+
 </resources>

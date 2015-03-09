@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:background="@drawable/list_row_background">
+
+    <ImageView
+        android:id="@+id/image_primary_action_avatar"
+        android:layout_gravity="center_vertical"
+        android:layout_width="?attr/listPreferredListItemIconSize"
+        android:layout_height="?attr/listPreferredListItemIconSize"
+        android:padding="@dimen/padding_action_icon" />
+
+    <LinearLayout
+        android:id="@+id/layout_primary_action_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:paddingTop="?attr/listPreferredItemPaddingTop"
+        android:paddingBottom="?attr/listPreferredItemPaddingBottom">
+
+        <TextView
+            android:id="@+id/textview_primary_text"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        <TextView
+            android:id="@+id/textview_secondary_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceListItemSecondary"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/image_secondary_action_icon"
+        android:layout_gravity="center_vertical"
+        android:layout_width="?attr/touchableAssetLayoutWidth"
+        android:layout_height="?attr/touchableAssetLayoutHeight"/>
+</LinearLayout>

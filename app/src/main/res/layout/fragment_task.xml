@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
+    style="@style/AppProductivityTheme.ActivityLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.applilandia.letmeknow.views.ValidationField
+        android:id="@+id/validationViewTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        letmeknow:hint="@string/hint_edit_text_task_name"
+        android:inputType="textCapSentences">
+    </com.applilandia.letmeknow.views.ValidationField>
+
+<!--    <EditText
+        android:id="@+id/editTextTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_edit_text_task_name"
+        android:imeOptions="actionDone"
+        android:inputType="textCapSentences" />-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="?attr/listPreferredItemHeight"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingLeft="5dp"
+        android:paddingTop="5dp">
+
+        <com.applilandia.letmeknow.views.ValidationField
+            android:id="@+id/validationViewDate"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/validation_text_view_field_metric"
+            android:layout_marginRight="5dp"
+            android:gravity="center"
+            letmeknow:viewType="TextView"
+            letmeknow:background="@drawable/action_background"
+            letmeknow:hint="@string/hint_edit_task_date">
+        </com.applilandia.letmeknow.views.ValidationField>
+
+        <com.applilandia.letmeknow.views.ValidationField
+            android:id="@+id/validationViewTime"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/validation_text_view_field_metric"
+            android:gravity="center"
+            letmeknow:viewType="TextView"
+            letmeknow:background="@drawable/action_background"
+            letmeknow:hint="@string/hint_edit_task_time">
+        </com.applilandia.letmeknow.views.ValidationField>
+
+<!--        <TextView
+            android:id="@+id/textViewTaskDate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:background="@drawable/action_background"
+            android:stateListAnimator="@animator/action_animator"
+            android:layout_marginRight="5dp"
+            android:text="@string/hint_edit_task_date"/>-->
+
+<!--        <TextView
+            android:id="@+id/textViewTaskTime"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_weight="1"
+            android:text="@string/hint_edit_task_time"
+            android:background="@drawable/action_background"
+            android:stateListAnimator="@animator/action_animator"
+            android:textColor="@color/button_flat_text_disabled"/>-->
+
+        <ImageView
+            android:id="@+id/imageViewClear"
+            android:layout_width="@dimen/touchable_grid_metric"
+            android:layout_height="@dimen/touchable_grid_metric"
+            android:layout_gravity="center"
+            android:padding="@dimen/padding_action_icon"
+            android:src="@drawable/ic_clear" />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerViewNotifies"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="10dp"
+        android:scrollbars="vertical" />
+
+    <Button
+        android:id="@+id/buttonOk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        style="@style/Widget.Button"
+        android:layout_gravity="bottom|end"
+        android:text="@string/button_ok"/>
+
+</LinearLayout>

@@ -2,6 +2,7 @@ package com.applilandia.letmeknow.views;
 
 import android.animation.Animator;
 import android.animation.ArgbEvaluator;
+import android.animation.FloatEvaluator;
 import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -277,18 +278,45 @@ public class Tile extends LinearLayout {
         }
 
         /**
+         * Create an animator for BackgroundColor
+         * @return Object animator
+         */
+        private ObjectAnimator createContentBackgroundColorAnimator() {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(Tile.this, "ContentBackgroundColor",
+                    R.attr.tileSelectableItemBackground);
+            objectAnimator.setEvaluator(new ArgbEvaluator());
+            objectAnimator.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
+            return objectAnimator;
+        }
+
+        /**
+         * Create an animator for Alpha Color
+         * @return Object animator
+         */
+        private ObjectAnimator createContentAlphaAnimator() {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(Tile.this, "alpha",
+                    0.5f);
+            objectAnimator.setEvaluator(new FloatEvaluator());
+            objectAnimator.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
+            return objectAnimator;
+        }
+
+        /**
          * When Content is clicked on
          *
          * @param v
          */
         @Override
         public void onClick(final View v) {
-            final ObjectAnimator objectAnimator = ObjectAnimator.ofInt(Tile.this, "ContentBackgroundColor",
-                    R.attr.tileSelectableItemBackground);
-            objectAnimator.setEvaluator(new ArgbEvaluator());
-            objectAnimator.setDuration(500);
-            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
-            objectAnimator.reverse();
+            final ObjectAnimator objectAnimator;
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT) {
+                objectAnimator = createContentBackgroundColorAnimator();
+            } else {
+                objectAnimator = createContentAlphaAnimator();
+            }
+            objectAnimator.start();
             objectAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {

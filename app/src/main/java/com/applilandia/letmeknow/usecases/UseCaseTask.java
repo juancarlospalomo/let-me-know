@@ -32,7 +32,7 @@ public class UseCaseTask {
      * Preconditions will be task is valid, then it will not validate the data
      *
      * @param task task to be created
-     * @return true if the task was successfully created
+     * @return taskId if it was created successfully. In other way, will be 0
      */
     public int createTask(Task task) {
         boolean hasNotifications = task.hasNotifications();

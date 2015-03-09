@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppProductivityTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+    <style name="AppProductivityTheme" parent="@style/Theme.AppCompat.Light">
+        <!-- Toolbar styles-->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        <!-- Tile attributes -->
+        <item name="tileStyle">@style/Widget.Tile</item>
+        <item name="colorPrimary">@color/primary_material_dark</item>
         <!-- List attributes -->
         <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
         <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>
@@ -8,9 +15,21 @@
         <item name="listPreferredItemPaddingBottom">@dimen/list_primary_action_text_padding_bottom</item>
         <item name="listPreferredListItemAvatarHeight">@dimen/list_primary_action_avatar_height</item>
         <item name="listPreferredListItemAvatarWidth">@dimen/list_primary_action_avatar_width</item>
+        <item name="listPreferredListItemIconSize">@dimen/list_primary_action_icon_size</item>
         <!-- Text styles are already defined for API 21 onwards-->
+        <!-- Text styles -->
+        <item name="textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="textColorHint">@color/hint_foreground_material_dark</item>
+        <item name="textColorHighlight">@color/highlighted_text_material_dark</item>
+        <item name="textColorLink">@color/link_text_material_dark</item>
         <!-- Touchable Metrics -->
         <item name="touchableAssetLayoutHeight">@dimen/touchable_grid_metric</item>
         <item name="touchableAssetLayoutWidth">@dimen/touchable_grid_metric</item>
+        <!-- Navigation Drawer -->
+        <item name="textDrawerItemColor">@color/text_drawer_item</item>
+        <!-- Validation Field View -->
+        <item name="validationFieldStyle">@style/Widget.ValidationField</item>
+        <item name="validationView">@style/Widget.ValidationView</item>
+        <item name="textValidationAppearance">@style/Widget.TextValidationAppearance</item>
     </style>
 </resources>
