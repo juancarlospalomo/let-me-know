@@ -2,6 +2,7 @@ package com.applilandia.letmeknow.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
@@ -78,6 +79,10 @@ public class UnitOfWork {
             mDatabase.close();
         }
         return rowsAffected;
+    }
+
+    public Cursor get(String table, String where, String[] args, String sortOrder) {
+        return mDatabase.query(table, null, where, args, null, null, sortOrder);
     }
 
 }

@@ -7,7 +7,7 @@
         <item name="windowActionBar">false</item>
         <!-- Tile attributes -->
         <item name="tileStyle">@style/Widget.Tile</item>
-        <item name="colorPrimary">@color/primary_material_dark</item>
+        <item name="colorPrimary">@color/color_toolbar_background</item>
         <!-- List attributes -->
         <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
         <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>
@@ -17,8 +17,8 @@
         <item name="listPreferredListItemAvatarWidth">@dimen/list_primary_action_avatar_width</item>
         <item name="listPreferredListItemIconSize">@dimen/list_primary_action_icon_size</item>
         <!-- Text styles -->
-        <item name="textColorPrimary">@color/primary_text_material_dark</item>
-        <item name="textColorHint">@color/hint_foreground_material_dark</item>
+        <item name="textColorPrimary">@color/primary_text_default_material_light</item>
+        <item name="textColorHint">@color/hint_foreground_material_light</item>
         <item name="textColorHighlight">@color/highlighted_text_material_dark</item>
         <item name="textColorLink">@color/link_text_material_dark</item>
         <!-- Touchable Metrics -->
@@ -30,5 +30,9 @@
         <item name="validationFieldStyle">@style/Widget.ValidationField</item>
         <item name="validationView">@style/Widget.ValidationView</item>
         <item name="textValidationAppearance">@style/Widget.TextValidationAppearance</item>
+        <!-- SnackBar -->
+        <item name="snackBarStyle">@style/Widget.SnackBarStyle</item>
+        <item name="snackBarText">@style/Widget.SnackBar.Text</item>
+        <item name="snackBarAction">@style/Widget.SnackBar.Action</item>
     </style>
 </resources>

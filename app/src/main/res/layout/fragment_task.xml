@@ -6,6 +6,33 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <LinearLayout android:id="@+id/layoutTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone">
+        <TextView android:id="@+id/textViewTaskName"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="@dimen/padding_task_name_view"
+            android:textColor="?attr/textColorPrimary"/>
+        <ImageView android:id="@+id/imageViewEdit"
+            android:layout_width="@dimen/touchable_grid_metric"
+            android:layout_height="@dimen/touchable_grid_metric"
+            android:padding="@dimen/padding_action_icon"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_edit"/>
+    </LinearLayout>
+
+    <TextView android:id="@+id/textViewDateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_task_name_view"
+        android:visibility="gone"/>
+
     <com.applilandia.letmeknow.views.ValidationField
         android:id="@+id/validationViewTaskName"
         android:layout_width="match_parent"
@@ -14,7 +41,7 @@
         android:inputType="textCapSentences">
     </com.applilandia.letmeknow.views.ValidationField>
 
-    <LinearLayout
+    <LinearLayout android:id="@+id/layoutDateTimeFields"
         android:layout_width="match_parent"
         android:layout_height="?attr/listPreferredItemHeight"
         android:layout_gravity="center"

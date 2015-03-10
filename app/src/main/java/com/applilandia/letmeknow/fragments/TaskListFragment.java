@@ -32,6 +32,10 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     //For logging purpose
     private final static String LOG_TAG = TaskListFragment.class.getSimpleName();
 
+    public interface OnTaskListFragmentListener {
+        public void onTaskSelected(int id);
+    }
+
     //LoaderId for task loader
     private static final int TASK_LOADER_ID = 1;
     //Type task to be loaded in the fragment
@@ -40,6 +44,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView mTaskRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private TaskAdapter mAdapter;
+    private OnTaskListFragmentListener mOnTaskListFragmentListener;
 
     /**
      * Creates and returns the view hierarchy associated with the fragment
@@ -83,6 +88,10 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      */
     public void setTypeTask(Task.TypeTask typeTask) {
         mTypeTask = typeTask;
+    }
+
+    public void setOnTaskListFragmentListener(OnTaskListFragmentListener l) {
+        mOnTaskListFragmentListener = l;
     }
 
     /**
@@ -141,6 +150,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          */
         public class ViewHolder extends RecyclerView.ViewHolder {
 
+            private LinearLayout mLayoutPrimaryAction;
             private ImageView mAvatarView;
             private TextView mTextPrimaryText;
             private TextView mTextSecondaryText;
@@ -148,6 +158,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
             public ViewHolder(View itemView) {
                 super(itemView);
+                mLayoutPrimaryAction = (LinearLayout) itemView.findViewById(R.id.layout_primary_action_content);
                 mAvatarView = (ImageView) itemView.findViewById(R.id.image_primary_action_avatar);
                 mTextPrimaryText = (TextView) itemView.findViewById(R.id.textview_primary_text);
                 mTextSecondaryText = (TextView) itemView.findViewById(R.id.textview_secondary_text);
@@ -220,6 +231,14 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         }
                     });
                     snackBar.show(R.string.snack_bar_task_completed_text);
+                }
+            });
+            holder.mLayoutPrimaryAction.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mOnTaskListFragmentListener != null) {
+                        mOnTaskListFragmentListener.onTaskSelected(task._id);
+                    }
                 }
             });
 

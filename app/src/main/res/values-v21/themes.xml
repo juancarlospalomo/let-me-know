@@ -5,9 +5,10 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="windowActionBar">false</item>
+        <!-- colorPrimary is used for the default action bar background -->
+        <item name="colorPrimary">@color/color_toolbar_background</item>
         <!-- Tile attributes -->
         <item name="tileStyle">@style/Widget.Tile</item>
-        <item name="colorPrimary">@color/primary_material_dark</item>
         <!-- List attributes -->
         <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
         <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>
@@ -18,8 +19,8 @@
         <item name="listPreferredListItemIconSize">@dimen/list_primary_action_icon_size</item>
         <!-- Text styles are already defined for API 21 onwards-->
         <!-- Text styles -->
-        <item name="textColorPrimary">?android:attr/textColorPrimary</item>
-        <item name="textColorHint">@color/hint_foreground_material_dark</item>
+        <item name="textColorPrimary">@color/primary_text_default_material_light</item>
+        <item name="textColorHint">@color/hint_foreground_material_light</item>
         <item name="textColorHighlight">@color/highlighted_text_material_dark</item>
         <item name="textColorLink">@color/link_text_material_dark</item>
         <!-- Touchable Metrics -->

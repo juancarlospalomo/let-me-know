@@ -26,5 +26,6 @@
     <color name="button_flat_text_disabled">#42000000</color>
     <!-- Snack bar colors -->
     <color name="snack_bar_background_color">#323232</color>
-
+    <!--Toolbar colors -->
+    <color name="color_toolbar_background">#323232</color>
 </resources>

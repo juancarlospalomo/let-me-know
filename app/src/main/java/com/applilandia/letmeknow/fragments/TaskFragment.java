@@ -9,13 +9,17 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,6 +28,7 @@ import android.widget.TextView;
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.TaskActivity;
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.models.ValidationResult;
@@ -35,12 +40,15 @@ import java.util.List;
 /**
  * Created by JuanCarlos on 27/02/2015.
  */
-public class TaskFragment extends Fragment {
+public class TaskFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Task>> {
 
     private final static String LOG_TAG = TaskFragment.class.getSimpleName();
+    private final static int LOADER_ID = 1;
 
     public interface OnTaskFragmentListener {
         public void onTaskSaved();
+
+        public void onClose();
     }
 
     /**
@@ -54,9 +62,13 @@ public class TaskFragment extends Fragment {
 
     //Working mode of the fragment
     private TaskActivity.TypeWorkMode mWorkMode = TaskActivity.TypeWorkMode.New;
+    //Task identifier when the fragment is in update or view modes
+    private int mTaskId;
     //Task entity bound to the screen
     private Task mTask = null;
     //Views
+    private TextView mTextViewTaskName;
+    private TextView mTextViewTaskDateTime;
     private ValidationField mValidationFieldTaskName;
     private ValidationField mValidationFieldDate;
     private ValidationField mValidationFieldTime;
@@ -76,23 +88,96 @@ public class TaskFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         hideSoftKeyboard();
-        //Get Views from inflated layout
+        //Get fixed views from inflated layout
+        mRecyclerViewNotifies = (RecyclerView) getView().findViewById(R.id.recyclerViewNotifies);
+        mButtonOk = (Button) getView().findViewById(R.id.buttonOk);
+        //Init the fragment to set in the correct state
+        initWorkMode();
+    }
+
+    /**
+     * Init the UI according to the work mode state
+     */
+    private void initWorkMode() {
         mValidationFieldTaskName = (ValidationField) getView().findViewById(R.id.validationViewTaskName);
         mValidationFieldDate = (ValidationField) getView().findViewById(R.id.validationViewDate);
         mValidationFieldTime = (ValidationField) getView().findViewById(R.id.validationViewTime);
         mImageViewClear = (ImageView) getView().findViewById(R.id.imageViewClear);
-        mRecyclerViewNotifies = (RecyclerView) getView().findViewById(R.id.recyclerViewNotifies);
-        mButtonOk = (Button) getView().findViewById(R.id.buttonOk);
+        createRecyclerViewNotifications();
+        if (mWorkMode == TaskActivity.TypeWorkMode.New) {
+            //Create Handlers
+            createValidationTaskNameHandler();
+            createDateTimeHandlers();
+            createClearHandler();
+            //Set initial State
+            refreshUIStatus(UIState.DateTimeEmpty);
+        }
+        if (mWorkMode == TaskActivity.TypeWorkMode.View) {
+            mValidationFieldTaskName.setVisibility(View.GONE);
+            getView().findViewById(R.id.layoutDateTimeFields).setVisibility(View.GONE);
+            mTextViewTaskName = (TextView) getView().findViewById(R.id.textViewTaskName);
+            mTextViewTaskDateTime = (TextView) getView().findViewById(R.id.textViewDateTime);
+            getView().findViewById(R.id.layoutTaskName).setVisibility(View.VISIBLE);
+            mTextViewTaskDateTime.setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.imageViewEdit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    changeToUpdateWorkMode();
+                }
+            });
+            getLoaderManager().initLoader(LOADER_ID, null, this);
+        }
+        createButtonOkHandler();
+    }
+
+    /**
+     * Change working mode to update, changing the UI according to it
+     */
+    private void changeToUpdateWorkMode() {
         //Create Handlers
         createValidationTaskNameHandler();
         createDateTimeHandlers();
         createClearHandler();
-        createRecyclerViewNotifications();
-        createButtonOkHandler();
-        //Set initial State
-        refreshUIStatus(UIState.DateTimeEmpty);
+        //Change UI Views
+        mValidationFieldTaskName.setVisibility(View.VISIBLE);
+        mValidationFieldTaskName.setAlpha(0);
+        mValidationFieldTaskName.animate().alpha(1)
+                .setInterpolator(new LinearInterpolator())
+                .setDuration(1000)
+                .start();
+        LinearLayout layout = (LinearLayout) getView().findViewById(R.id.layoutDateTimeFields);
+        layout.setVisibility(View.VISIBLE);
+        mValidationFieldDate.animate().alpha(1)
+                .setInterpolator(new LinearInterpolator())
+                .setDuration(1000)
+                .start();
+        mValidationFieldTime.animate().alpha(1)
+                .setInterpolator(new LinearInterpolator())
+                .setDuration(1000)
+                .start();
+        //Hide view controls
+        getView().findViewById(R.id.layoutTaskName).setVisibility(View.GONE);
+        mTextViewTaskDateTime.setVisibility(View.GONE);
+        //Fill data
+        mValidationFieldTaskName.setText(mTask.name);
+        if (mTask.targetDateTime != null) {
+            mValidationFieldDate.setText(mTask.targetDateTime.getDisplayFormatDate());
+            if (!mTask.targetDateTime.isTimeNull()) {
+                mValidationFieldTime.setText(mTask.targetDateTime.getDisplayFormatTime(getActivity()));
+                refreshUIStatus(UIState.TimeSet);
+            } else {
+                refreshUIStatus(UIState.DateSet);
+            }
+        } else {
+            refreshUIStatus(UIState.DateTimeEmpty);
+        }
+        mWorkMode = TaskActivity.TypeWorkMode.Update;
     }
 
+
+    /**
+     * Create handler for task name edition field
+     */
     private void createValidationTaskNameHandler() {
         mValidationFieldTaskName.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,29 +209,41 @@ public class TaskFragment extends Fragment {
         mButtonOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Create task including date, although it can be null
-                mTask.name = mValidationFieldTaskName.getText();
-                List<ValidationResult> validationResults = mTask.validate();
-                if (validationResults == null) {
-                    UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-                    if (useCaseTask.createTask(mTask) > 0) {
-                        if (mOnTaskFragmentListener != null) {
-                            mOnTaskFragmentListener.onTaskSaved();
-                        }
-                    } else {
-                        //TODO: Show Error Dialog
+                if (mWorkMode == TaskActivity.TypeWorkMode.View) {
+                    if (mOnTaskFragmentListener != null) {
+                        mOnTaskFragmentListener.onClose();
                     }
                 } else {
-                    for (ValidationResult validationResult : validationResults) {
-                        switch (validationResult.member) {
-                            case "name":
-                                if (validationResult.code == ValidationResult.ValidationCode.Empty) {
-                                    mValidationFieldTaskName.setError(getString(R.string.error_task_name_empty));
-                                }
-                                if (validationResult.code == ValidationResult.ValidationCode.GreaterThanRange) {
-                                    mValidationFieldTaskName.setError(getString(R.string.error_task_name_greater_than_max));
-                                }
-                                break;
+                    //Create or update task including date, although it can be null
+                    mTask.name = mValidationFieldTaskName.getText();
+                    List<ValidationResult> validationResults = mTask.validate();
+                    if (validationResults == null) {
+                        boolean resultOk = false;
+                        UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                        if (mWorkMode == TaskActivity.TypeWorkMode.New) {
+                            resultOk = (useCaseTask.createTask(mTask) > 0);
+                        } else if (mWorkMode == TaskActivity.TypeWorkMode.Update) {
+                            resultOk = useCaseTask.updateTask(mTask);
+                        }
+                        if (resultOk) {
+                            if (mOnTaskFragmentListener != null) {
+                                mOnTaskFragmentListener.onTaskSaved();
+                            }
+                        } else {
+                            //TODO: Show Error Dialog
+                        }
+                    } else {
+                        for (ValidationResult validationResult : validationResults) {
+                            switch (validationResult.member) {
+                                case "name":
+                                    if (validationResult.code == ValidationResult.ValidationCode.Empty) {
+                                        mValidationFieldTaskName.setError(getString(R.string.error_task_name_empty));
+                                    }
+                                    if (validationResult.code == ValidationResult.ValidationCode.GreaterThanRange) {
+                                        mValidationFieldTaskName.setError(getString(R.string.error_task_name_greater_than_max));
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
@@ -264,7 +361,7 @@ public class TaskFragment extends Fragment {
                         @Override
                         public void onOk(int hour, int minute) {
                             mTask.targetDateTime.setTime(hour, minute);
-                            if (mTask.targetDateTime.compareTo(new LocalDate())>=0) {
+                            if (mTask.targetDateTime.compareTo(new LocalDate()) >= 0) {
                                 mValidationFieldTime.setText(mTask.targetDateTime.getDisplayFormatTime(getActivity()));
                                 refreshUIStatus(UIState.TimeSet);
                             } else {
@@ -286,15 +383,17 @@ public class TaskFragment extends Fragment {
     }
 
     /**
-     * Set the fragment working mode
+     * Set the working mode for the fragment
      *
-     * @param value mode
+     * @param value  type working mode
+     * @param taskId if the working mode is different from new, the task identifier
      */
-    public void setWorkMode(TaskActivity.TypeWorkMode value) {
+    public void setWorkMode(TaskActivity.TypeWorkMode value, int taskId) {
         mWorkMode = value;
         if (mWorkMode == TaskActivity.TypeWorkMode.New) {
             mTask = new Task();
         }
+        mTaskId = taskId;
     }
 
     /**
@@ -304,6 +403,49 @@ public class TaskFragment extends Fragment {
      */
     public void setOnTaskFragmentListener(OnTaskFragmentListener l) {
         mOnTaskFragmentListener = l;
+    }
+
+    /**
+     * Loader Manager
+     *
+     * @param id
+     * @param args
+     * @return
+     */
+    @Override
+    public Loader<List<Task>> onCreateLoader(int id, Bundle args) {
+        return new TaskLoader(getActivity(), mTaskId);
+    }
+
+    /**
+     * Loader Manager
+     *
+     * @param loader
+     * @param data
+     */
+    @Override
+    public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
+        if (loader.getId() == LOADER_ID) {
+            if ((data != null) && (data.size() == 1)) {
+                mTask = data.get(0);
+                Log.v(LOG_TAG, mTask.name);
+                mTextViewTaskName.setText(mTask.name);
+                if (mTask.targetDateTime != null) {
+                    mTextViewTaskDateTime.setText(mTask.targetDateTime.getDisplayFormat(getActivity()));
+                }
+                createRecyclerViewNotifications();
+            }
+        }
+    }
+
+    /**
+     * Loader Manager
+     *
+     * @param loader
+     */
+    @Override
+    public void onLoaderReset(Loader<List<Task>> loader) {
+        mRecyclerViewNotifies.setAdapter(null);
     }
 
     /**

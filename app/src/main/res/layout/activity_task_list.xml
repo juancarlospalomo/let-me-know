@@ -14,8 +14,10 @@
             android:id="@+id/taskToolBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:minHeight="?attr/actionBarSize">
+            letmeknow:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            letmeknow:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
 
             <Spinner
                 android:id="@+id/spinnerTypeTasks"

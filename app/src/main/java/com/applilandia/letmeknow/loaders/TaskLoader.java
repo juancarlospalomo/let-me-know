@@ -10,6 +10,7 @@ import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +22,14 @@ public class TaskLoader extends AsyncTaskLoader<List<Task>> {
     private Task.TypeTask mTypeTask;
     private List<Task> mTaskList;
     private TaskObserver mObserver;
+    private int mTaskId = 0;
 
+    /**
+     * Constructor for init the loader for a type of task
+     *
+     * @param context
+     * @param typeTask
+     */
     public TaskLoader(Context context, Task.TypeTask typeTask) {
         super(context);
         mContext = context;
@@ -31,10 +39,29 @@ public class TaskLoader extends AsyncTaskLoader<List<Task>> {
                 true, mObserver);
     }
 
+    /**
+     * Init the loader for a specific task
+     *
+     * @param context
+     * @param id      task identifier
+     */
+    public TaskLoader(Context context, int id) {
+        super(context);
+        mContext = context;
+        mTaskId = id;
+    }
+
     @Override
     public List<Task> loadInBackground() {
         UseCaseTask useCaseTask = new UseCaseTask(mContext);
-        mTaskList = useCaseTask.getTasksByType(mTypeTask);
+        if (mTypeTask != null) {
+            mTaskList = useCaseTask.getTasksByType(mTypeTask);
+        }
+        if (mTaskId != 0) {
+            Task task = useCaseTask.getTask(mTaskId);
+            mTaskList = new ArrayList<Task>();
+            mTaskList.add(task);
+        }
         return mTaskList;
     }
 
@@ -88,7 +115,7 @@ public class TaskLoader extends AsyncTaskLoader<List<Task>> {
     protected void onReset() {
         //ensure the loader has been stopped
         onStopLoading();
-        mContext.getContentResolver().unregisterContentObserver(mObserver);
+        onReleaseResources(mTaskList);
     }
 
     /**
@@ -96,9 +123,13 @@ public class TaskLoader extends AsyncTaskLoader<List<Task>> {
      * with an actively loaded data set.
      */
     protected void onReleaseResources(List<Task> data) {
-        data.clear();
+        if (data!=null) {
+            data.clear();
+        }
         //Unregister the observer to avoid GC doesn't eliminate the class object
-        mContext.getContentResolver().unregisterContentObserver(mObserver);
+        if (mObserver != null) {
+            mContext.getContentResolver().unregisterContentObserver(mObserver);
+        }
     }
 
     private final class TaskObserver extends ContentObserver {

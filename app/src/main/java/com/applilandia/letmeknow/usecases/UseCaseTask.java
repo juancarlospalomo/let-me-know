@@ -31,14 +31,12 @@ public class UseCaseTask {
 
     /**
      * Create a task.
-     * Preconditions will be task is valid, then it will not validate the data
+     * Preconditions will be a valid task, then it will not validate the data
      *
      * @param task task to be created
      * @return taskId if it was created successfully. In other way, will be 0
      */
     public int createTask(Task task) {
-        boolean hasNotifications = task.hasNotifications();
-
         //Check if the Date has time.  If it hasn't, notification cannot be created
         if ((task.targetDateTime != null) && (!task.targetDateTime.isTimeNull())) {
             //We check if we have to include the creation of notification
@@ -59,6 +57,38 @@ public class UseCaseTask {
         TaskSet taskSet = new TaskSet(mContext);
         long taskId = taskSet.create(task);
         return (int) taskId;
+    }
+
+    /**
+     * Update and existing task
+     * Preconditions will be a valid task, then it will not validate the data
+     *
+     * @param task task data to be updated
+     * @return true if it was update correctly
+     */
+    public boolean updateTask(Task task) {
+        //Check if the Date has time.  If it hasn't, notification cannot be created
+        if ((task.targetDateTime != null) && (!task.targetDateTime.isTimeNull())) {
+            //We check if we have to include the creation of notification
+            if (!task.hasNotifications()) {
+                //The task hasn't notifications included, so we must check the setting
+                //to know if we must create a default notification
+                if (Settings.getCreateDefaultNotificationValue(mContext)) {
+                    //Create the default notification.  It is the 5 minutes before
+                    Notification notification = new Notification();
+                    notification.type = Notification.TypeNotification.FiveMinutesBefore;
+                    notification.status = Notification.TypeStatus.Pending;
+                    notification.dateTime = new LocalDate(task.targetDateTime).addMinutes(-5).getDateTime();
+                    task.addNotification(notification);
+                }
+            }
+        }
+        TaskSet taskSet = new TaskSet(mContext);
+        if (taskSet.update(task) > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

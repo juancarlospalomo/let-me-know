@@ -66,10 +66,16 @@ public class TaskActivity extends ActionBarActivity {
      */
     private void createFragmentContent() {
         mTaskFragment = new TaskFragment();
-        mTaskFragment.setWorkMode(mWorkMode);
+        mTaskFragment.setWorkMode(mWorkMode, 0);
         mTaskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved() {
+                setResult(RESULT_OK);
+                finish();
+            }
+
+            @Override
+            public void onClose() {
                 setResult(RESULT_OK);
                 finish();
             }

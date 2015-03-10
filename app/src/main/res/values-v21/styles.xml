@@ -48,6 +48,7 @@
     <style name="AppProductivityTheme.TextAppearance.Material.Body1" parent="android:TextAppearance.Material.Body1">
         <!-- New attribute to set the padding to text with avatar, text and icon -->
         <item name="android:paddingLeft">@dimen/list_primary_action_text_avatar_text</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
     </style>
 
     <!-- Styles for Navigation Drawer -->

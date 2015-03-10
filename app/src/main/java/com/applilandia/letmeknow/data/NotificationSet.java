@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -14,7 +15,10 @@ import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.receiver.AlarmReceiver;
 
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by JuanCarlos on 19/02/2015.
@@ -33,13 +37,13 @@ public class NotificationSet extends DbSet<Notification> {
     public long create(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
-        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , new LocalDate(notification.dateTime).toString());
-        values.put(TaskContract.NotificationEntry.COLUMN_STATUS , notification.status.getValue());
+        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME, new LocalDate(notification.dateTime).toString());
+        values.put(TaskContract.NotificationEntry.COLUMN_STATUS, notification.status.getValue());
         values.put(TaskContract.NotificationEntry.COLUMN_TYPE, notification.type.getValue());
         long rowId = mUnitOfWork.add(TaskContract.NotificationEntry.TABLE_NAME, null, values);
         if (rowId > 0) {
             Alarm alarm = new Alarm();
-            if (alarm.create((int)rowId, notification.dateTime)) {
+            if (alarm.create((int) rowId, notification.dateTime)) {
                 mContext.getContentResolver().notifyChange(TaskContract.NotificationEntry.CONTENT_URI, null);
             } else {
                 throw new AlarmException("alarm couldn't be created");
@@ -52,9 +56,9 @@ public class NotificationSet extends DbSet<Notification> {
     public int update(Notification notification) throws AlarmException {
         ContentValues values = new ContentValues();
         values.put(TaskContract.NotificationEntry.COLUMN_TASK_ID, notification.taskId);
-        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME , new LocalDate(notification.dateTime).toString());
+        values.put(TaskContract.NotificationEntry.COLUMN_DATE_TIME, new LocalDate(notification.dateTime).toString());
         values.put(TaskContract.NotificationEntry.COLUMN_TYPE, notification.type.getValue());
-        values.put(TaskContract.NotificationEntry.COLUMN_STATUS , notification.status.getValue());
+        values.put(TaskContract.NotificationEntry.COLUMN_STATUS, notification.status.getValue());
 
         String where = TaskContract.NotificationEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(notification._id)};
@@ -91,6 +95,40 @@ public class NotificationSet extends DbSet<Notification> {
     @Override
     public boolean find(int id) {
         return false;
+    }
+
+    /**
+     * Get all the notifications belonging to a specific task
+     *
+     * @param taskId task identifier
+     * @return List of Notification
+     */
+    public List<Notification> getSet(int taskId) {
+        List<Notification> result = null;
+        Cursor cursor = mUnitOfWork.get(TaskContract.NotificationEntry.TABLE_NAME,
+                TaskContract.NotificationEntry.COLUMN_TASK_ID + "=?",
+                new String[] {String.valueOf(taskId)},
+                null);
+        if ((cursor != null) && (cursor.moveToFirst())) {
+            result = new ArrayList<>();
+            while (!cursor.isAfterLast()) {
+                Notification notification = new Notification();
+                notification._id = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry._ID));
+                try {
+                    notification.dateTime = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_DATE_TIME))).getDateTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                notification.type = Notification.TypeNotification.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TYPE)));
+                notification.status = Notification.TypeStatus.map(cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_STATUS)));
+                notification.taskId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry.COLUMN_TASK_ID));
+                result.add(notification);
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        return result;
     }
 
     //TODO: Build the notification correctly
@@ -153,6 +191,7 @@ public class NotificationSet extends DbSet<Notification> {
 
         /**
          * Create a daily repetitive alarm
+         *
          * @param timeInMillis time in milliseconds when the Alarm has to be triggered
          */
         public void create(long timeInMillis) {

@@ -2,19 +2,25 @@ package com.applilandia.letmeknow;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.applilandia.letmeknow.fragments.TaskFragment;
 import com.applilandia.letmeknow.fragments.TaskListFragment;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.views.FloatingActionButton;
 
 
 public class TaskListActivity extends ActionBarActivity {
+
+    private final static String LOG_TAG = TaskListActivity.class.getSimpleName();
 
     public final static String EXTRA_TYPE_TASK = "TypeTask";
 
@@ -33,6 +39,55 @@ public class TaskListActivity extends ActionBarActivity {
         loadExtras();
         createFloatingActionButton();
         createTaskSpinner();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                int backStackEntry = getFragmentNumber();
+                if (backStackEntry > 0) {
+                    popFragmentBackStack();
+                    backStackEntry--;
+                    refreshUIState(backStackEntry);
+                } else {
+                    finish();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        int backStackEntry = getFragmentNumber();
+        if (backStackEntry > 0) {
+            popFragmentBackStack();
+            backStackEntry--;
+            refreshUIState(backStackEntry);
+        } else {
+            finish();
+        }
+    }
+
+    /**
+     * Set the Toolbar in the action bar in the correct state
+     */
+    private void refreshUIState(int count) {
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
+        Spinner taskSpinner = (Spinner) findViewById(R.id.spinnerTypeTasks);
+        if (count == 0) {
+            //We are in the main fragment, then the Floating Action Button
+            //and spinner must be shown
+            floatingActionButton.setVisibility(View.VISIBLE);
+            taskSpinner.setVisibility(View.VISIBLE);
+        } else {
+            //We are not in the main fragment, so we hide Floating Action Button
+            //and spinner
+            floatingActionButton.setVisibility(View.GONE);
+            taskSpinner.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -59,8 +114,8 @@ public class TaskListActivity extends ActionBarActivity {
 
     private void createTaskSpinner() {
         Spinner spinner = (Spinner) findViewById(R.id.spinnerTypeTasks);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.type_task_array, android.R.layout.simple_spinner_item);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
+                R.array.type_task_array, android.R.layout.simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(mTypeTask.getValue());
@@ -68,7 +123,7 @@ public class TaskListActivity extends ActionBarActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTypeTask = Task.TypeTask.map(position);
-                createTasksFragment();
+                createTaskListFragment();
             }
 
             @Override
@@ -80,23 +135,70 @@ public class TaskListActivity extends ActionBarActivity {
     /**
      * Create Fragment to show the task list
      */
-    private void createTasksFragment() {
-        boolean addedFragment = false;
+    private void createTaskListFragment() {
         TaskListFragment taskListFragment = new TaskListFragment();
         taskListFragment.setTypeTask(mTypeTask);
-        if (getSupportFragmentManager().findFragmentById(R.id.content_frame) != null) {
-            addedFragment = true;
+        taskListFragment.setOnTaskListFragmentListener(new TaskListFragment.OnTaskListFragmentListener() {
+            @Override
+            public void onTaskSelected(int id) {
+                createTaskFragment(id);
+            }
+        });
+        taskListFragment.setTypeTask(mTypeTask);
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
+                .replace(R.id.content_frame, taskListFragment)
+                .commit();
+    }
+
+    /**
+     * Create a fragment to display the task stated
+     *
+     * @param id task identifier
+     */
+    private void createTaskFragment(int id) {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        TaskFragment taskFragment = new TaskFragment();
+        taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id);
+        taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
+            @Override
+            public void onTaskSaved() {
+                popFragmentBackStack();
+            }
+
+            @Override
+            public void onClose() {
+                Log.v(LOG_TAG, "onClose");
+            }
+        });
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
+                .replace(R.id.content_frame, taskFragment)
+                .commit();
+        refreshUIState(getSupportFragmentManager().getBackStackEntryCount() + 1);
+    }
+
+    /**
+     * Simulate pop fragment from BackStack.
+     */
+    private void popFragmentBackStack() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (currentFragment instanceof TaskFragment) {
+            createTaskListFragment();
         }
-        if (!addedFragment) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.content_frame, taskListFragment)
-                    .commit();
-        } else {
-            taskListFragment.setTypeTask(mTypeTask);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.content_frame, taskListFragment)
-                    .commit();
+    }
+
+    /**
+     * Return the current fragment number in the stack
+     *
+     * @return number depicts the fragment number
+     */
+    private int getFragmentNumber() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (currentFragment instanceof TaskFragment) {
+            return 1;
         }
+        return 0;
     }
 
 }
