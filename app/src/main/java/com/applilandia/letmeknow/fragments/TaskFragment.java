@@ -13,7 +13,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -428,7 +427,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         if (loader.getId() == LOADER_ID) {
             if ((data != null) && (data.size() == 1)) {
                 mTask = data.get(0);
-                Log.v(LOG_TAG, mTask.name);
                 mTextViewTaskName.setText(mTask.name);
                 if (mTask.targetDateTime != null) {
                     mTextViewTaskDateTime.setText(mTask.targetDateTime.getDisplayFormat(getActivity()));

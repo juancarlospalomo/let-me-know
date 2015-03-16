@@ -11,4 +11,5 @@
     <color name="action_pressed_color">#ff9090</color>
     <color name="list_item_background">#E0E0E0</color>
     <color name="list_item_pressed">#ECEBEB</color>
+    <color name="list_item_selected">#BBDEFB</color>
 </resources>

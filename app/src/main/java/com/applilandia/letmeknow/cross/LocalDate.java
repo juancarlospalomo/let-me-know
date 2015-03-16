@@ -115,14 +115,29 @@ public class LocalDate implements Comparable<LocalDate> {
         return this;
     }
 
+    /**
+     * Set the date part string with a date
+     * @param year
+     * @param month
+     * @param day
+     */
     public void setDate(int year, int month, int day) {
         mDate = String.format("%d-%02d-%02d", year, month, day);
     }
 
+    /**
+     * Return the string containing the date part
+     * @return
+     */
     public String getDate() {
         return mDate;
     }
 
+    /**
+     * Set the time part
+     * @param hour
+     * @param minute
+     */
     public void setTime(int hour, int minute) {
         mTime = String.format("%02d:%02d", hour, minute);
     }
@@ -151,14 +166,27 @@ public class LocalDate implements Comparable<LocalDate> {
         throw new RuntimeException("Time is not well formatted");
     }
 
+    /**
+     * Returns the string part containing only the time
+     * @return
+     */
     public String getTime() {
         return mTime;
     }
 
+    /**
+     * Return a date object depicting the date & time stored
+     * @return
+     */
     public Date getDateTime() {
         return getDate(toString());
     }
 
+    /**
+     * Parse a string containing the date and time
+     * @param date
+     * @throws ParseException
+     */
     private void parse(String date) throws ParseException {
         if (!TextUtils.isEmpty(date)) {
             String[] dateTimeParts = date.split(" ");
@@ -184,6 +212,10 @@ public class LocalDate implements Comparable<LocalDate> {
         }
     }
 
+    /**
+     * Parse a date object
+     * @param date
+     */
     private void parse(Date date) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
         mDate = simpleDateFormat.format(date);

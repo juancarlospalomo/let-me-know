@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,16 +24,19 @@ public class TaskListActivity extends ActionBarActivity {
     private final static String LOG_TAG = TaskListActivity.class.getSimpleName();
 
     public final static String EXTRA_TYPE_TASK = "TypeTask";
-
+    //Keep track on the toolbar menu is showed or not
+    private boolean mShowedToolbarMenu = false;
     private Task.TypeTask mTypeTask = Task.TypeTask.All;
+    //Toolbar
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_list);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.taskToolBar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.taskToolBar);
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -42,16 +46,36 @@ public class TaskListActivity extends ActionBarActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mShowedToolbarMenu) {
+            mToolbar.setNavigationIcon(R.drawable.ic_action_down);
+        } else {
+            mToolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        }
+        return mShowedToolbarMenu;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                int backStackEntry = getFragmentNumber();
-                if (backStackEntry > 0) {
-                    popFragmentBackStack();
-                    backStackEntry--;
-                    refreshUIState(backStackEntry);
+                if (!mShowedToolbarMenu) {
+                    int backStackEntry = getFragmentNumber();
+                    if (backStackEntry > 0) {
+                        popFragmentBackStack();
+                        backStackEntry--;
+                        refreshUIState(backStackEntry);
+                    } else {
+                        finish();
+                    }
                 } else {
-                    finish();
+                    mShowedToolbarMenu = false;
+                    invalidateOptionsMenu();
+                    refreshUIState(0);
+                    TaskListFragment taskListFragment = (TaskListFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
+                    if (taskListFragment != null) {
+                        taskListFragment.deactivateToolbarActions();
+                    }
                 }
                 return true;
             default:
@@ -77,16 +101,23 @@ public class TaskListActivity extends ActionBarActivity {
     private void refreshUIState(int count) {
         FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
         Spinner taskSpinner = (Spinner) findViewById(R.id.spinnerTypeTasks);
-        if (count == 0) {
-            //We are in the main fragment, then the Floating Action Button
-            //and spinner must be shown
-            floatingActionButton.setVisibility(View.VISIBLE);
-            taskSpinner.setVisibility(View.VISIBLE);
-        } else {
-            //We are not in the main fragment, so we hide Floating Action Button
+        if (mShowedToolbarMenu) {
+            //Actions are displayed in toolbar, then we hide the floating action button
             //and spinner
             floatingActionButton.setVisibility(View.GONE);
             taskSpinner.setVisibility(View.GONE);
+        } else {
+            if (count == 0) {
+                //We are in the main fragment, then the Floating Action Button
+                //and spinner must be shown
+                floatingActionButton.setVisibility(View.VISIBLE);
+                taskSpinner.setVisibility(View.VISIBLE);
+            } else {
+                //We are not in the main fragment, so we hide Floating Action Button
+                //and spinner
+                floatingActionButton.setVisibility(View.GONE);
+                taskSpinner.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -142,6 +173,13 @@ public class TaskListActivity extends ActionBarActivity {
             @Override
             public void onTaskSelected(int id) {
                 createTaskFragment(id);
+            }
+
+            @Override
+            public void onTaskLongPressed() {
+                mShowedToolbarMenu = true;
+                invalidateOptionsMenu();
+                refreshUIState(0);
             }
         });
         taskListFragment.setTypeTask(mTypeTask);

@@ -1,14 +1,27 @@
 package com.applilandia.letmeknow.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
+import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,11 +30,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.listeners.RecyclerViewClickListener;
+import com.applilandia.letmeknow.listeners.RecyclerViewMotion;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.SnackBar;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,10 +50,13 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface OnTaskListFragmentListener {
         public void onTaskSelected(int id);
+
+        public void onTaskLongPressed();
     }
 
     //LoaderId for task loader
     private static final int TASK_LOADER_ID = 1;
+    private boolean mActionBarActived = false;
     //Type task to be loaded in the fragment
     private Task.TypeTask mTypeTask;
     private ProgressBar mProgressBar;
@@ -67,9 +86,17 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
         View view = getView();
+
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressActivityTask);
-        mTaskRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerViewTasks);
+        initRecyclerView();
+        //Init loader.  Data will be set to Adapter in onLoadFinished()
+        getLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+    }
+
+    private void initRecyclerView() {
+        mTaskRecyclerView = (RecyclerView) getView().findViewById(R.id.recyclerViewTasks);
         //Change in content will not change the layout size of the recycler view
         //Of this way, we improve the performance
         mTaskRecyclerView.setHasFixedSize(true);
@@ -77,8 +104,183 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         mLayoutManager = new LinearLayoutManager(getActivity());
         mTaskRecyclerView.setLayoutManager(mLayoutManager);
         mTaskRecyclerView.addItemDecoration(new TaskItemDecoration());
-        //Init loader.  Data will be set to Adapter in onLoadFinished()
-        getLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+        mTaskRecyclerView.addOnItemTouchListener(new RecyclerViewClickListener(getActivity(),
+                new RecyclerViewClickListener.RecyclerViewOnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, final int position) {
+                        if (!mActionBarActived) {
+                            AnimatorSet animatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.touch_feedback_animator);
+                            animatorSet.setTarget(view);
+                            animatorSet.start();
+                            animatorSet.addListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    if (mOnTaskListFragmentListener != null) {
+                                        mOnTaskListFragmentListener.onTaskSelected((int) mAdapter.getItemId(position));
+                                    }
+                                }
+                            });
+                        } else {
+                            mAdapter.toggle(position);
+                            if (mAdapter.isSelected(position)) {
+                                view.setBackgroundResource(R.drawable.list_row_background_selected);
+                                view.findViewById(R.id.layout_primary_action_content).setBackgroundResource(R.drawable.list_row_background_selected);
+                            } else {
+                                view.setBackgroundResource(R.drawable.list_row_background);
+                                view.findViewById(R.id.layout_primary_action_content).setBackgroundResource(R.drawable.item_background);
+                                if (mAdapter.getSelectedCount() == 0) {
+                                    deactivateToolbarActions();
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+                        activateToolbarActions();
+                        mAdapter.toggle(position);
+                        view.setBackgroundResource(R.drawable.list_row_background_selected);
+                        view.findViewById(R.id.layout_primary_action_content).setBackgroundResource(R.drawable.list_row_background_selected);
+                        if (mOnTaskListFragmentListener != null) {
+                            mOnTaskListFragmentListener.onTaskLongPressed();
+                        }
+                    }
+                }));
+        mTaskRecyclerView.setOnTouchListener(new RecyclerViewMotion(mTaskRecyclerView,
+                new RecyclerViewMotion.OnRecyclerViewMotion() {
+                    @Override
+                    public boolean canDismiss(int position) {
+                        return true;
+                    }
+
+                    @Override
+                    public void onDismiss(final View view, final int position) {
+                        if (view != null) {
+                            AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(getResources().getString(R.string.delete_task_dialog_title),
+                                    "", getResources().getString(R.string.delete_task_dialog_cancel_text),
+                                    getResources().getString(R.string.delete_task_dalog_ok_text));
+                            alertDialog.setButtonOnClickListener(new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (which == AlertDialogFragment.INDEX_BUTTON_YES) {
+                                        final ViewGroup.LayoutParams lp = view.getLayoutParams();
+                                        final int originalHeight = view.getHeight();
+
+                                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
+
+                                        animator.addListener(new AnimatorListenerAdapter() {
+                                            @Override
+                                            public void onAnimationEnd(Animator animation) {
+                                                ViewGroup.LayoutParams lp;
+                                                // Reset view presentation
+                                                view.setAlpha(1f);
+                                                view.setTranslationX(0);
+                                                lp = view.getLayoutParams();
+                                                lp.height = originalHeight;
+                                                view.setLayoutParams(lp);
+                                                mAdapter.mTaskList.remove(position);
+                                                mAdapter.notifyDataSetChanged();
+                                                mAdapter.toggle(position);
+                                                AsyncTaskList asyncTaskList = new AsyncTaskList();
+                                                asyncTaskList.execute(mAdapter.getSelectedList());
+                                                // Send a cancel event
+                                                long time = SystemClock.uptimeMillis();
+                                                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+                                                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                                                mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
+                                            }
+                                        });
+
+                                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                            @Override
+                                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                                lp.height = (Integer) valueAnimator.getAnimatedValue();
+                                                view.setLayoutParams(lp);
+                                            }
+                                        });
+                                        animator.start();
+
+                                    } else {
+                                        view.animate()
+                                                .translationX(0)
+                                                .alpha(1)
+                                                .setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime))
+                                                .setListener(null);
+                                        // Send a cancel event
+                                        long time = SystemClock.uptimeMillis();
+                                        MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+                                                MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                                        mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
+                                    }
+                                }
+                            });
+                            alertDialog.show(getFragmentManager(), "dialog");
+                        }
+                    }
+                }));
+
+    }
+
+    /**
+     * Delete the tasks selected
+     */
+    private void delete() {
+        String title;
+        if (mAdapter.getSelectedCount() > 1) {
+            title = getResources().getString(R.string.delete_tasks_dialog_title);
+        } else {
+            title = getResources().getString(R.string.delete_task_dialog_title);
+        }
+        AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(title,
+                "", getResources().getString(R.string.delete_task_dialog_cancel_text),
+                getResources().getString(R.string.delete_task_dalog_ok_text));
+        alertDialog.setButtonOnClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == AlertDialogFragment.INDEX_BUTTON_YES) {
+                    AsyncTaskList asyncTaskList = new AsyncTaskList();
+                    asyncTaskList.execute(mAdapter.getSelectedList());
+                }
+            }
+        });
+        alertDialog.show(getFragmentManager(), "dialog");
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (mActionBarActived) {
+            inflater.inflate(R.menu.menu_task_list, menu);
+        } else {
+            super.onCreateOptionsMenu(menu, inflater);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_delete:
+                delete();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * Activate the action icons in the toolbar
+     */
+    public void activateToolbarActions() {
+        mActionBarActived = true;
+        getActivity().invalidateOptionsMenu();
+    }
+
+    /**
+     * Deactivate the action bar to remove the actions
+     */
+    public void deactivateToolbarActions() {
+        mActionBarActived = false;
+        getActivity().invalidateOptionsMenu();
+        mAdapter.resetSelected();
     }
 
     /**
@@ -141,9 +343,10 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      * Adapter for task.  It use the recyclerview adapter
      */
     public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
-
+        private int mSelectedCountRef = 0;
         //Dataset for the Adapter
         private List<Task> mTaskList;
+        private SparseBooleanArray mTasksSelected;
 
         /**
          * View Holder pattern
@@ -233,15 +436,6 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                     snackBar.show(R.string.snack_bar_task_completed_text);
                 }
             });
-            holder.mLayoutPrimaryAction.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mOnTaskListFragmentListener != null) {
-                        mOnTaskListFragmentListener.onTaskSelected(task._id);
-                    }
-                }
-            });
-
         }
 
         /**
@@ -254,9 +448,84 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             return mTaskList.size();
         }
 
+        @Override
+        public long getItemId(int position) {
+            if ((mTaskList != null) && (position < mTaskList.size())) {
+                return mTaskList.get(position)._id;
+            } else {
+                return super.getItemId(position);
+            }
+        }
+
+        public int getSelectedCount() {
+            return mSelectedCountRef;
+        }
+
+        /**
+         * Return if a task is selected or not
+         *
+         * @param position task list position
+         * @return true or false
+         */
+        public boolean isSelected(int position) {
+            return mTasksSelected.get(position);
+        }
+
+        /**
+         * Swap the value of the task selected to not selected and vice versa
+         *
+         * @param position task list position
+         */
+        public void toggle(int position) {
+            if (mTasksSelected == null) {
+                mTasksSelected = new SparseBooleanArray();
+            }
+            if (isSelected(position)) {
+                mTasksSelected.delete(position);
+                mSelectedCountRef--;
+            } else {
+                mSelectedCountRef++;
+                mTasksSelected.put(position, true);
+            }
+        }
+
+        /**
+         * Get the list of task selected
+         *
+         * @return
+         */
+        public List<Task> getSelectedList() {
+            List<Task> result = null;
+            int position = 0;
+            for (Task task : mTaskList) {
+                if (mTasksSelected.get(position)) {
+                    if (result == null) {
+                        result = new ArrayList<>();
+                    }
+                    result.add(task);
+                }
+                position++;
+            }
+            return result;
+        }
+
+        /**
+         * Remove all items from selected state
+         */
+        public void resetSelected() {
+            if (mSelectedCountRef > 0) {
+                mTasksSelected = null;
+                mSelectedCountRef = 0;
+                notifyDataSetChanged();
+            }
+        }
+
     }
 
-    public class TaskItemDecoration extends RecyclerView.ItemDecoration {
+    /**
+     * Item decoration for recycler view
+     */
+    public class TaskItemDecoration extends android.support.v7.widget.RecyclerView.ItemDecoration {
 
         Drawable mDivider;
 
@@ -272,6 +541,42 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                 outRect.top = mDivider.getIntrinsicHeight();
             } else {
                 return;
+            }
+        }
+    }
+
+    /**
+     * Make a delete operation for a list of task in an asynchronous way
+     */
+    private class AsyncTaskList extends AsyncTask<List<Task>, Integer, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(List<Task>... params) {
+            int deleteErrorCount = 0;
+            if (params != null) {
+                List<Task> taskList = params[0];
+                if (taskList != null) {
+                    UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                    for (Task task : taskList) {
+                        if (!useCaseTask.deleteTask(task)) {
+                            deleteErrorCount++;
+                        }
+                    }
+                    if (deleteErrorCount == 0) {
+                        return new Boolean(false);
+                    } else {
+                        return new Boolean(true);
+                    }
+                }
+            }
+            return new Boolean(false);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            mAdapter.notifyDataSetChanged();
+            if (mActionBarActived) {
+                deactivateToolbarActions();
             }
         }
     }

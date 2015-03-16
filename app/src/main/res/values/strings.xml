@@ -74,4 +74,13 @@
     <string name="snack_bar_task_completed_text">Completed</string>
     <string name="snack_bar_action_text">UNDO</string>
 
+    <!-- Task List Activity -->
+    <string name="title_menu_item_delete">Delete</string>
+
+    <!-- Delete Task Dialog -->
+    <string name="delete_task_dialog_title">Delete Task?</string>
+    <string name="delete_task_dialog_cancel_text">Cancel</string>
+    <string name="delete_task_dalog_ok_text">Delete</string>
+    <string name="delete_tasks_dialog_title">Delete Tasks?</string>
+
 </resources>

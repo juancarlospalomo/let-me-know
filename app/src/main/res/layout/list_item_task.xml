@@ -8,7 +8,7 @@
     android:paddingRight="?android:attr/listPreferredItemPaddingRight"
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
     android:background="@drawable/list_row_background"
-    android:elevation="2dp">
+    android:elevation="@dimen/elevation_view_default">
 
     <ImageView
         android:id="@+id/image_primary_action_avatar"

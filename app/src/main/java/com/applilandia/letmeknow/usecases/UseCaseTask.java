@@ -109,7 +109,10 @@ public class UseCaseTask {
             task._id = cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry.ALIAS_ID));
             task.name = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
             try {
-                task.targetDateTime = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                LocalDate date = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                if (!date.isNull()) {
+                    task.targetDateTime = date;
+                }
                 while (!cursor.isAfterLast()) {
                     int notificationId = cursor.getInt(cursor.getColumnIndex(TaskContract.NotificationEntry._ID));
                     if (notificationId > 0) {
@@ -450,6 +453,17 @@ public class UseCaseTask {
         } else {
         }
         historySet.endWork(result);
+        return result;
+    }
+
+    /**
+     * Delete a task from repository
+     * @param task
+     * @return true or false
+     */
+    public boolean deleteTask(Task task) {
+        TaskSet taskSet = new TaskSet(mContext);
+        boolean result = taskSet.delete(task);
         return result;
     }
 

@@ -91,17 +91,10 @@ public class TaskSet extends DbSet<Task> {
         int rowsAffected = mUnitOfWork.update(TaskContract.TaskEntry.TABLE_NAME, values, where, args);
         if (rowsAffected > 0) {
             //Remove all notifications
-            NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
-            List<Notification> notifications = notificationSet.getSet(task._id);
-            if (notifications != null) {
-                for (Notification notification : notifications) {
-                    if (!notificationSet.delete(notification)) {
-                        throw new RuntimeException("Error deleting notifications");
-                    }
-                }
-            }
+            removeNotifications(task._id);
             //Create new notifications if there are
             if (task.hasNotifications()) {
+                NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
                 for (int index = 0; index < Notification.TypeNotification.values().length; index++) {
                     Notification notification = task.getNotifications().get(index);
                     if (notification != null) {
@@ -124,21 +117,50 @@ public class TaskSet extends DbSet<Task> {
         return rowsAffected;
     }
 
+    /**
+     * Delete a task and their notifications
+     * @param task
+     * @return true if it was successfully deleted
+     */
     @Override
     public boolean delete(Task task) {
+        boolean result = false;
         String where = TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(task._id)};
+        initWork();
         int rowsAffected = mUnitOfWork.delete(TaskContract.TaskEntry.TABLE_NAME, where, args);
         if (rowsAffected > 0) {
-            mContext.getContentResolver().notifyChange(TaskContract.TaskEntry.CONTENT_URI, null);
-            return true;
-        } else {
-            return false;
+            try {
+                removeNotifications(task._id);
+                mContext.getContentResolver().notifyChange(TaskContract.TaskEntry.CONTENT_URI, null);
+                result = true;
+            } catch(RuntimeException e) {
+                result = false;
+            }
         }
+        endWork(result);
+        return result;
     }
 
     @Override
     public boolean find(int id) {
         return false;
+    }
+
+    /**
+     * Remove the notifications that belong to one task
+     * @param taskId
+     */
+    private void removeNotifications(int taskId) {
+        NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
+        //get all current notifications
+        List<Notification> notifications = notificationSet.getSet(taskId);
+        if (notifications != null) {
+            for (Notification notification : notifications) {
+                if (!notificationSet.delete(notification)) {
+                    throw new RuntimeException("Error deleting notifications");
+                }
+            }
+        }
     }
 }
