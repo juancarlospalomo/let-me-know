@@ -127,7 +127,8 @@ public class TaskSet extends DbSet<Task> {
         boolean result = false;
         String where = TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(task._id)};
-        initWork();
+
+        //TODO: find out when initWork();
         int rowsAffected = mUnitOfWork.delete(TaskContract.TaskEntry.TABLE_NAME, where, args);
         if (rowsAffected > 0) {
             try {
@@ -138,7 +139,7 @@ public class TaskSet extends DbSet<Task> {
                 result = false;
             }
         }
-        endWork(result);
+        //TODO: execute when initWork() has been executed. endWork(result);
         return result;
     }
 

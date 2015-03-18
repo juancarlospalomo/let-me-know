@@ -195,7 +195,6 @@ public class TaskListActivity extends ActionBarActivity {
      * @param id task identifier
      */
     private void createTaskFragment(int id) {
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
         TaskFragment taskFragment = new TaskFragment();
         taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id);
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {

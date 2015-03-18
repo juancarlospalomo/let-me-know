@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:letmeknow="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardNotificationItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/card_margin"
+    letmeknow:cardCornerRadius="@dimen/card_corner_radius_default"
+    letmeknow:cardElevation="@dimen/card_elevation_default">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/textViewHeadline"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/card_headline_height"
+            android:gravity="center"
+            style="@style/Widget.CardHead"/>
+
+        <TextView
+            android:id="@+id/textViewBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.CardBody"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center" >
+            <ImageView
+                android:id="@+id/imageViewNotifications"
+                android:layout_width="?attr/touchableAssetLayoutWidth"
+                android:layout_height="?attr/touchableAssetLayoutHeight"
+                android:padding="@dimen/padding_action_icon"
+                android:layout_marginLeft="@dimen/card_margin_action_icons"
+                android:src="@drawable/ic_alarm_off"/>
+
+            <ImageView
+                android:id="@+id/imageViewCheck"
+                android:layout_width="?attr/touchableAssetLayoutWidth"
+                android:layout_height="?attr/touchableAssetLayoutHeight"
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_check_off"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="@dimen/card_margin_action_icons"
+                android:layout_toRightOf="@id/imageViewNotifications"/>
+
+            <ImageView
+                android:id="@+id/imageViewClose"
+                android:layout_width="?attr/touchableAssetLayoutWidth"
+                android:layout_height="?attr/touchableAssetLayoutHeight"
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_clear"
+                android:clickable="true"
+                android:layout_gravity="center_vertical"
+                android:layout_toRightOf="@id/imageViewCheck"
+                android:layout_alignParentRight="true"/>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>
+

@@ -15,6 +15,7 @@ public class TaskProvider extends ContentProvider {
     //Uri codes when Uri match
     private static final int TASK = 100;
     private static final int TASK_WITH_NOTIFICATIONS = 101;
+    private static final int TASK_NOTIFICATION_STATUS = 102;
     private static final int NOTIFICATION = 200;
     private static final int HISTORY = 300;
 
@@ -27,6 +28,7 @@ public class TaskProvider extends ContentProvider {
         mUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_TASK, TASK);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_TASK + "/#", TASK_WITH_NOTIFICATIONS);
+        mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_TASK + "/" + TaskContract.PATH_NOTIFICATION_STATUS + "/#", TASK_NOTIFICATION_STATUS);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_NOTIFICATION + "/#", NOTIFICATION);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_HISTORY, HISTORY);
     }
@@ -60,6 +62,37 @@ public class TaskProvider extends ContentProvider {
         return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(), projection, selection, args, null, null, null);
     }
 
+    /**
+     * Return a list of task with a specific notification status
+     * @param orderBy
+     * @return
+     */
+    private Cursor getTasksNotificationStatus(int status, String orderBy) {
+        SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
+        sqLiteQueryBuilder.setTables(TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " +
+                TaskContract.NotificationEntry.TABLE_NAME + " ON " +
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
+                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TASK_ID);
+
+        String[] fields = new String[]{TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID,
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME,
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME,
+                "Count(" + TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry._ID + ") AS " + TaskContract.TaskEntry.ALIAS_NOTIFICATION_COUNT};
+
+        String selection = TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS + "=?";
+        String[] args = new String[]{String.valueOf(status)};
+
+        return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(),
+                fields, selection, args, null, null, orderBy);
+    }
+
+    /**
+     * Return the whole task list and their notifications count number
+     * @param selection
+     * @param args
+     * @param orderBy
+     * @return
+     */
     private Cursor getTasks(String selection, String[] args, String orderBy) {
         SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
         sqLiteQueryBuilder.setTables(TaskContract.TaskEntry.TABLE_NAME + " LEFT JOIN " +
@@ -114,6 +147,12 @@ public class TaskProvider extends ContentProvider {
                 cursor = getTasksWithNotifications(taskId);
                 break;
 
+            case TASK_NOTIFICATION_STATUS:
+                int status = TaskContract.TaskEntry.getUriTaskNotificationStatus(uri);
+                cursor = getTasksNotificationStatus(status,
+                        TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);
+                break;
+
             case NOTIFICATION:
                 int id = TaskContract.NotificationEntry.getUriNotificationId(uri);
                 cursor = getNotification(id);
@@ -139,6 +178,8 @@ public class TaskProvider extends ContentProvider {
             case TASK:
                 return TaskContract.TaskEntry.CONTENT_TYPE;
             case TASK_WITH_NOTIFICATIONS:
+                return TaskContract.TaskEntry.CONTENT_TYPE;
+            case TASK_NOTIFICATION_STATUS:
                 return TaskContract.TaskEntry.CONTENT_TYPE;
             case NOTIFICATION:
                 return TaskContract.NotificationEntry.CONTENT_TYPE;

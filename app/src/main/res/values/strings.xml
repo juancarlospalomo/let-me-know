@@ -82,5 +82,6 @@
     <string name="delete_task_dialog_cancel_text">Cancel</string>
     <string name="delete_task_dalog_ok_text">Delete</string>
     <string name="delete_tasks_dialog_title">Delete Tasks?</string>
+    <string name="title_activity_notification_list">Notification List</string>
 
 </resources>

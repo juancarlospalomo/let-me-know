@@ -1,5 +1,6 @@
 package com.applilandia.letmeknow.receiver;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,5 +20,6 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         ComponentName componentName = new ComponentName(context.getPackageName(),
                 AlarmService.class.getName());
         startWakefulService(context, intent.setComponent(componentName));
+        setResultCode(Activity.RESULT_OK);
     }
 }

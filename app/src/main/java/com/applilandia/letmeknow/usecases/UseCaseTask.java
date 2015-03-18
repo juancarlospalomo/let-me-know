@@ -135,7 +135,7 @@ public class UseCaseTask {
     }
 
     /**
-     * Conver cursor with tasks to List
+     * Convert cursor with tasks to List
      *
      * @param cursor task cursor
      * @return List of tasks
@@ -432,6 +432,20 @@ public class UseCaseTask {
     }
 
     /**
+     * Return a list of task with notifications in a specific status
+     * @param typeStatus
+     * @return List of tasks
+     */
+    public List<Task> getTasksByNotificationStatus(Notification.TypeStatus typeStatus) {
+        Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.setUriTaskNotificationStatus(typeStatus.getValue()),
+                null, null, null, null);
+        List<Task> taskList = toList(cursor);
+        cursor.close();
+        return taskList;
+    }
+
+
+    /**
      * Set a task as completed
      *
      * @param task Task entity to set as completed
@@ -466,5 +480,7 @@ public class UseCaseTask {
         boolean result = taskSet.delete(task);
         return result;
     }
+
+
 
 }

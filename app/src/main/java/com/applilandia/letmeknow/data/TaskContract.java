@@ -18,6 +18,8 @@ public class TaskContract {
     //For instance, content://com.productivity.letmeknow/task will be a valid path
     public static final String PATH_TASK = "task";
     public static final String PATH_NOTIFICATION = "notification";
+    public static final String NOTIFICATION_STATUS = "status";
+    public static final String PATH_NOTIFICATION_STATUS = PATH_NOTIFICATION + "/" + NOTIFICATION_STATUS;
     public static final String PATH_HISTORY = "history";
 
     /**
@@ -58,6 +60,16 @@ public class TaskContract {
         }
 
         /**
+         * extract the status id from the Uri
+         * @param uri
+         * @return
+         */
+        public static int getUriTaskNotificationStatus(Uri uri) {
+            int status = Integer.parseInt(uri.getLastPathSegment());
+            return status;
+        }
+
+        /**
          * Build URI adding the task id
          * @param id task identifier
          * @return URI
@@ -65,6 +77,18 @@ public class TaskContract {
         public static Uri setUriTaskId(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        /**
+         * Build Uri with notification status
+         * @param id
+         * @return
+         */
+        public static Uri setUriTaskNotificationStatus(int id) {
+            return ContentUris.withAppendedId(CONTENT_URI.buildUpon().appendPath(PATH_NOTIFICATION)
+                    .appendPath(NOTIFICATION_STATUS)
+                    .build(), id);
+        }
+
     }
 
     /**

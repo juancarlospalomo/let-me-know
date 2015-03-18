@@ -11,5 +11,11 @@
     <!-- Elevation max standard -->
     <dimen name="elevation_view_top">9dp</dimen>
     <dimen name="elevation_view_default">2dp</dimen>
+    <!-- Card standard -->
+    <dimen name="card_elevation_default">2dp</dimen>
+    <dimen name="card_corner_radius_default">2dp</dimen>
+    <dimen name="card_headline_height">100dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+    <dimen name="card_margin_action_icons">10dp</dimen>
 </resources>
 

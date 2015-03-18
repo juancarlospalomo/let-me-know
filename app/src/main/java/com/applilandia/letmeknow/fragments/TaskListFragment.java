@@ -50,7 +50,6 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface OnTaskListFragmentListener {
         public void onTaskSelected(int id);
-
         public void onTaskLongPressed();
     }
 
