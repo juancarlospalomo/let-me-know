@@ -200,10 +200,13 @@ public class NotificationSet extends DbSet<Notification> {
         return task;
     }
 
-    private PendingIntent getContentIntent() {
+    private PendingIntent getContentIntent(int actionId, int taskId, int notificationId) {
         Intent intent = new Intent(mContext, NotificationListActivity.class);
+        intent.putExtra(NotificationListActivity.INTENT_ACTION, actionId);
+        intent.putExtra(NotificationListActivity.EXTRA_TASK_ID, taskId);
+        intent.putExtra(NotificationListActivity.EXTRA_NOTIFICATION_ID, notificationId);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext,
-                Notification.TypeStatus.Sent.getValue(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                actionId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return pendingIntent;
     }
 
@@ -220,8 +223,21 @@ public class NotificationSet extends DbSet<Notification> {
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle(task.name)
                         .setContentText(task.targetDateTime.getDisplayFormat(mContext))
-                        .setContentIntent(getContentIntent())
+                        .setContentIntent(getContentIntent(NotificationListActivity.ACTION_NONE, task._id, id))
                         .setAutoCancel(true);
+
+                builder.addAction(R.drawable.ic_alarm_on, "",
+                        getContentIntent(NotificationListActivity.ACTION_VIEW,
+                                task._id, id));
+
+                builder.addAction(R.drawable.ic_check_off, "",
+                        getContentIntent(NotificationListActivity.ACTION_END_TASK,
+                                task._id, id));
+
+                builder.addAction(R.drawable.ic_clear, "",
+                        getContentIntent(NotificationListActivity.ACTION_DISMISS,
+                                task._id, id));
+
 
 /*
                 NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
