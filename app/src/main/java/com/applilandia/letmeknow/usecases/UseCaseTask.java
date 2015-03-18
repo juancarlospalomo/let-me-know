@@ -100,10 +100,7 @@ public class UseCaseTask {
     public Task getTask(int id) {
         Task task = null;
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.setUriTaskId(id),
-                null, null, null,
-                "CASE WHEN " + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " IS NULL THEN 1 ELSE 0 END, " +
-                        TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " ASC, " +
-                        TaskContract.TaskEntry.COLUMN_TASK_NAME + " ASC");
+                null, null, null, null);
         if ((cursor != null) && (cursor.moveToFirst())) {
             task = new Task();
             task._id = cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry.ALIAS_ID));

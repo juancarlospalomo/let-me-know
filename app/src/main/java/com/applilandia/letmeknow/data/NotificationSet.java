@@ -16,6 +16,7 @@ import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.receiver.AlarmReceiver;
+import com.applilandia.letmeknow.services.NotificationService;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ import java.util.List;
 public class NotificationSet extends DbSet<Notification> {
 
     private final static String LOG_TAG = NotificationSet.class.getSimpleName();
+
+    public final static int LET_ME_KNOW_NOTIFICATION_ID = 1;
 
     public NotificationSet(Context context) {
         super(context);
@@ -99,6 +102,25 @@ public class NotificationSet extends DbSet<Notification> {
     @Override
     public boolean find(int id) {
         return false;
+    }
+
+    /**
+     * Change the status of a notification
+     *
+     * @param id        notification identifier
+     * @param newStatus new type status
+     * @return
+     */
+    public int changeStatus(int id, Notification.TypeStatus newStatus) {
+        ContentValues values = new ContentValues();
+        values.put(TaskContract.NotificationEntry.COLUMN_STATUS, newStatus.getValue());
+
+        String where = TaskContract.NotificationEntry._ID + "=?";
+        String[] args = new String[]{String.valueOf(id)};
+
+        int rowsAffected = mUnitOfWork.update(TaskContract.NotificationEntry.TABLE_NAME,
+                values, where, args);
+        return rowsAffected;
     }
 
     /**
@@ -200,70 +222,156 @@ public class NotificationSet extends DbSet<Notification> {
         return task;
     }
 
-    private PendingIntent getContentIntent(int actionId, int taskId, int notificationId) {
+    /**
+     * Find out the sent notifications number
+     *
+     * @return
+     */
+    private int getSentNotificationCount() {
+        String[] fields = new String[]{"Count(*)"};
+        Cursor cursor = mUnitOfWork.mDatabase.query(TaskContract.NotificationEntry.TABLE_NAME,
+                fields, TaskContract.NotificationEntry.COLUMN_STATUS + "=" +
+                        Notification.TypeStatus.Sent.getValue(), null, null, null, null);
+        if ((cursor != null) && (cursor.moveToFirst())) {
+            return cursor.getInt(0);
+        }
+        return 0;
+    }
+
+    /**
+     * Build an pending intent for an activity
+     *
+     * @param actionId
+     * @param taskId
+     * @return
+     */
+    private PendingIntent getActivityContentIntent(int actionId, int taskId) {
         Intent intent = new Intent(mContext, NotificationListActivity.class);
         intent.putExtra(NotificationListActivity.INTENT_ACTION, actionId);
         intent.putExtra(NotificationListActivity.EXTRA_TASK_ID, taskId);
-        intent.putExtra(NotificationListActivity.EXTRA_NOTIFICATION_ID, notificationId);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext,
                 actionId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return pendingIntent;
     }
 
-    //TODO: Build the notification correctly
-    // Refer to: http://developer.android.com/guide/topics/ui/notifiers/notifications.html
-    //           http://developer.android.com/design/patterns/notifications.html
-    public void send(int id) {
+    /**
+     * Build a Pending Intent for a service
+     *
+     * @param actionId
+     * @param taskId
+     * @return
+     */
+    private PendingIntent getServiceContentIntent(int actionId, int taskId) {
+        Intent intent = new Intent(mContext, NotificationService.class);
+        intent.putExtra(NotificationService.INTENT_ACTION, actionId);
+        intent.putExtra(NotificationService.EXTRA_TASK_ID, taskId);
+        PendingIntent pendingIntent = PendingIntent.getService(mContext,
+                actionId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return pendingIntent;
+    }
+
+    /**
+     * Build a query to get the task name of the notifications sent
+     *
+     * @return Cursor with the Task names
+     */
+    private Cursor getSentNotificationsTaskName() {
+        String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME +
+                " FROM " + TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " + TaskContract.NotificationEntry.TABLE_NAME +
+                " ON " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
+                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TASK_ID +
+                " WHERE " + TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS + "=" +
+                Notification.TypeStatus.Sent.getValue() +
+                " GROUP BY " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME;
+        return mUnitOfWork.mDatabase.rawQuery(sql, null);
+    }
+
+    /**
+     * Send a multiple view notification
+     */
+    private void sendMultiple(int number) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle(mContext.getString(R.string.notification_title_tasks))
+                .setContentText(mContext.getString(R.string.notification_content_tasks))
+                .setNumber(number)
+                .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, 0))
+                .setAutoCancel(true);
+
+        Cursor cursor = getSentNotificationsTaskName();
+        if ((cursor != null) && (cursor.moveToFirst())) {
+            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            // Sets a title for the Inbox in expanded layout
+            inboxStyle.setBigContentTitle(mContext.getResources().getString(R.string.notifications_tracker_details));
+            // Moves events into the expanded layout
+            while (!cursor.isAfterLast()) {
+                String line = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
+                inboxStyle.addLine(line);
+                cursor.moveToNext();
+            }
+            // Moves the expanded layout object into the notification object.
+            builder.setStyle(inboxStyle);
+        }
+        cursor.close();
+        // Now, issue the notification
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+        notificationManager.notify(LET_ME_KNOW_NOTIFICATION_ID, builder.build());
+    }
+
+    /**
+     * Send a single notification for a specific one
+     *
+     * @param id notification identifier
+     */
+    private void sendSingle(int id, int taskId) {
         Task task = null;
+        task = getTask(taskId);
+        if (task != null) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(task.name)
+                    .setContentText(task.targetDateTime.getDisplayFormat(mContext))
+                    .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, task._id))
+                    .setAutoCancel(true);
+
+            builder.addAction(R.drawable.ic_alarm_on, "",
+                    getActivityContentIntent(NotificationListActivity.ACTION_VIEW,
+                            task._id));
+
+            builder.addAction(R.drawable.ic_check_off, "",
+                    getServiceContentIntent(NotificationService.ACTION_END_TASK,
+                            task._id));
+
+            builder.addAction(R.drawable.ic_clear, "",
+                    getServiceContentIntent(NotificationService.ACTION_DISMISS,
+                            task._id));
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+            notificationManager.notify(LET_ME_KNOW_NOTIFICATION_ID, builder.build());
+        }
+    }
+
+
+    /**
+     * Send a notification to the notification bar
+     * // Refer to: http://developer.android.com/guide/topics/ui/notifiers/notifications.html
+     * // http://developer.android.com/design/patterns/notifications.html
+     *
+     * @param id notification identifier
+     */
+    public void send(int id) {
+        initWork();
+        changeStatus(id, Notification.TypeStatus.Sent);
+        int count = getSentNotificationCount();
         Notification notification = get(id);
         if (notification != null) {
-            task = getTask(notification.taskId);
-            if (task != null) {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle(task.name)
-                        .setContentText(task.targetDateTime.getDisplayFormat(mContext))
-                        .setContentIntent(getContentIntent(NotificationListActivity.ACTION_NONE, task._id, id))
-                        .setAutoCancel(true);
-
-                builder.addAction(R.drawable.ic_alarm_on, "",
-                        getContentIntent(NotificationListActivity.ACTION_VIEW,
-                                task._id, id));
-
-                builder.addAction(R.drawable.ic_check_off, "",
-                        getContentIntent(NotificationListActivity.ACTION_END_TASK,
-                                task._id, id));
-
-                builder.addAction(R.drawable.ic_clear, "",
-                        getContentIntent(NotificationListActivity.ACTION_DISMISS,
-                                task._id, id));
-
-
-/*
-                NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-                String[] events = new String[6];
-                // Sets a title for the Inbox in expanded layout
-                inboxStyle.setBigContentTitle("Event tracker details:");
-                // Moves events into the expanded layout
-                for (int i = 0; i < events.length; i++) {
-                    inboxStyle.addLine(events[i]);
-                }
-                // Moves the expanded layout object into the notification object.
-                builder.setStyle(inboxStyle);
-                // Issue the notification here.
-*/
-
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
-                notificationManager.notify(id, builder.build());
-
-                try {
-                    notification.status = Notification.TypeStatus.Sent;
-                    update(notification);
-                } catch (AlarmException e) {
-                    e.printStackTrace();
-                }
+            if (count == 1) {
+                sendSingle(id, notification.taskId);
+            } else {
+                sendMultiple(count);
             }
         }
+        endWork(true);
     }
 
 

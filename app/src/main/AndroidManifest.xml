@@ -33,6 +33,7 @@
 
         <service android:name=".services.BootService" />
         <service android:name=".services.AlarmService" />
+        <service android:name=".services.NotificationService" />
 
         <activity
             android:name=".SettingsActivity"

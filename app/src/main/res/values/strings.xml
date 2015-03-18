@@ -84,4 +84,8 @@
     <string name="delete_tasks_dialog_title">Delete Tasks?</string>
     <string name="title_activity_notification_list">Notification List</string>
 
+    <!-- Notification -->
+    <string name="notification_title_tasks">New Task Notifications</string>
+    <string name="notification_content_tasks">Tasks</string>
+    <string name="notifications_tracker_details">Task details:</string>
 </resources>
