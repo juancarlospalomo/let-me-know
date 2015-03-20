@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 
 import com.applilandia.letmeknow.NotificationListActivity;
 import com.applilandia.letmeknow.R;
@@ -228,12 +229,17 @@ public class NotificationSet extends DbSet<Notification> {
      * @return
      */
     private int getSentNotificationCount() {
-        String[] fields = new String[]{"Count(*)"};
-        Cursor cursor = mUnitOfWork.mDatabase.query(TaskContract.NotificationEntry.TABLE_NAME,
-                fields, TaskContract.NotificationEntry.COLUMN_STATUS + "=" +
-                        Notification.TypeStatus.Sent.getValue(), null, null, null, null);
+        String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME +
+                " FROM " + TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " + TaskContract.NotificationEntry.TABLE_NAME +
+                " ON " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
+                TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TASK_ID +
+                " WHERE " + TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS + "=" +
+                Notification.TypeStatus.Sent.getValue() +
+                " GROUP BY " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME;
+        Log.v(LOG_TAG, sql);
+        Cursor cursor = mUnitOfWork.mDatabase.rawQuery(sql, null);
         if ((cursor != null) && (cursor.moveToFirst())) {
-            return cursor.getInt(0);
+            return cursor.getCount();
         }
         return 0;
     }
