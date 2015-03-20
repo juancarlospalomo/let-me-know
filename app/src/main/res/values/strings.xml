@@ -60,7 +60,7 @@
     <!-- Task Activity -->
     <string name="hint_edit_task_date">Date</string>
     <string name="hint_edit_task_time">Time</string>
-    <string name="button_ok">Ok</string>
+    <string name="button_ok">OK</string>
 
     <!-- Type Notifications Array -->
     <string-array name="type_notifications_array">
@@ -88,4 +88,10 @@
     <string name="notification_title_tasks">New Task Notifications</string>
     <string name="notification_content_tasks">Tasks</string>
     <string name="notifications_tracker_details">Task details:</string>
+
+    <!-- Recognizer Intent Error Dialog -->
+    <string name="voice_intent_error_title">Error</string>
+    <string name="voice_intent_error_content">Voice recognition is not available in your device</string>
+    <string name="voice_intent_error_ok">OK</string>
+
 </resources>

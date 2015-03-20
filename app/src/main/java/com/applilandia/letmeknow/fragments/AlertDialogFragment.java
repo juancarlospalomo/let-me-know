@@ -1,9 +1,11 @@
 package com.applilandia.letmeknow.fragments;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.text.TextUtils;
 
 /**
  * Created by JuanCarlos on 16/03/2015.
@@ -55,25 +57,34 @@ public class AlertDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         loadArguments();
-        return new android.app.AlertDialog.Builder(getActivity())
-                .setTitle(mTitle)
-                .setNegativeButton(mCancelText, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mOnClickListener != null) {
-                            mOnClickListener.onClick(dialog, which);
-                        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        if (!TextUtils.isEmpty(mTitle)) {
+            builder.setTitle(mTitle);
+        }
+        if (!TextUtils.isEmpty(mContent)) {
+            builder.setMessage(mContent);
+        }
+        if (!TextUtils.isEmpty(mCancelText)) {
+            builder.setNegativeButton(mCancelText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (mOnClickListener != null) {
+                        mOnClickListener.onClick(dialog, INDEX_BUTTON_NO);
                     }
-                })
-                .setPositiveButton(mOkText, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mOnClickListener != null) {
-                            mOnClickListener.onClick(dialog, which);
-                        }
+                }
+            });
+        }
+        if (!TextUtils.isEmpty(mOkText)) {
+            builder.setPositiveButton(mOkText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (mOnClickListener != null) {
+                        mOnClickListener.onClick(dialog, which);
                     }
-                })
-                .create();
+                }
+            });
+        }
+        return builder.create();
     }
 
     /**

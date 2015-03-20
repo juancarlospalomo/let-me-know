@@ -13,6 +13,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import com.applilandia.letmeknow.models.ValidationResult;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.ValidationField;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -104,6 +106,11 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         mImageViewClear = (ImageView) getView().findViewById(R.id.imageViewClear);
         createRecyclerViewNotifications();
         if (mWorkMode == TaskActivity.TypeWorkMode.New) {
+            //Init Views with initial values
+            mValidationFieldTaskName.setText(mTask.name);
+            if (mTask.targetDateTime!=null) {
+                mValidationFieldTaskName.setText(mTask.targetDateTime.getDisplayFormatDate());
+            }
             //Create Handlers
             createValidationTaskNameHandler();
             createDateTimeHandlers();
@@ -386,11 +393,21 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
      *
      * @param value  type working mode
      * @param taskId if the working mode is different from new, the task identifier
+     * @param taskName initial task name to show
+     * @param taskDate initial task date to show
      */
-    public void setWorkMode(TaskActivity.TypeWorkMode value, int taskId) {
+    public void setWorkMode(TaskActivity.TypeWorkMode value, int taskId, String taskName, String taskDate) {
         mWorkMode = value;
         if (mWorkMode == TaskActivity.TypeWorkMode.New) {
             mTask = new Task();
+            mTask.name = taskName;
+            if (!TextUtils.isEmpty(taskDate)) {
+                try {
+                    mTask.targetDateTime = new LocalDate(taskDate);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         mTaskId = taskId;
     }

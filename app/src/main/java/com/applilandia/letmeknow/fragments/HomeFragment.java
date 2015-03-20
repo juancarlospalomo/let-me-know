@@ -1,8 +1,11 @@
 package com.applilandia.letmeknow.fragments;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -21,15 +24,19 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.TaskActivity;
 import com.applilandia.letmeknow.TaskListActivity;
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.cross.VoiceInputToken;
 import com.applilandia.letmeknow.loaders.SummaryLoader;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.models.ValidationResult;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.Tile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by JuanCarlos on 24/02/2015.
@@ -45,6 +52,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     private final static int REQUEST_CODE_TODAY_TASKS = 2;
     private final static int REQUEST_CODE_FUTURE_TASKS = 3;
     private final static int REQUEST_CODE_ANYTIME_TASKS = 4;
+    private final static int REQUEST_CODE_VOICE_RECOGNIZER = 5;
 
     private ProgressBar mProgressBar;
     private GridView mGridView;
@@ -128,6 +136,24 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     /**
+     * Show the intent recognizer to listen the voice
+     */
+    private void showVoiceRecognition() {
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        try {
+            startActivityForResult(i, REQUEST_CODE_VOICE_RECOGNIZER);
+        } catch (ActivityNotFoundException e) {
+            AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(getString(R.string.voice_intent_error_title),
+                    getString(R.string.voice_intent_error_content), null, getString(R.string.voice_intent_error_ok));
+            alertDialog.show(getFragmentManager(), "dialog");
+        } catch (Exception e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
      * Start the action to create task, calling to a Date Dialog
      */
     private void enterCreateTaskAction() {
@@ -147,8 +173,11 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 }
             });
             dateDialogFragment.show(getFragmentManager(), "dateDialog");
-
+        } else {
+            //Enter by voice
+            showVoiceRecognition();
         }
+
     }
 
     /**
@@ -185,8 +214,28 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             case REQUEST_CODE_EXPIRED_TASKS:
                 Toast.makeText(getActivity(), "expired", Toast.LENGTH_SHORT).show();
                 break;
+            case REQUEST_CODE_VOICE_RECOGNIZER:
+                if (resultCode== Activity.RESULT_OK) {
+                    ArrayList<String> words = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    navigateToAddTask(words);
+                }
             default:
                 Toast.makeText(getActivity(), String.valueOf(requestCode), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     *
+     * @param words
+     */
+    private void navigateToAddTask(ArrayList<String> words) {
+        if (words.size()>0) {
+            VoiceInputToken inputToken = new VoiceInputToken(words.get(0));
+            inputToken.parse();
+            Intent intent = new Intent(getActivity(), TaskActivity.class);
+            intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.New);
+            intent.putExtra(TaskActivity.EXTRA_TASK_NAME, inputToken.getTaskName());
+            startActivity(intent);
         }
     }
 

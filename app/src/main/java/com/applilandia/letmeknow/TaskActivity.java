@@ -30,9 +30,14 @@ public class TaskActivity extends ActionBarActivity {
         }
     }
 
-    public final static String EXTRA_WORK_MODE = "WorkMode";
+    //Extras
+    public final static String EXTRA_WORK_MODE = "WorkMode"; //State the work mode of the Activity according to the TypeWorkMode
+    public final static String EXTRA_TASK_NAME = "TaskName"; //Initial Task Name
+    public final static String EXTRA_TASK_DATE = "TaskDate"; //Initial Task Date
 
     private TypeWorkMode mWorkMode = TypeWorkMode.New;
+    private String mInitialTaskName; //Variable for initial Task Name
+    private String mInitialTaskDate; //Variable for initial Task Date
     private TaskFragment mTaskFragment;
 
     @Override
@@ -58,6 +63,8 @@ public class TaskActivity extends ActionBarActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             mWorkMode = TypeWorkMode.map(bundle.getInt(EXTRA_WORK_MODE));
+            mInitialTaskName = bundle.getString(EXTRA_TASK_NAME);
+            mInitialTaskDate = bundle.getString(EXTRA_TASK_DATE);
         }
     }
 
@@ -66,7 +73,7 @@ public class TaskActivity extends ActionBarActivity {
      */
     private void createFragmentContent() {
         mTaskFragment = new TaskFragment();
-        mTaskFragment.setWorkMode(mWorkMode, 0);
+        mTaskFragment.setWorkMode(mWorkMode, 0, mInitialTaskName, mInitialTaskDate);
         mTaskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved() {

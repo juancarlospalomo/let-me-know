@@ -196,7 +196,7 @@ public class TaskListActivity extends ActionBarActivity {
      */
     private void createTaskFragment(int id) {
         TaskFragment taskFragment = new TaskFragment();
-        taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id);
+        taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id, "", "");
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved() {
