@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.util.Log;
 
 import com.applilandia.letmeknow.NotificationListActivity;
 import com.applilandia.letmeknow.R;
@@ -138,6 +137,15 @@ public class NotificationSet extends DbSet<Notification> {
     }
 
     /**
+     * Delete all notifications sent
+     */
+    public void deleteNotifications(Notification.TypeStatus status) {
+        String sql = "DELETE FROM " + TaskContract.NotificationEntry.TABLE_NAME +
+                " WHERE " + TaskContract.NotificationEntry.COLUMN_STATUS + "=" + status.getValue();
+        mUnitOfWork.mDatabase.execSQL(sql);
+    }
+
+    /**
      * Return a notification entity
      *
      * @param notificationId
@@ -224,6 +232,25 @@ public class NotificationSet extends DbSet<Notification> {
     }
 
     /**
+     * Get the number of notifications. The number can be filtered by status too
+     * @param status status of the notifications that want be counted
+     * @return number of notifications
+     */
+    public int getCount(Notification.TypeStatus status) {
+        int result = 0;
+        String where = "";
+        if (status != null) {
+            where = TaskContract.NotificationEntry.COLUMN_STATUS + "=" + status.getValue();
+        }
+        Cursor cursor = mUnitOfWork.get(TaskContract.NotificationEntry.TABLE_NAME, where
+                , null, null);
+        if (cursor != null) {
+            result = cursor.getCount();
+        }
+        return result;
+    }
+
+    /**
      * Find out the sent notifications number
      *
      * @return
@@ -236,7 +263,6 @@ public class NotificationSet extends DbSet<Notification> {
                 " WHERE " + TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS + "=" +
                 Notification.TypeStatus.Sent.getValue() +
                 " GROUP BY " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME;
-        Log.v(LOG_TAG, sql);
         Cursor cursor = mUnitOfWork.mDatabase.rawQuery(sql, null);
         if ((cursor != null) && (cursor.moveToFirst())) {
             return cursor.getCount();

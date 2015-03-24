@@ -1,9 +1,5 @@
 package com.applilandia.letmeknow.views;
 
-import android.animation.Animator;
-import android.animation.ArgbEvaluator;
-import android.animation.FloatEvaluator;
-import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -19,8 +15,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -131,6 +125,15 @@ public class Tile extends LinearLayout {
     }
 
     /**
+     * Set background for content
+     *
+     * @param resId background resourceId
+     */
+    public void setContentBackground(int resId) {
+        mContent.setBackgroundResource(resId);
+    }
+
+    /**
      * Method exposes the possibility of changing the primary text on footer in runtime
      *
      * @param text text to set
@@ -207,7 +210,9 @@ public class Tile extends LinearLayout {
                 mTextContent.setTypeface(Typeface.create(textFamily, Typeface.BOLD));
                 float textSize = typedArray.getDimension(R.styleable.TileAppearance_tileTextContentSize, 0);
                 mTextContent.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-                int color = typedArray.getColor(R.styleable.TileAppearance_tileContentBackground, 0);
+                int color = typedArray.getColor(R.styleable.TileAppearance_tileTextContentColor, 0);
+                mTextContent.setTextColor(color);
+                color = typedArray.getColor(R.styleable.TileAppearance_tileContentBackground, 0);
                 setBackgroundColor(color);
             } finally {
                 typedArray.recycle();
@@ -271,36 +276,19 @@ public class Tile extends LinearLayout {
             mTextContent.setText(value);
         }
 
+        /**
+         * Set background for content
+         *
+         * @param resId background resourceId
+         */
+        public void setContentBackground(int resId) {
+            mTextContent.setBackgroundResource(resId);
+        }
+
         @Override
         public void setOnClickListener(OnClickListener l) {
             super.setOnClickListener(this);
             mOnClickListener = l;
-        }
-
-        /**
-         * Create an animator for BackgroundColor
-         * @return Object animator
-         */
-        private ObjectAnimator createContentBackgroundColorAnimator() {
-            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(Tile.this, "ContentBackgroundColor",
-                    R.attr.tileSelectableItemBackground);
-            objectAnimator.setEvaluator(new ArgbEvaluator());
-            objectAnimator.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
-            return objectAnimator;
-        }
-
-        /**
-         * Create an animator for Alpha Color
-         * @return Object animator
-         */
-        private ObjectAnimator createContentAlphaAnimator() {
-            ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(Tile.this, "alpha",
-                    0.5f);
-            objectAnimator.setEvaluator(new FloatEvaluator());
-            objectAnimator.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-            objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator(mContext, null));
-            return objectAnimator;
         }
 
         /**
@@ -310,32 +298,7 @@ public class Tile extends LinearLayout {
          */
         @Override
         public void onClick(final View v) {
-            final ObjectAnimator objectAnimator;
-            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT) {
-                objectAnimator = createContentBackgroundColorAnimator();
-            } else {
-                objectAnimator = createContentAlphaAnimator();
-            }
-            objectAnimator.start();
-            objectAnimator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mOnClickListener.onClick(v);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-                }
-            });
-
+            mOnClickListener.onClick(v);
         }
     }
 
@@ -368,6 +331,7 @@ public class Tile extends LinearLayout {
         private float mTileTextFooterPrimarySize;
         private float mTileTextFooterSecondarySize;
         private float mTextFooterPadding;
+        private int mBackgroundResId;
 
         private Footer(Context context, AttributeSet attrs) {
             super(context, attrs);
@@ -413,6 +377,12 @@ public class Tile extends LinearLayout {
             } finally {
                 typedArray.recycle();
             }
+            typedArray = mContext.getTheme().obtainStyledAttributes(new int[]{R.attr.selectableItemBackground});
+            try {
+                mBackgroundResId = typedArray.getResourceId(0, 0);
+            } finally {
+                typedArray.recycle();
+            }
         }
 
         /**
@@ -447,6 +417,7 @@ public class Tile extends LinearLayout {
                     (int) mTextFooterPadding,
                     (int) mTextFooterPadding,
                     (int) mTextFooterPadding);
+            mTextLayout.setBackgroundResource(mBackgroundResId);
             //Primary line
             mTextPrimaryLine.setSingleLine();
             //To show the three dots at the end when the text is truncated
@@ -467,8 +438,9 @@ public class Tile extends LinearLayout {
             LinearLayout.LayoutParams layoutParams = new LayoutParams((int) mIconSize, (int) mIconSize);
             layoutParams.gravity = Gravity.CENTER;
             mIcon.setLayoutParams(layoutParams);
-            int padding = (int)getResources().getDimension(R.dimen.padding_action_icon);
+            int padding = (int) getResources().getDimension(R.dimen.padding_action_icon);
             mIcon.setPadding(padding, padding, padding, padding);
+            mIcon.setBackgroundResource(mBackgroundResId);
             addView(mIcon);
         }
 
@@ -509,7 +481,9 @@ public class Tile extends LinearLayout {
             mTextLayout.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    animateTouchFeedback(mTextLayout, "TextBackgroundColor", mTextLayoutOnClickListener);
+                    if (mTextLayoutOnClickListener != null) {
+                        mTextLayoutOnClickListener.onClick(v);
+                    }
                 }
             });
         }
@@ -525,41 +499,9 @@ public class Tile extends LinearLayout {
             mIcon.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    animateTouchFeedback(mIcon, "IconBackgroundColor", mIconOnClickListener);
-                }
-            });
-        }
-
-        /**
-         * Create the touch feedback
-         *
-         * @param v        view
-         * @param property property that set and get the background color
-         * @param l        onclicklistener to trigger once the animation has finished
-         */
-        private void animateTouchFeedback(final View v, String property, final OnClickListener l) {
-            final ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, property,
-                    R.attr.selectableItemBackground);
-            objectAnimator.setEvaluator(new ArgbEvaluator());
-            objectAnimator.setDuration(500);
-            objectAnimator.setInterpolator(new LinearInterpolator(mContext, null));
-            objectAnimator.reverse();
-            objectAnimator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    l.onClick(v);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
+                    if (mIconOnClickListener != null) {
+                        mIconOnClickListener.onClick(v);
+                    }
                 }
             });
         }

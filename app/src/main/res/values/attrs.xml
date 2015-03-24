@@ -5,6 +5,7 @@
     <attr name="tileFooterHeight" format="dimension" />
     <attr name="tileTextContentFamily" format="string" />
     <attr name="tileTextContentSize" format="dimension" />
+    <attr name="tileTextContentColor" format="color" />
     <attr name="tileIconSize" format="dimension" />
     <attr name="tileContentBackground" format="reference|color" />
     <attr name="tileFooterBackground" format="reference|color" />
@@ -65,6 +66,7 @@
         <attr name="tileFooterHeight" />
         <attr name="tileTextContentFamily" />
         <attr name="tileTextContentSize" />
+        <attr name="tileTextContentColor" />
         <attr name="tileIconSize" />
         <attr name="tileContentBackground" />
         <attr name="tileFooterBackground" />

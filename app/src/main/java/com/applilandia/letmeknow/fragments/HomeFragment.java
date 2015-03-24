@@ -4,14 +4,15 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import com.applilandia.letmeknow.TaskListActivity;
 import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.cross.VoiceInputToken;
 import com.applilandia.letmeknow.loaders.SummaryLoader;
+import com.applilandia.letmeknow.models.Summary;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.models.ValidationResult;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
@@ -42,11 +44,16 @@ import java.util.Locale;
  * Created by JuanCarlos on 24/02/2015.
  * Fragment that displays the home activity screen
  */
-public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Task>> {
+public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Summary>> {
 
     private final static String LOG_TAG = HomeFragment.class.getSimpleName();
 
     private final static int LOADER_SUMMARY = 1;
+
+    //Keys for saving state when configuration change occurs
+    private static final String KEY_FIRST_VISIBLE_POSITION = "firstPosition";
+    private static final String KEY_GRID_STATE = "gridState";
+    private static final String KEY_ITEM_POSITION = "itemPosition";
 
     private final static int REQUEST_CODE_EXPIRED_TASKS = 1;
     private final static int REQUEST_CODE_TODAY_TASKS = 2;
@@ -59,6 +66,11 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     private GridTilesAdapter mAdapter; //Adapter for linking to GridView
     private EditText mEditTextTask;
     private ImageView mImageViewActionIcon; //Microphone or Accept
+    //Variables for saving state when configuration change occurs
+    private int mFirstVisiblePosition;
+    private int mItemPosition;
+    private Parcelable mGridState = null;
+
 
     /**
      * Creates and returns the view hierarchy associated with the fragment
@@ -97,8 +109,48 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 enterCreateTaskAction();
             }
         });
+        if (savedInstanceState != null) {
+            //Configuration change occurred
+            mFirstVisiblePosition = savedInstanceState.getInt(KEY_FIRST_VISIBLE_POSITION);
+            mItemPosition = savedInstanceState.getInt(KEY_ITEM_POSITION);
+            mGridState = savedInstanceState.getParcelable(KEY_GRID_STATE);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         //Init the loader manager to start loading
-        getLoaderManager().initLoader(LOADER_SUMMARY, null, this);
+        if (getLoaderManager().getLoader(LOADER_SUMMARY) == null) {
+            getLoaderManager().initLoader(LOADER_SUMMARY, null, this);
+        } else {
+            getLoaderManager().restartLoader(LOADER_SUMMARY, null, this);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_FIRST_VISIBLE_POSITION, mGridView.getFirstVisiblePosition());
+        outState.putParcelable(KEY_GRID_STATE, mGridView.onSaveInstanceState());
+        View view = mGridView.getChildAt(0);
+        mItemPosition = view == null ? 0 : view.getTop();
+        outState.putInt(KEY_ITEM_POSITION, mItemPosition);
+    }
+
+    /**
+     * Restore the state before configuration change occurred
+     */
+    private void restoreSavedState() {
+        if (mGridState != null) {
+            mGridView.onRestoreInstanceState(mGridState);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mGridView.setSelectionFromTop(mFirstVisiblePosition, mItemPosition);
+            } else {
+                mGridView.setSelection(mFirstVisiblePosition);
+            }
+            mGridState = null;
+        }
     }
 
     /**
@@ -119,13 +171,13 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         List<ValidationResult> validationResults = task.validate();
         if (validationResults == null) {
             UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-            if (useCaseTask.createTask(task)>0) {
+            if (useCaseTask.createTask(task) > 0) {
                 mEditTextTask.setText("");
             } else {
                 //TODO: Show Error Dialog
             }
         } else {
-            for(ValidationResult validationResult : validationResults) {
+            for (ValidationResult validationResult : validationResults) {
                 switch (validationResult.member) {
                     case "name":
                         mEditTextTask.setError(getString(R.string.error_task_name_greater_than_max));
@@ -188,7 +240,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
      * @return Loader of List of Tasks
      */
     @Override
-    public Loader<List<Task>> onCreateLoader(int id, Bundle args) {
+    public Loader<List<Summary>> onCreateLoader(int id, Bundle args) {
         mProgressBar.setVisibility(View.VISIBLE);
         return new SummaryLoader(getActivity());
     }
@@ -200,43 +252,13 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
      * @param data   data delivered by the loader
      */
     @Override
-    public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
+    public void onLoadFinished(Loader<List<Summary>> loader, List<Summary> data) {
         if (loader.getId() == LOADER_SUMMARY) {
             mAdapter = new GridTilesAdapter(data);
             mGridView.setAdapter(mAdapter);
+            restoreSavedState();
         }
         mProgressBar.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_EXPIRED_TASKS:
-                Toast.makeText(getActivity(), "expired", Toast.LENGTH_SHORT).show();
-                break;
-            case REQUEST_CODE_VOICE_RECOGNIZER:
-                if (resultCode== Activity.RESULT_OK) {
-                    ArrayList<String> words = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    navigateToAddTask(words);
-                }
-            default:
-                Toast.makeText(getActivity(), String.valueOf(requestCode), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     *
-     * @param words
-     */
-    private void navigateToAddTask(ArrayList<String> words) {
-        if (words.size()>0) {
-            VoiceInputToken inputToken = new VoiceInputToken(words.get(0));
-            inputToken.parse();
-            Intent intent = new Intent(getActivity(), TaskActivity.class);
-            intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.New);
-            intent.putExtra(TaskActivity.EXTRA_TASK_NAME, inputToken.getTaskName());
-            startActivity(intent);
-        }
     }
 
     /**
@@ -245,10 +267,35 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
      * @param loader
      */
     @Override
-    public void onLoaderReset(Loader<List<Task>> loader) {
+    public void onLoaderReset(Loader<List<Summary>> loader) {
         if (loader.getId() == LOADER_SUMMARY) {
             mAdapter = null;
             mGridView.setAdapter(null);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_VOICE_RECOGNIZER:
+                if (resultCode == Activity.RESULT_OK) {
+                    ArrayList<String> words = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    navigateToAddTask(words);
+                }
+        }
+    }
+
+    /**
+     * @param words
+     */
+    private void navigateToAddTask(ArrayList<String> words) {
+        if (words.size() > 0) {
+            VoiceInputToken inputToken = new VoiceInputToken(words.get(0));
+            inputToken.parse();
+            Intent intent = new Intent(getActivity(), TaskActivity.class);
+            intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.New);
+            intent.putExtra(TaskActivity.EXTRA_TASK_NAME, inputToken.getTaskName());
+            startActivity(intent);
         }
     }
 
@@ -272,29 +319,27 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         private final String LOG_TAG = GridTilesAdapter.class.getSimpleName();
 
         //Task List of the Adapter
-        private List<Task> mTaskList;
+        private List<Summary> mSummaryList;
 
-        private GridTilesAdapter(List<Task> mTaskList) {
-            this.mTaskList = mTaskList;
+        private GridTilesAdapter(List<Summary> summaryList) {
+            this.mSummaryList = summaryList;
         }
 
         @Override
         public int getCount() {
-            return mTaskList.size();
+            return mSummaryList.size();
         }
 
         @Override
-        public Task getItem(int position) {
-            return mTaskList.get(position);
+        public Summary getItem(int position) {
+            return mSummaryList.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            if (mTaskList.get(position) != null) {
-                return mTaskList.get(position)._id;
+            if (mSummaryList.get(position).task != null) {
+                return mSummaryList.get(position).task._id;
             } else {
-                //TODO: Remove Log
-                Log.v(LOG_TAG, String.valueOf(position));
                 return 0;
             }
         }
@@ -313,17 +358,24 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 viewHolder = (ViewHolder) convertView.getTag();
             }
 
-            viewHolder.tile.setContentText(getResources().getStringArray(R.array.text_tile_content)[position]);
-            viewHolder.tile.setContentBackgroundColor(getColor(position));
-            Task task = mTaskList.get(position);
+            String contentText = getResources().getStringArray(R.array.text_tile_content)[position];
+            contentText += " " + String.valueOf(mSummaryList.get(position).count);
+            viewHolder.tile.setContentText(contentText);
+            viewHolder.tile.setContentBackground(getBackground(position));
+            final Task task = mSummaryList.get(position).task;
             if (task != null) {
                 viewHolder.tile.setFooterPrimaryLine(task.name);
-                if ((task.targetDateTime != null) && (!task.targetDateTime.isNull())) {
-                    viewHolder.tile.setFooterSecondaryLine(task.targetDateTime.getDisplayFormat(getActivity()));
-                }
-                if (task.getCurrentNotificationsCount() > 0) {
-                    viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_on);
+                if (position != INDEX_TILE_ANYTIME) {
+                    if ((task.targetDateTime != null) && (!task.targetDateTime.isNull())) {
+                        viewHolder.tile.setFooterSecondaryLine(task.targetDateTime.getDisplayFormat(getActivity()));
+                    }
+                    if (task.getCurrentNotificationsCount() > 0) {
+                        viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_on);
+                    } else {
+                        viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_off);
+                    }
                 } else {
+                    viewHolder.tile.setFooterSecondaryLine("");
                     viewHolder.tile.setFooterIcon(R.drawable.ic_alarm_off);
                 }
             } else {
@@ -339,19 +391,33 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             viewHolder.tile.setFooterTextOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity(), "tile", Toast.LENGTH_SHORT).show();
+                    if (task != null) {
+                        Intent intent = new Intent(getActivity(), TaskActivity.class);
+                        intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.View.getValue());
+                        intent.putExtra(TaskActivity.EXTRA_TASK_ID, task._id);
+                        startActivity(intent);
+                    }
                 }
             });
             viewHolder.tile.setIconOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity(), "tile", Toast.LENGTH_SHORT).show();
+                    if (task != null) {
+                        Intent intent = new Intent(getActivity(), TaskActivity.class);
+                        intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.View.getValue());
+                        intent.putExtra(TaskActivity.EXTRA_TASK_ID, task._id);
+                        startActivity(intent);
+                    }
                 }
             });
 
             return convertView;
         }
 
+        /**
+         * Create activity for showing the task list belonging to a type
+         * @param position
+         */
         private void showTasksList(int position) {
             Intent intent = new Intent(getActivity(), TaskListActivity.class);
             switch (position) {
@@ -378,23 +444,22 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         }
 
         /**
-         * Returns the color according to the required tile position
-         *
-         * @param position position in the adapter
-         * @return color
+         * Get background resource depending of the type of tile
+         * @param position in the adapter
+         * @return background resource identifier
          */
-        private int getColor(int position) {
+        private int getBackground(int position) {
             switch (position) {
                 case INDEX_TILE_EXPIRED:
-                    return getResources().getColor(R.color.tile_expired_content_background);
+                    return R.drawable.tile_expired_content_background;
                 case INDEX_TILE_TODAY:
-                    return getResources().getColor(R.color.tile_today_content_background);
+                    return R.drawable.tile_today_content_background;
                 case INDEX_TILE_FUTURE:
-                    return getResources().getColor(R.color.tile_future_content_background);
+                    return R.drawable.tile_future_content_background;
                 case INDEX_TILE_ANYTIME:
-                    return getResources().getColor(R.color.tile_anytime_content_background);
+                    return R.drawable.tile_anytime_content_background;
                 default:
-                    return getResources().getColor(R.color.tile_expired_content_background);
+                    return  R.drawable.tile_expired_content_background;
             }
         }
     }

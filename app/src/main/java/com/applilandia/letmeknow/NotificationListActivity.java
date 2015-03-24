@@ -75,6 +75,11 @@ public class NotificationListActivity extends ActionBarActivity {
             public void onSelectedTask(int id) {
                 createTaskFragment(id);
             }
+
+            @Override
+            public void onItemRemoved(int count) {
+
+            }
         });
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, fragment)

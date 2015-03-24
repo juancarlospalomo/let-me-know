@@ -3,24 +3,17 @@
     android:interpolator="@android:anim/accelerate_decelerate_interpolator" >
 
     <scale
-        android:duration="300"
-        android:pivotX="0"
-        android:pivotY="0"
+        android:duration="@android:integer/config_shortAnimTime"
+        android:pivotX="300"
+        android:pivotY="1000"
+        android:fromXScale="0.5"
+        android:fromYScale="0.5"
         android:toXScale="1.0"
         android:toYScale="1.0"/>
 
     <alpha
+        android:duration="@android:integer/config_shortAnimTime"
         android:fromAlpha="0.3"
-        android:toAlpha="1"
-        android:duration="300" />
-
-<!--    <translate
-        android:fromXDelta="100%"
-        android:toXDelta="0"
-        android:duration="300" />
-    <alpha
-        android:fromAlpha="0.3"
-        android:toAlpha="1"
-        android:duration="300" />-->
+        android:toAlpha="1"/>
 
 </set>

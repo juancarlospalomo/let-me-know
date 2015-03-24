@@ -34,7 +34,17 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     private static final int LOADER_ID = 1;
 
     public interface OnNotificationListListener {
+        /**
+         * Trigger when a task has been selected
+         * @param id task identifier of the selected task
+         */
         public void onSelectedTask(int id);
+
+        /**
+         * Trigger when an item has been removed from List
+         * @param count numbers of current items
+         */
+        public void onItemRemoved(int count);
     }
 
     private OnNotificationListListener mOnNotificationListListener;
@@ -225,6 +235,10 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                         mTaskList.remove(position);
                         notifyItemRemoved(position);
                         notifyItemRangeRemoved(position, mTaskList.size());
+                        if (mOnNotificationListListener != null) {
+                            //Notify one item has been removed from the list
+                            mOnNotificationListListener.onItemRemoved(mTaskList.size());
+                        }
                     }
                 });
                 holder.mImageViewCheck.setOnClickListener(new View.OnClickListener() {
@@ -241,6 +255,10 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                                     mTaskList.remove(position);
                                     notifyItemRemoved(position);
                                     notifyItemRangeRemoved(position, mTaskList.size());
+                                    if (mOnNotificationListListener != null) {
+                                        //Notify an item has been removed
+                                        mOnNotificationListListener.onItemRemoved(mTaskList.size());
+                                    }
                                 }
                             }
                         });

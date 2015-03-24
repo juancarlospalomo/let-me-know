@@ -11,6 +11,7 @@ import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.data.TaskSet;
 import com.applilandia.letmeknow.models.History;
 import com.applilandia.letmeknow.models.Notification;
+import com.applilandia.letmeknow.models.Summary;
 import com.applilandia.letmeknow.models.Task;
 
 import java.text.ParseException;
@@ -170,7 +171,8 @@ public class UseCaseTask {
     public List<Task> getTasks() {
         List<Task> result = null;
         String orderBy = "CASE WHEN " + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " IS NULL " +
-                "THEN 1 ELSE 0 END DESC, " + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " DESC," +
+                "THEN 1 ELSE 0 END ASC, " +
+                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " ASC, " +
                 TaskContract.TaskEntry.COLUMN_TASK_NAME;
 
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
@@ -178,6 +180,28 @@ public class UseCaseTask {
         result = toList(cursor);
         cursor.close();
         return result;
+    }
+
+    /**
+     * Get the existing total expired number
+     *
+     * @return number
+     */
+    private int getExpiredTaskCount() {
+        String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + "<? AND " +
+                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + "<>?";
+        LocalDate currentDate = new LocalDate();
+        String[] args = new String[]{currentDate.toString(), currentDate.getDate()};
+
+        Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
+                null, selection, args, null);
+        if (cursor != null) {
+            int result = cursor.getCount();
+            cursor.close();
+            return result;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -203,23 +227,49 @@ public class UseCaseTask {
     }
 
     /**
-     * Get the the next task for today
+     * Get the existing total today number
      *
-     * @return Task
+     * @return number
      */
-    private Task getNextTodayTask() {
+    private int getTodayTaskCount() {
         String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " =? OR (" +
-                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + ">? AND " +
+                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + ">=? AND " +
                 TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + "<?)";
         LocalDate currentDate = new LocalDate();
         String beginningDateTime = currentDate.toString();
         currentDate.setTime(23, 59);
         String endingDateTime = currentDate.toString();
         String[] args = new String[]{currentDate.getDate(), beginningDateTime, endingDateTime};
-        String orderBy = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " ASC LIMIT 1";
 
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
-                null, selection, args, orderBy);
+                null, selection, args, null);
+
+        if (cursor != null) {
+            int result = cursor.getCount();
+            cursor.close();
+            return result;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Get the the next task for today
+     *
+     * @return Task
+     */
+    private Task getNextTodayTask() {
+        String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " =? OR (" +
+                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + ">=? AND " +
+                TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + "<?)";
+        LocalDate currentDate = new LocalDate();
+        String beginningDateTime = currentDate.toString();
+        currentDate.setTime(23, 59);
+        String endingDateTime = currentDate.toString();
+        String[] args = new String[]{currentDate.getDate(), beginningDateTime, endingDateTime};
+
+        Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
+                null, selection, args, null);
         List<Task> result = toList(cursor);
         cursor.close();
         if ((result != null) && (result.size() == 1))
@@ -227,6 +277,28 @@ public class UseCaseTask {
         else
             return null;
     }
+
+    /**
+     * Get the existing total future number
+     *
+     * @return number
+     */
+    private int getFutureTaskCount() {
+        String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " >=?";
+        LocalDate currentDate = new LocalDate().addDays(1);
+        String[] args = new String[]{currentDate.getDate()};
+
+        Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
+                null, selection, args, null);
+        if (cursor != null) {
+            int result = cursor.getCount();
+            cursor.close();
+            return result;
+        } else {
+            return 0;
+        }
+    }
+
 
     /**
      * Get the the next task for the future (from tomorrow onwards)
@@ -247,6 +319,24 @@ public class UseCaseTask {
             return result.get(0);
         else
             return null;
+    }
+
+    /**
+     * Get the existing total anytime number
+     *
+     * @return number
+     */
+    private int getAnyTimeTaskCount() {
+        String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " IS NULL";
+        Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
+                null, selection, null, null);
+        if (cursor != null) {
+            int result = cursor.getCount();
+            cursor.close();
+            return result;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -272,16 +362,28 @@ public class UseCaseTask {
      *
      * @return List of tasks
      */
-    public List<Task> getTaskSummary() {
-        List<Task> result = new ArrayList<Task>();
+    public List<Summary> getTaskSummary() {
+        List<Summary> result = new ArrayList<Summary>();
+        //Add summary for expired tasks
         Task task = getLastExpiredTask();
-        result.add(task);
+        int count = getExpiredTaskCount();
+        Summary summary = new Summary(count, task);
+        result.add(summary);
+        //Add summary for today tasks
         task = getNextTodayTask();
-        result.add(task);
+        count = getTodayTaskCount();
+        summary = new Summary(count, task);
+        result.add(summary);
+        //Add summary for future tasks
         task = getNextFutureTask();
-        result.add(task);
+        count = getFutureTaskCount();
+        summary = new Summary(count, task);
+        result.add(summary);
+        //Add summary for anytime tasks
         task = getLastEnteredAnyTimeTask();
-        result.add(task);
+        count = getAnyTimeTaskCount();
+        summary = new Summary(count, task);
+        result.add(summary);
 
         return result;
     }
@@ -383,6 +485,9 @@ public class UseCaseTask {
         if (typeTask == Task.TypeTask.AnyTime) {
             return getAnyTimeTasks();
         }
+        if (typeTask == Task.TypeTask.All) {
+            return getTasks();
+        }
         return null;
     }
 
@@ -430,6 +535,7 @@ public class UseCaseTask {
 
     /**
      * Return a list of task with notifications in a specific status
+     *
      * @param typeStatus
      * @return List of tasks
      */
@@ -469,6 +575,7 @@ public class UseCaseTask {
 
     /**
      * Delete a task from repository
+     *
      * @param task
      * @return true or false
      */
@@ -477,7 +584,6 @@ public class UseCaseTask {
         boolean result = taskSet.delete(task);
         return result;
     }
-
 
 
 }

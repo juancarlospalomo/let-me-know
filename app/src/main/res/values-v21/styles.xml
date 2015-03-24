@@ -8,6 +8,7 @@
         <item name="tileFooterHeight">@dimen/tile_footer_height</item>
         <item name="tileTextContentFamily">@string/font_family_body_1_material</item>
         <item name="tileTextContentSize">@dimen/tile_content_text_size</item>
+        <item name="tileTextContentColor">@color/primary_text_default_material_dark</item>
         <item name="tileIconSize">@dimen/tile_icon_size</item>
         <item name="tileContentBackground">@color/green</item>
         <item name="tileFooterBackground">@color/white</item>

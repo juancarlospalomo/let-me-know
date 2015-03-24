@@ -10,6 +10,7 @@
         <item name="tileFooterHeight">@dimen/tile_footer_height</item>
         <item name="tileTextContentFamily">@string/font_family_body_1_material</item>
         <item name="tileTextContentSize">@dimen/tile_content_text_size</item>
+        <item name="tileTextContentColor">@color/primary_text_default_material_dark</item>
         <item name="tileIconSize">@dimen/tile_icon_size</item>
         <item name="tileContentBackground">@color/green</item>
         <item name="tileFooterBackground">@color/white</item>
@@ -116,4 +117,22 @@
         <item name="fontFamily">sans-serif-medium</item>
         <item name="android:textColor">@color/fab_color_1</item>
     </style>
+
+    <!-- Card styles -->
+    <style name="Widget.CardHead">
+        <item name="android:textSize">24sp</item>
+        <!-- Roboto regular -->
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/primary_text_default_material_dark</item>
+        <item name="android:paddingLeft">16dp</item>
+    </style>
+
+    <style name="Widget.CardBody">
+        <item name="android:textSize">16sp</item>
+        <!-- Roboto medium -->
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/primary_text_default_material_light</item>
+        <item name="android:paddingLeft">16dp</item>
+    </style>
+
 </resources>
