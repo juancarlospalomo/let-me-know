@@ -1,12 +1,15 @@
 package com.applilandia.letmeknow.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
 /**
  * Created by JuanCarlos on 18/02/2015.
  * Notification entity domain model
  */
-public class Notification {
+public class Notification implements Parcelable {
 
     public enum TypeNotification {
         FiveMinutesBefore(0),
@@ -79,6 +82,55 @@ public class Notification {
     public TypeNotification type;
     //current status of the notification
     public TypeStatus status;
+
+    public final static Creator<Notification> CREATOR = new Creator<Notification>() {
+        @Override
+        public Notification createFromParcel(Parcel source) {
+            return new Notification(source);
+        }
+
+        @Override
+        public Notification[] newArray(int size) {
+            return new Notification[size];
+        }
+    };
+
+    public Notification() {
+        super();
+    }
+
+    /**
+     * Create the object from a parcel
+     *
+     * @param parcel
+     */
+    public Notification(Parcel parcel) {
+        //Read in the same order they was written in writeToParcel method
+        _id = parcel.readInt();
+        taskId = parcel.readInt();
+        dateTime = new Date(parcel.readLong());
+        type = TypeNotification.map(parcel.readInt());
+        status = TypeStatus.map(parcel.readInt());
+    }
+
+    /**
+     * Parcelable Interface
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(_id);
+        dest.writeInt(taskId);
+        dest.writeLong(dateTime.getTime());
+        dest.writeInt(type.getValue());
+        dest.writeInt(status.getValue());
+    }
+
+
 
     @Override
     public boolean equals(Object other) {

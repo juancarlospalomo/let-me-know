@@ -212,6 +212,14 @@ public class ValidationField extends LinearLayout {
     }
 
     /**
+     * Set the enable status of the Content View
+     * @param enabled
+     */
+    public void setEnabled(boolean enabled) {
+        mContentView.setEnabled(enabled);
+    }
+
+    /**
      * Show the validation error message
      *
      * @param message String

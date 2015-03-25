@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 
 import com.applilandia.letmeknow.NotificationListActivity;
 import com.applilandia.letmeknow.R;
@@ -233,6 +234,7 @@ public class NotificationSet extends DbSet<Notification> {
 
     /**
      * Get the number of notifications. The number can be filtered by status too
+     *
      * @param status status of the notifications that want be counted
      * @return number of notifications
      */
@@ -242,10 +244,15 @@ public class NotificationSet extends DbSet<Notification> {
         if (status != null) {
             where = TaskContract.NotificationEntry.COLUMN_STATUS + "=" + status.getValue();
         }
-        Cursor cursor = mUnitOfWork.get(TaskContract.NotificationEntry.TABLE_NAME, where
-                , null, null);
-        if (cursor != null) {
-            result = cursor.getCount();
+        try {
+            Cursor cursor = mUnitOfWork.get(TaskContract.NotificationEntry.TABLE_NAME, where
+                    , null, null);
+            if (cursor != null) {
+                result = cursor.getCount();
+                cursor.close();
+            }
+        } catch (Exception exception) {
+            Log.e(LOG_TAG, exception.getMessage());
         }
         return result;
     }

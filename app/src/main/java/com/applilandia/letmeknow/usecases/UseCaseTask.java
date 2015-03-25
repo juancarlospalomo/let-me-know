@@ -267,9 +267,10 @@ public class UseCaseTask {
         currentDate.setTime(23, 59);
         String endingDateTime = currentDate.toString();
         String[] args = new String[]{currentDate.getDate(), beginningDateTime, endingDateTime};
+        String orderBy = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " DESC LIMIT 1";
 
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
-                null, selection, args, null);
+                null, selection, args, orderBy);
         List<Task> result = toList(cursor);
         cursor.close();
         if ((result != null) && (result.size() == 1))
@@ -347,6 +348,7 @@ public class UseCaseTask {
     private Task getLastEnteredAnyTimeTask() {
         String selection = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " IS NULL";
         String orderBy = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + " DESC LIMIT 1";
+
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
                 null, selection, null, orderBy);
         List<Task> result = toList(cursor);
@@ -497,7 +499,7 @@ public class UseCaseTask {
      * @param date task date
      * @return TypeTask
      */
-    private Task.TypeTask getTypeTask(LocalDate date) {
+    public Task.TypeTask getTypeTask(LocalDate date) {
         Task.TypeTask typeTask = Task.TypeTask.AnyTime;
         if ((date != null) && (date.toString() != null)) {
             LocalDate currentDate = new LocalDate();

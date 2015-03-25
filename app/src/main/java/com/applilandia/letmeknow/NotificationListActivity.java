@@ -10,6 +10,7 @@ import android.util.Log;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.fragments.NotificationListFragment;
 import com.applilandia.letmeknow.fragments.TaskFragment;
+import com.applilandia.letmeknow.models.Task;
 
 
 public class NotificationListActivity extends ActionBarActivity {
@@ -96,7 +97,7 @@ public class NotificationListActivity extends ActionBarActivity {
         taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id, "", "");
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
-            public void onTaskSaved() {
+            public void onTaskSaved(Task task) {
                 popFragmentBackStack();
             }
 

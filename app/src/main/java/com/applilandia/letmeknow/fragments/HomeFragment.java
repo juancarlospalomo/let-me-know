@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -106,7 +107,11 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         mImageViewActionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                enterCreateTaskAction();
+                if (Task.isValidLengthName(mEditTextTask.getText().toString())) {
+                    enterCreateTaskAction();
+                } else {
+                    mEditTextTask.setError(getString(R.string.error_task_name_greater_than_max));
+                }
             }
         });
         if (savedInstanceState != null) {
@@ -154,10 +159,18 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     /**
-     * Hide the input keyboard method
+     * Hide the input keyboard method when start
      */
     private void hideSoftKeyboard() {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    /**
+     * Hide the current keyboard linked to the edit text
+     */
+    private void hideSoftKeyboardFromWindow() {
+        InputMethodManager inputMethodManager = (InputMethodManager)  getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(mEditTextTask.getWindowToken(), 0);
     }
 
     /**
@@ -173,6 +186,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             UseCaseTask useCaseTask = new UseCaseTask(getActivity());
             if (useCaseTask.createTask(task) > 0) {
                 mEditTextTask.setText("");
+                hideSoftKeyboardFromWindow();
             } else {
                 //TODO: Show Error Dialog
             }
@@ -181,6 +195,9 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 switch (validationResult.member) {
                     case "name":
                         mEditTextTask.setError(getString(R.string.error_task_name_greater_than_max));
+                        break;
+                    case "targetDateTime":
+                        mEditTextTask.setError(getString(R.string.error_task_date_less_than_today));
                         break;
                 }
             }

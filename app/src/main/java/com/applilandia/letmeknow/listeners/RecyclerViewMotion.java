@@ -113,11 +113,13 @@ public class RecyclerViewMotion implements View.OnTouchListener {
                             })
                             .start();
                 } else {
-                    mDownView.animate()
-                            .translationX(0)
-                            .setDuration(mRecyclerView.getContext().getResources()
-                                    .getInteger(android.R.integer.config_shortAnimTime))
-                            .start();
+                    if (mDownView != null) {
+                        mDownView.animate()
+                                .translationX(0)
+                                .setDuration(mRecyclerView.getContext().getResources()
+                                        .getInteger(android.R.integer.config_shortAnimTime))
+                                .start();
+                    }
                 }
                 mDownX = 0;
                 mDownView = null;

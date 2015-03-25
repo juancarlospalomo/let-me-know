@@ -2,6 +2,8 @@ package com.applilandia.letmeknow.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
@@ -26,6 +28,7 @@ public class TaskSet extends DbSet<Task> {
 
     @Override
     public long create(Task task) {
+        long rowId = 0;
         ContentValues values = new ContentValues();
         values.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, task.name);
         if (task.targetDateTime != null) {
@@ -33,35 +36,39 @@ public class TaskSet extends DbSet<Task> {
         } else {
             values.putNull(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME);
         }
-        if (task.hasNotifications()) initWork();
-        long rowId = mUnitOfWork.add(TaskContract.TaskEntry.TABLE_NAME, null, values);
-        if (rowId > 0) {
-            if (task.hasNotifications()) {
-                long id = 0;
-                NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
-                for (int index = 0; index < Notification.TypeNotification.values().length; index++) {
-                    Notification notification = task.getNotifications().get(index);
-                    if (notification != null) {
-                        notification.taskId = (int) rowId;
-                        try {
-                            id = notificationSet.create(notification);
-                        } catch (AlarmException e) {
-                            id = -1;
-                            e.printStackTrace();
-                            break;
+        try {
+            if (task.hasNotifications()) initWork();
+            rowId = mUnitOfWork.add(TaskContract.TaskEntry.TABLE_NAME, null, values);
+            if (rowId > 0) {
+                if (task.hasNotifications()) {
+                    long id = 0;
+                    NotificationSet notificationSet = new NotificationSet(mContext, mUnitOfWork);
+                    for (int index = 0; index < Notification.TypeNotification.values().length; index++) {
+                        Notification notification = task.getNotifications().get(index);
+                        if (notification != null) {
+                            notification.taskId = (int) rowId;
+                            try {
+                                id = notificationSet.create(notification);
+                            } catch (AlarmException e) {
+                                id = -1;
+                                e.printStackTrace();
+                                break;
+                            }
                         }
                     }
-                }
-                if (id < 0) {
-                    endWork(false);
-                    rowId = 0;
-                } else {
-                    endWork(true);
+                    if (id < 0) {
+                        endWork(false);
+                        rowId = 0;
+                    } else {
+                        endWork(true);
+                    }
                 }
             }
-        }
-        if (rowId > 0) {
-            mContext.getContentResolver().notifyChange(TaskContract.TaskEntry.CONTENT_URI, null);
+            if (rowId > 0) {
+                mContext.getContentResolver().notifyChange(TaskContract.TaskEntry.CONTENT_URI, null);
+            }
+        } catch (SQLiteException exception) {
+            Log.e(LOG_TAG, exception.getMessage());
         }
         return rowId;
     }

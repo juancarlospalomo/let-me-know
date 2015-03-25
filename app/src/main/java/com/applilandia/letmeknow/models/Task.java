@@ -1,10 +1,14 @@
 package com.applilandia.letmeknow.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.applilandia.letmeknow.cross.LocalDate;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +16,10 @@ import java.util.List;
  * Created by JuanCarlos on 18/02/2015.
  * Task entity domain model
  */
-public class Task implements IValidatable {
+public class Task implements IValidatable, Parcelable {
+
+    private final static String LOG_TAG = Task.class.getSimpleName();
+
     //Max size constraint for name field
     private static final int NAME_MAX_SIZE = 50;
 
@@ -54,6 +61,104 @@ public class Task implements IValidatable {
     public TypeTask typeTask;
     //List of notifications for the task
     private SparseArray<Notification> mNotifications;
+
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel source) {
+            return new Task(source);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public Task() {
+        super();
+    }
+
+    /**
+     * Create the object from a parcel
+     *
+     * @param parcel
+     */
+    public Task(Parcel parcel) {
+        Log.e(LOG_TAG, "Task");
+        //Read in the same order it was parceled in the writeToParcel method
+        _id = parcel.readInt();
+        name = parcel.readString();
+        String value = parcel.readString();
+        if (!TextUtils.isEmpty(value)) {
+            try {
+                targetDateTime = new LocalDate(value);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            targetDateTime = null;
+        }
+        value = parcel.readString();
+        if (!TextUtils.isEmpty(value)) {
+            typeTask = TypeTask.map(Integer.parseInt(value));
+        } else {
+            typeTask = null;
+        }
+        readParcelableNotifications(parcel.readParcelableArray(Notification.class.getClassLoader()));
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        Log.e(LOG_TAG, "writeToParcel");
+        //Write with a fixed order
+        dest.writeInt(_id);
+        dest.writeString(name);
+        if (targetDateTime == null) {
+            dest.writeString(null);
+        } else {
+            dest.writeString(targetDateTime.toString());
+        }
+        if (typeTask == null) {
+            dest.writeString(null);
+        } else {
+            dest.writeString(String.valueOf(typeTask.getValue()));
+        }
+        dest.writeParcelableArray(convertNotificationsToParcelableArray(), 0);
+    }
+
+    /**
+     * Load the parcelables into the notification list
+     * @param parcelables
+     */
+    private void readParcelableNotifications(Parcelable[] parcelables) {
+        if (parcelables != null) {
+            for(Parcelable parcelable : parcelables) {
+                Notification notification = (Notification) parcelable;
+                addNotification(notification);
+            }
+        }
+    }
+
+    /**
+     * Convert Notification List to a Parcelable Array
+     *
+     * @return
+     */
+    private Parcelable[] convertNotificationsToParcelableArray() {
+        if (mNotifications != null) {
+            Parcelable[] parcelables = new Parcelable[mNotifications.size()];
+            for (int index = 0; index < mNotifications.size(); index++) {
+                parcelables[index] = mNotifications.get(index);
+            }
+            return parcelables;
+        }
+        return null;
+    }
 
     /**
      * Set the current existing notifications in database for this task
@@ -242,7 +347,7 @@ public class Task implements IValidatable {
         if (TextUtils.isEmpty(name)) {
             result.add(new ValidationResult("name", ValidationResult.ValidationCode.Empty));
         } else {
-            if (name.length() > NAME_MAX_SIZE) {
+            if (!isValidLengthName(name)) {
                 result.add(new ValidationResult("name", ValidationResult.ValidationCode.GreaterThanRange));
             }
         }
@@ -255,6 +360,13 @@ public class Task implements IValidatable {
             result = null;
         }
         return result;
+    }
+
+    public static boolean isValidLengthName(String name) {
+        if (name.length() > NAME_MAX_SIZE) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -4,13 +4,17 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * Created by JuanCarlos on 18/02/2015.
  */
 public class TaskProvider extends ContentProvider {
+
+    private final static String LOG_TAG = TaskProvider.class.getSimpleName();
 
     //Uri codes when Uri match
     private static final int TASK = 100;
@@ -64,6 +68,7 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Return a list of task with a specific notification status
+     *
      * @param orderBy
      * @return
      */
@@ -88,6 +93,7 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Return the whole task list and their notifications count number
+     *
      * @param selection
      * @param args
      * @param orderBy
@@ -107,7 +113,12 @@ public class TaskProvider extends ContentProvider {
         String groupBy = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "," +
                 TaskContract.TaskEntry.COLUMN_TASK_NAME + "," + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME;
 
-        return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(), fields, selection, args, groupBy, null, orderBy);
+        try {
+            return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(), fields, selection, args, groupBy, null, orderBy);
+        } catch (SQLiteException exception) {
+            Log.e(LOG_TAG, exception.getMessage());
+            return null;
+        }
     }
 
     /**

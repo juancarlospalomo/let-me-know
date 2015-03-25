@@ -11,6 +11,8 @@ import com.applilandia.letmeknow.models.Notification;
  */
 public class UseCaseNotification {
 
+    private final static String LOG_TAG = UseCaseNotification.class.getSimpleName();
+
     private Context mContext;
 
     public UseCaseNotification(Context context) {

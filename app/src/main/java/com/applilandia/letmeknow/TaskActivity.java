@@ -1,11 +1,15 @@
 package com.applilandia.letmeknow;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.applilandia.letmeknow.fragments.TaskFragment;
+import com.applilandia.letmeknow.models.Task;
+import com.applilandia.letmeknow.usecases.UseCaseTask;
 
 
 public class TaskActivity extends ActionBarActivity {
@@ -35,6 +39,7 @@ public class TaskActivity extends ActionBarActivity {
     public final static String EXTRA_TASK_ID = "TaskId"; //Initial Task Id
     public final static String EXTRA_TASK_NAME = "TaskName"; //Initial Task Name
     public final static String EXTRA_TASK_DATE = "TaskDate"; //Initial Task Date
+    public final static String EXTRA_TASK_TYPE = "TaskType"; //Type of task.  It is an out extra
 
     private TypeWorkMode mWorkMode = TypeWorkMode.New;
     private int mInitialTaskId; //Variable for initial TaskId
@@ -55,7 +60,22 @@ public class TaskActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         loadExtras();
-        createFragmentContent();
+        if (savedInstanceState != null) {
+            createFragmentContent(false);
+        } else {
+            createFragmentContent(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -74,27 +94,41 @@ public class TaskActivity extends ActionBarActivity {
     /**
      * Add the Fragment for the content
      */
-    private void createFragmentContent() {
-        mTaskFragment = new TaskFragment();
-        mTaskFragment.setWorkMode(mWorkMode, mInitialTaskId, mInitialTaskName, mInitialTaskDate);
+    private void createFragmentContent(boolean addNew) {
+        if (addNew) {
+            mTaskFragment = new TaskFragment();
+            mTaskFragment.setWorkMode(mWorkMode, mInitialTaskId, mInitialTaskName, mInitialTaskDate);
+        } else {
+            mTaskFragment = (TaskFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        }
         mTaskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
-            public void onTaskSaved() {
-                setResult(RESULT_OK);
+            public void onTaskSaved(Task task) {
+                Intent intent = null;
+                if (task != null) {
+                    UseCaseTask useCaseTask = new UseCaseTask(TaskActivity.this);
+                    task.typeTask = useCaseTask.getTypeTask(task.targetDateTime);
+                    intent = new Intent();
+                    intent.putExtra(EXTRA_TASK_TYPE, task.typeTask.getValue());
+                    intent.putExtra(EXTRA_TASK_ID, task._id);
+                }
+                setResult(RESULT_OK, intent);
                 finish();
             }
 
             @Override
             public void onClose() {
-                setResult(RESULT_OK);
+                setResult(RESULT_CANCELED);
                 finish();
             }
         });
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.content_frame, mTaskFragment);
-        transaction.commit();
-    }
+        if (addNew) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.content_frame, mTaskFragment);
+            transaction.commit();
+        }
 
+    }
 
 
 }

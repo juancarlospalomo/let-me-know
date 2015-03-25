@@ -50,11 +50,16 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface OnTaskListFragmentListener {
         public void onTaskSelected(int id);
+
         public void onTaskLongPressed();
     }
 
     //LoaderId for task loader
     private static final int TASK_LOADER_ID = 1;
+    //Variables to state the init recyclerview scroll
+    private int mShowRowPosition = -1;
+    private int mShowRowTask = -1; //Task Id of the row
+    //ActionBar status
     private boolean mActionBarActived = false;
     //Type task to be loaded in the fragment
     private Task.TypeTask mTypeTask;
@@ -291,6 +296,20 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         mTypeTask = typeTask;
     }
 
+    /**
+     * Set the task id of the row that list has to scroll
+     *
+     * @param id
+     */
+    public void scrollToTask(int id) {
+        mShowRowTask = id;
+    }
+
+    /**
+     * Set the handler for the events
+     *
+     * @param l
+     */
     public void setOnTaskListFragmentListener(OnTaskListFragmentListener l) {
         mOnTaskListFragmentListener = l;
     }
@@ -321,6 +340,10 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             if (data != null) {
                 mAdapter = new TaskAdapter(data);
                 mTaskRecyclerView.setAdapter(mAdapter);
+                if (mShowRowTask != -1) {
+                    convertTaskIdToPosition();
+                    mTaskRecyclerView.scrollToPosition(mShowRowPosition);
+                }
             }
         }
         mProgressBar.setVisibility(View.GONE);
@@ -335,6 +358,29 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<List<Task>> loader) {
         if (loader.getId() == TASK_LOADER_ID) {
             mTaskRecyclerView.setAdapter(null);
+        }
+    }
+
+    /**
+     * Init the position members
+     */
+    private void initPositionValues() {
+        mShowRowTask = -1;
+        mShowRowPosition = -1;
+    }
+
+    /**
+     * Through the task id, get its position in the adapter
+     */
+    private void convertTaskIdToPosition() {
+        if (mAdapter.mTaskList != null) {
+            int index = 0;
+            for (Task task : mAdapter.mTaskList) {
+                if (task._id == mShowRowTask) {
+                    mShowRowPosition = index;
+                }
+                index++;
+            }
         }
     }
 
@@ -435,6 +481,11 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                     snackBar.show(R.string.snack_bar_task_completed_text);
                 }
             });
+            if (position == mShowRowPosition) {
+                animateRowEmergence(holder.itemView);
+                //After use it, reset values for avoiding using them again
+                initPositionValues();
+            }
         }
 
         /**
@@ -456,6 +507,22 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             }
         }
 
+        /**
+         * Animate a view to emergence
+         *
+         * @param view it is the row to animate
+         */
+        private void animateRowEmergence(final View view) {
+            view.setAlpha(0f);
+            view.animate().alpha(1f).setDuration(3000)
+                    .start();
+        }
+
+        /**
+         * Get the rows selected on the list
+         *
+         * @return
+         */
         public int getSelectedCount() {
             return mSelectedCountRef;
         }

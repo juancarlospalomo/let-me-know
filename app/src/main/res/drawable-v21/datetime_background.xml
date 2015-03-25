@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="false">
+        <color android:color="@color/color_disabled"/>
+    </item>
+    <item>
+        <ripple android:color="@color/datetime_view_pressed">
+            <item>
+                <shape>
+                    <solid android:color="@color/datetime_view"/>
+                </shape>
+            </item>
+        </ripple>
+    </item>
+</selector>

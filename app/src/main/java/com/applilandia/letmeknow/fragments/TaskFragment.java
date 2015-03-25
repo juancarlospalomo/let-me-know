@@ -28,6 +28,7 @@ import android.widget.TextView;
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.TaskActivity;
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.exceptions.UnitOfWorkException;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -46,8 +47,12 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     private final static String LOG_TAG = TaskFragment.class.getSimpleName();
     private final static int LOADER_ID = 1;
 
+    //Keys for saving state when configuration change occurs
+    private static final String KEY_WORK_MODE = "workMode";
+    private static final String KEY_TASK = "task";
+
     public interface OnTaskFragmentListener {
-        public void onTaskSaved();
+        public void onTaskSaved(Task task);
 
         public void onClose();
     }
@@ -89,11 +94,24 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         hideSoftKeyboard();
+        if (savedInstanceState != null) {
+            //Configuration change occurred
+            mTask = savedInstanceState.getParcelable(KEY_TASK);
+            mWorkMode = TaskActivity.TypeWorkMode.map(savedInstanceState.getInt(KEY_WORK_MODE));
+        }
         //Get fixed views from inflated layout
         mRecyclerViewNotifies = (RecyclerView) getView().findViewById(R.id.recyclerViewNotifies);
         mButtonOk = (Button) getView().findViewById(R.id.buttonOk);
         //Init the fragment to set in the correct state
         initWorkMode();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_WORK_MODE, mWorkMode.getValue());
+        mTask.name = mValidationFieldTaskName.getText();
+        outState.putParcelable(KEY_TASK, mTask);
     }
 
     /**
@@ -108,15 +126,23 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         if (mWorkMode == TaskActivity.TypeWorkMode.New) {
             //Init Views with initial values
             mValidationFieldTaskName.setText(mTask.name);
-            if (mTask.targetDateTime!=null) {
-                mValidationFieldTaskName.setText(mTask.targetDateTime.getDisplayFormatDate());
+            if (mTask.targetDateTime != null) {
+                mValidationFieldDate.setText(mTask.targetDateTime.getDisplayFormatDate());
+                if (!mTask.targetDateTime.isTimeNull()) {
+                    mValidationFieldTime.setText(mTask.targetDateTime.getDisplayFormatTime(getActivity()));
+                    refreshUIStatus(UIState.TimeSet);
+                } else {
+                    refreshUIStatus(UIState.DateSet);
+                }
+            } else {
+                refreshUIStatus(UIState.DateTimeEmpty);
             }
             //Create Handlers
             createValidationTaskNameHandler();
             createDateTimeHandlers();
             createClearHandler();
             //Set initial State
-            refreshUIStatus(UIState.DateTimeEmpty);
+
         }
         if (mWorkMode == TaskActivity.TypeWorkMode.View) {
             mValidationFieldTaskName.setVisibility(View.GONE);
@@ -225,19 +251,25 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                     List<ValidationResult> validationResults = mTask.validate();
                     if (validationResults == null) {
                         boolean resultOk = false;
-                        UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-                        if (mWorkMode == TaskActivity.TypeWorkMode.New) {
-                            resultOk = (useCaseTask.createTask(mTask) > 0);
-                        } else if (mWorkMode == TaskActivity.TypeWorkMode.Update) {
-                            resultOk = useCaseTask.updateTask(mTask);
-                        }
-                        if (resultOk) {
-                            if (mOnTaskFragmentListener != null) {
-                                mOnTaskFragmentListener.onTaskSaved();
+                        try {
+                            UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                            if (mWorkMode == TaskActivity.TypeWorkMode.New) {
+                                mTask._id = useCaseTask.createTask(mTask);
+                                resultOk = (mTask._id > 0);
+                            } else if (mWorkMode == TaskActivity.TypeWorkMode.Update) {
+                                resultOk = useCaseTask.updateTask(mTask);
                             }
-                        } else {
-                            //TODO: Show Error Dialog
+                            if (resultOk) {
+                                if (mOnTaskFragmentListener != null) {
+                                    mOnTaskFragmentListener.onTaskSaved(mTask);
+                                }
+                            }
+                        } catch (UnitOfWorkException exception) {
+                            AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(getString(R.string.error_title),
+                                    getString(R.string.unit_of_work_exception), null, getString(R.string.error_button_ok));
+                            alertDialogFragment.show(getFragmentManager(), "errorDialog");
                         }
+
                     } else {
                         for (ValidationResult validationResult : validationResults) {
                             switch (validationResult.member) {
@@ -287,7 +319,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     private void disableTime() {
         mValidationFieldTime.setClickable(false);
         mValidationFieldTime.setEnabled(false);
-        //mValidationFieldTime.setTextColor(getResources().getColor(R.color.button_flat_text_disabled));
     }
 
     /**
@@ -296,7 +327,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     private void enableTime() {
         mValidationFieldTime.setClickable(true);
         mValidationFieldTime.setEnabled(true);
-        //mTextViewTime.setTextColor(getResources().getColor(R.color.button_flat_text_normal));
     }
 
     /**
@@ -340,7 +370,11 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                             mValidationFieldDate.setText(date.getDisplayFormatDate());
                             refreshUIStatus(UIState.DateSet);
                         } else {
+                            mTask.targetDateTime = null;
+                            mValidationFieldTime.setText(R.string.hint_edit_task_time);
+                            mValidationFieldDate.setText(R.string.hint_edit_task_date);
                             mValidationFieldDate.setError(R.string.error_task_date_less_than_today);
+                            refreshUIStatus(UIState.DateTimeEmpty);
                         }
                     }
 
@@ -391,8 +425,8 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     /**
      * Set the working mode for the fragment
      *
-     * @param value  type working mode
-     * @param taskId if the working mode is different from new, the task identifier
+     * @param value    type working mode
+     * @param taskId   if the working mode is different from new, the task identifier
      * @param taskName initial task name to show
      * @param taskDate initial task date to show
      */
@@ -447,6 +481,13 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 mTextViewTaskName.setText(mTask.name);
                 if (mTask.targetDateTime != null) {
                     mTextViewTaskDateTime.setText(mTask.targetDateTime.getDisplayFormat(getActivity()));
+                    if (!mTask.targetDateTime.isTimeNull()) {
+                        refreshUIStatus(UIState.TimeSet);
+                    } else {
+                        refreshUIStatus(UIState.DateSet);
+                    }
+                } else {
+                    refreshUIStatus(UIState.DateTimeEmpty);
                 }
                 createRecyclerViewNotifications();
             }

@@ -94,4 +94,17 @@
     <string name="voice_intent_error_content">Voice recognition is not available in your device</string>
     <string name="voice_intent_error_ok">OK</string>
 
+    <!-- CalendarView buttons -->
+    <string name="calendar_view_ok">OK</string>
+    <string name="calendar_view_cancel">Cancel</string>
+
+    <!-- Common -->
+    <string name="error_title">Error</string>
+    <string name="error_button_ok">OK</string>
+
+    <!-- UnitOfWorkException Messages -->
+    <string name="unit_of_work_exception">An error occurred in database</string>
+    <string name="unit_of_work_locked_exception">Database cannot be accessed. The application will be closed</string>
+    <string name="unit_of_work_io_exception">Disk access error occurred</string>
+
 </resources>

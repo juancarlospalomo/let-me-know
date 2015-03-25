@@ -58,7 +58,7 @@
             android:layout_marginRight="5dp"
             android:gravity="center"
             letmeknow:viewType="TextView"
-            letmeknow:background="@drawable/action_background"
+            letmeknow:background="@drawable/datetime_background"
             letmeknow:hint="@string/hint_edit_task_date">
         </com.applilandia.letmeknow.views.ValidationField>
 
@@ -69,7 +69,7 @@
             android:layout_height="@dimen/validation_text_view_field_metric"
             android:gravity="center"
             letmeknow:viewType="TextView"
-            letmeknow:background="@drawable/action_background"
+            letmeknow:background="@drawable/datetime_background"
             letmeknow:hint="@string/hint_edit_task_time">
         </com.applilandia.letmeknow.views.ValidationField>
 

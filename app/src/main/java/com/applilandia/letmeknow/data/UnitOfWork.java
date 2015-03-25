@@ -4,6 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+
+import com.applilandia.letmeknow.exceptions.UnitOfWorkException;
 
 /**
  * Created by JuanCarlos on 19/02/2015.
@@ -18,12 +21,20 @@ public class UnitOfWork {
 
     public UnitOfWork(Context context) {
         mContext = context;
-        mDatabase = new TaskDbHelper(mContext).getWritableDatabase();
+        try {
+            mDatabase = new TaskDbHelper(mContext).getWritableDatabase();
+        } catch (SQLiteException exception) {
+            throw new UnitOfWorkException(mContext, exception);
+        }
     }
 
     public void init() {
-        mDatabase.beginTransaction();
-        mWorkStarted = true;
+        try {
+            mDatabase.beginTransaction();
+            mWorkStarted = true;
+        } catch (SQLiteException exception) {
+            throw new UnitOfWorkException(mContext, exception);
+        }
     }
 
     public void commit() {
@@ -68,7 +79,7 @@ public class UnitOfWork {
             //If not, it must be confirmed or roll backed manually
             mDatabase.close();
         }
-        return  rowsAffected;
+        return rowsAffected;
     }
 
     public int delete(String table, String where, String[] args) {

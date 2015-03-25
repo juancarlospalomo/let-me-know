@@ -11,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.fragments.HomeFragment;
 import com.applilandia.letmeknow.fragments.NotificationListFragment;
 import com.applilandia.letmeknow.fragments.TaskFragment;
+import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseNotification;
 
 import java.util.ArrayList;
@@ -106,6 +108,7 @@ public class MainActivity extends ActionBarActivity {
      * If there are any notification sent, add Fragment to show the notification list
      */
     private void addIfNotificationFragment() {
+        Log.e(LOG_TAG, String.valueOf(LetMeKnowApp.anySentNotification()));
         if (LetMeKnowApp.anySentNotification()) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             notificationManager.cancel(NotificationSet.LET_ME_KNOW_NOTIFICATION_ID);
@@ -149,7 +152,7 @@ public class MainActivity extends ActionBarActivity {
         taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id, "", "");
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
-            public void onTaskSaved() {
+            public void onTaskSaved(Task task) {
                 getSupportFragmentManager().popBackStack();
             }
 
