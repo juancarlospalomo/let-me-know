@@ -37,6 +37,10 @@ public class UnitOfWork {
         }
     }
 
+    protected boolean isWorkStarted() {
+        return mWorkStarted;
+    }
+
     public void commit() {
         if (!mWorkStarted) {
             throw new UnsupportedOperationException("not available without a started work");

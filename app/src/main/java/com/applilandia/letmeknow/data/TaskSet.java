@@ -132,10 +132,16 @@ public class TaskSet extends DbSet<Task> {
     @Override
     public boolean delete(Task task) {
         boolean result = false;
+        boolean startNewWork = false;
         String where = TaskContract.TaskEntry._ID + "=?";
         String[] args = new String[]{String.valueOf(task._id)};
 
-        //TODO: find out when initWork();
+        if (!mUnitOfWork.isWorkStarted()) {
+            //If it isn't inside a work, we need to create a new one.
+            //It is a new work, because we need this execution is in a work
+            startNewWork = true;
+        }
+        if (startNewWork) initWork();
         int rowsAffected = mUnitOfWork.delete(TaskContract.TaskEntry.TABLE_NAME, where, args);
         if (rowsAffected > 0) {
             try {
@@ -146,7 +152,10 @@ public class TaskSet extends DbSet<Task> {
                 result = false;
             }
         }
-        //TODO: execute when initWork() has been executed. endWork(result);
+        if (startNewWork) {
+            //Execute when initWork() has been executed. endWork(result);
+            endWork(result);
+        }
         return result;
     }
 

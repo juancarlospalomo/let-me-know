@@ -130,7 +130,7 @@ public class TaskListActivity extends ActionBarActivity {
         if (mShowedToolbarMenu) {
             //Actions are displayed in toolbar, then we hide the floating action button
             //and spinner
-            floatingActionButton.setVisibility(View.GONE);
+            floatingActionButton.setVisibility(View.INVISIBLE);
             mSpinnerType.setVisibility(View.GONE);
         } else {
             if (count == 0) {
@@ -141,7 +141,7 @@ public class TaskListActivity extends ActionBarActivity {
             } else {
                 //We are not in the main fragment, so we hide Floating Action Button
                 //and spinner
-                floatingActionButton.setVisibility(View.GONE);
+                floatingActionButton.setVisibility(View.INVISIBLE);
                 mSpinnerType.setVisibility(View.GONE);
             }
         }
@@ -208,6 +208,15 @@ public class TaskListActivity extends ActionBarActivity {
                 mShowedToolbarMenu = true;
                 invalidateOptionsMenu();
                 refreshUIState(0);
+            }
+
+            @Override
+            public void onTaskDeleted() {
+                if (mShowedToolbarMenu) {
+                    mShowedToolbarMenu = false;
+                    invalidateOptionsMenu();
+                    refreshUIState(0);
+                }
             }
         });
         getSupportFragmentManager().beginTransaction()

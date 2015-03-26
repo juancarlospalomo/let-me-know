@@ -50,8 +50,8 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface OnTaskListFragmentListener {
         public void onTaskSelected(int id);
-
         public void onTaskLongPressed();
+        public void onTaskDeleted();
     }
 
     //LoaderId for task loader
@@ -182,11 +182,10 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                                 lp = view.getLayoutParams();
                                                 lp.height = originalHeight;
                                                 view.setLayoutParams(lp);
-                                                mAdapter.mTaskList.remove(position);
-                                                mAdapter.notifyDataSetChanged();
                                                 mAdapter.toggle(position);
                                                 AsyncTaskList asyncTaskList = new AsyncTaskList();
                                                 asyncTaskList.execute(mAdapter.getSelectedList());
+                                                mAdapter.mTaskList.remove(position);
                                                 // Send a cancel event
                                                 long time = SystemClock.uptimeMillis();
                                                 MotionEvent cancelEvent = MotionEvent.obtain(time, time,
@@ -481,6 +480,8 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                     snackBar.show(R.string.snack_bar_task_completed_text);
                 }
             });
+            holder.itemView.setBackgroundResource(R.drawable.list_row_background);
+            holder.mLayoutPrimaryAction.setBackgroundResource(R.drawable.list_row_background);
             if (position == mShowRowPosition) {
                 animateRowEmergence(holder.itemView);
                 //After use it, reset values for avoiding using them again
@@ -629,9 +630,9 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         }
                     }
                     if (deleteErrorCount == 0) {
-                        return new Boolean(false);
-                    } else {
                         return new Boolean(true);
+                    } else {
+                        return new Boolean(false);
                     }
                 }
             }
@@ -640,7 +641,14 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         protected void onPostExecute(Boolean result) {
-            mAdapter.notifyDataSetChanged();
+            if (!result.booleanValue()) {
+                AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(getString(R.string.error_title),
+                        getString(R.string.unit_of_work_exception), null, getString(R.string.error_button_ok));
+                alertDialogFragment.show(getFragmentManager(), "errorDialog");
+            }
+            if (mOnTaskListFragmentListener != null) {
+                mOnTaskListFragmentListener.onTaskDeleted();
+            }
             if (mActionBarActived) {
                 deactivateToolbarActions();
             }

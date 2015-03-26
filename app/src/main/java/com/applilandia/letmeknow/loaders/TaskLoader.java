@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class TaskLoader extends AsyncTaskLoader<List<Task>> {
 
+    private final static String LOG_TAG = TaskLoader.class.getSimpleName();
+
     private Context mContext;
     private Task.TypeTask mTypeTask;
     private List<Task> mTaskList;
