@@ -21,6 +21,7 @@ public class TaskProvider extends ContentProvider {
     private static final int TASK_WITH_NOTIFICATIONS = 101;
     private static final int TASK_NOTIFICATION_STATUS = 102;
     private static final int NOTIFICATION = 200;
+    private static final int NOTIFICATIONS = 201;
     private static final int HISTORY = 300;
 
     private TaskDbHelper mDbHelper;
@@ -34,6 +35,7 @@ public class TaskProvider extends ContentProvider {
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_TASK + "/#", TASK_WITH_NOTIFICATIONS);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_TASK + "/" + TaskContract.PATH_NOTIFICATION_STATUS + "/#", TASK_NOTIFICATION_STATUS);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_NOTIFICATION + "/#", NOTIFICATION);
+        mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_NOTIFICATION, NOTIFICATIONS);
         mUriMatcher.addURI(TaskContract.CONTENT_AUTHORITY, TaskContract.PATH_HISTORY, HISTORY);
     }
 
@@ -169,6 +171,11 @@ public class TaskProvider extends ContentProvider {
                 cursor = getNotification(id);
                 break;
 
+            case NOTIFICATIONS:
+                cursor = mDbHelper.getReadableDatabase().query(TaskContract.NotificationEntry.TABLE_NAME,
+                        projection, selection, selectionArgs, null, null, sortOrder);
+                break;
+
             case HISTORY:
                 cursor = mDbHelper.getReadableDatabase().query(TaskContract.HistoryEntry.TABLE_NAME,
                         projection, selection, selectionArgs, null, null, sortOrder);
@@ -193,6 +200,8 @@ public class TaskProvider extends ContentProvider {
             case TASK_NOTIFICATION_STATUS:
                 return TaskContract.TaskEntry.CONTENT_TYPE;
             case NOTIFICATION:
+                return TaskContract.NotificationEntry.CONTENT_TYPE;
+            case NOTIFICATIONS:
                 return TaskContract.NotificationEntry.CONTENT_TYPE;
             case HISTORY:
                 return TaskContract.HistoryEntry.CONTENT_TYPE;
