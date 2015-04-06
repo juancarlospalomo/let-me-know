@@ -24,6 +24,9 @@ public class TaskListActivity extends ActionBarActivity {
 
     private final static String LOG_TAG = TaskListActivity.class.getSimpleName();
 
+    private final static int INDEX_FRAGMENT_LIST = 0;
+    private final static int INDEX_FRAGMENT_TASK = 1;
+
     public final static String EXTRA_TYPE_TASK = "TypeTask";
     //Request Codes
     private final static int REQUEST_CODE_TASK = 1;
@@ -36,23 +39,65 @@ public class TaskListActivity extends ActionBarActivity {
     //Toolbar
     private Toolbar mToolbar;
     private Spinner mSpinnerType;
-
+    private FloatingActionButton mFloatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_list);
+        inflateViews();
+        initTaskTypeSpinner();
+        //Create handlers for the views
+        createViewsHandlers();
+        //Load parameters
+        if (savedInstanceState == null) {
+            loadExtras();
+            initValues();
+        } else {
+            restoreFragmentState();
+        }
+    }
 
+    /**
+     * Inflate views on activity
+     */
+    private void inflateViews() {
+        //Inflate views
         mToolbar = (Toolbar) findViewById(R.id.taskToolBar);
+        mSpinnerType = (Spinner) findViewById(R.id.spinnerTypeTasks);
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
+        //Init toolbar
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        loadExtras();
-        createFloatingActionButton();
-        createTaskSpinner();
     }
 
+    /**
+     * Init the task spinner with data
+     */
+    private void initTaskTypeSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
+                R.array.type_task_array, android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerType.setAdapter(adapter);
+    }
+
+    /**
+     * Create the handlers for the views on activity
+     */
+    private void createViewsHandlers() {
+        createFloatingActionButtonHandler();
+        createTaskSpinnerHandler();
+    }
+
+
+    /**
+     * Set initial values for the views
+     */
+    private void initValues() {
+        mSpinnerType.setSelection(mTypeTask.getValue());
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -96,9 +141,8 @@ public class TaskListActivity extends ActionBarActivity {
                         finish();
                     }
                 } else {
-                    mShowedToolbarMenu = false;
-                    invalidateOptionsMenu();
-                    refreshUIState(0);
+                    refreshToolbarState(false);
+                    refreshUIState(INDEX_FRAGMENT_LIST);
                     TaskListFragment taskListFragment = (TaskListFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
                     if (taskListFragment != null) {
                         taskListFragment.deactivateToolbarActions();
@@ -123,25 +167,34 @@ public class TaskListActivity extends ActionBarActivity {
     }
 
     /**
-     * Set the Toolbar in the action bar in the correct state
+     * update the status of toolbar according with the actions to be showed or hidden
      */
-    private void refreshUIState(int count) {
-        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
+    private void refreshToolbarState(boolean showActions) {
+        mShowedToolbarMenu = showActions;
+        invalidateOptionsMenu();
+    }
+
+    /**
+     * Set the Toolbar in the action bar in the correct state
+     *
+     * @param index index of the current fragment in the activity
+     */
+    private void refreshUIState(int index) {
         if (mShowedToolbarMenu) {
             //Actions are displayed in toolbar, then we hide the floating action button
             //and spinner
-            floatingActionButton.setVisibility(View.INVISIBLE);
+            mFloatingActionButton.setVisibility(View.INVISIBLE);
             mSpinnerType.setVisibility(View.GONE);
         } else {
-            if (count == 0) {
+            if (index == INDEX_FRAGMENT_LIST) {
                 //We are in the main fragment, then the Floating Action Button
                 //and spinner must be shown
-                floatingActionButton.setVisibility(View.VISIBLE);
+                mFloatingActionButton.setVisibility(View.VISIBLE);
                 mSpinnerType.setVisibility(View.VISIBLE);
             } else {
                 //We are not in the main fragment, so we hide Floating Action Button
                 //and spinner
-                floatingActionButton.setVisibility(View.INVISIBLE);
+                mFloatingActionButton.setVisibility(View.INVISIBLE);
                 mSpinnerType.setVisibility(View.GONE);
             }
         }
@@ -157,9 +210,11 @@ public class TaskListActivity extends ActionBarActivity {
         }
     }
 
-    private void createFloatingActionButton() {
-        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+    /**
+     * Create handler for the Floating Action Button
+     */
+    private void createFloatingActionButtonHandler() {
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(TaskListActivity.this, TaskActivity.class);
@@ -169,13 +224,10 @@ public class TaskListActivity extends ActionBarActivity {
         });
     }
 
-    private void createTaskSpinner() {
-        mSpinnerType = (Spinner) findViewById(R.id.spinnerTypeTasks);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
-                R.array.type_task_array, android.R.layout.simple_spinner_dropdown_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerType.setAdapter(adapter);
-        mSpinnerType.setSelection(mTypeTask.getValue());
+    /**
+     * Create the spinner for the type of task
+     */
+    private void createTaskSpinnerHandler() {
         mSpinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -197,6 +249,19 @@ public class TaskListActivity extends ActionBarActivity {
         taskListFragment.setTypeTask(mTypeTask);
         if (mSelectTaskId != -1) taskListFragment.scrollToTask(mSelectTaskId);
         mSelectTaskId = -1; //Reset value for avoiding send the old value again
+        setTaskListFragmentHandlers(taskListFragment);
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
+                .replace(R.id.content_frame, taskListFragment)
+                .commit();
+        refreshUIState(INDEX_FRAGMENT_LIST);
+    }
+
+    /**
+     * Set the event handlers for task list fragment
+     * @param taskListFragment
+     */
+    private void setTaskListFragmentHandlers(TaskListFragment taskListFragment) {
         taskListFragment.setOnTaskListFragmentListener(new TaskListFragment.OnTaskListFragmentListener() {
             @Override
             public void onTaskSelected(int id) {
@@ -207,7 +272,7 @@ public class TaskListActivity extends ActionBarActivity {
             public void onTaskLongPressed() {
                 mShowedToolbarMenu = true;
                 invalidateOptionsMenu();
-                refreshUIState(0);
+                refreshUIState(INDEX_FRAGMENT_LIST);
             }
 
             @Override
@@ -215,14 +280,10 @@ public class TaskListActivity extends ActionBarActivity {
                 if (mShowedToolbarMenu) {
                     mShowedToolbarMenu = false;
                     invalidateOptionsMenu();
-                    refreshUIState(0);
+                    refreshUIState(INDEX_FRAGMENT_LIST);
                 }
             }
         });
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
-                .replace(R.id.content_frame, taskListFragment)
-                .commit();
     }
 
     /**
@@ -231,15 +292,26 @@ public class TaskListActivity extends ActionBarActivity {
      * @param id task identifier
      */
     private void createTaskFragment(int id) {
-        TaskFragment taskFragment = new TaskFragment();
+        TaskFragment taskFragment;
+        taskFragment = new TaskFragment();
         taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id, "", "");
+        setTaskFragmentHandlers(taskFragment);
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
+                .replace(R.id.content_frame, taskFragment)
+                .commit();
+        refreshUIState(INDEX_FRAGMENT_TASK);
+    }
+
+    /**
+     * Set event handlers for task fragment
+     * @param taskFragment
+     */
+    private void setTaskFragmentHandlers(TaskFragment taskFragment) {
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved(Task task) {
                 popFragmentBackStack();
-/*                int value = task.typeTask.getValue();
-                mSelectTaskId = task._id;
-                mSpinnerType.setSelection(value);*/
             }
 
             @Override
@@ -247,11 +319,20 @@ public class TaskListActivity extends ActionBarActivity {
                 Log.v(LOG_TAG, "onClose");
             }
         });
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
-                .replace(R.id.content_frame, taskFragment)
-                .commit();
-        refreshUIState(getSupportFragmentManager().getBackStackEntryCount() + 1);
+    }
+
+    /**
+     * Restore the state for current fragment
+     */
+    private void restoreFragmentState() {
+        int fragmentIndex = getFragmentNumber();
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (fragmentIndex == INDEX_FRAGMENT_LIST) {
+            setTaskListFragmentHandlers((TaskListFragment) fragment);
+        } else {
+            setTaskFragmentHandlers((TaskFragment) fragment);
+        }
+        refreshUIState(fragmentIndex);
     }
 
     /**
@@ -270,11 +351,12 @@ public class TaskListActivity extends ActionBarActivity {
      * @return number depicts the fragment number
      */
     private int getFragmentNumber() {
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
-        if (currentFragment instanceof TaskFragment) {
-            return 1;
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (fragment instanceof TaskListFragment) {
+            return INDEX_FRAGMENT_LIST;
+        } else {
+            return INDEX_FRAGMENT_TASK;
         }
-        return 0;
     }
 
 }

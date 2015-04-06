@@ -101,7 +101,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         }
         //Get fixed views from inflated layout
         mRecyclerViewNotifies = (RecyclerView) getView().findViewById(R.id.recyclerViewNotifies);
-        mButtonOk = (Button) getView().findViewById(R.id.buttonOk);
         //Init the fragment to set in the correct state
         initWorkMode();
     }
@@ -110,19 +109,43 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_WORK_MODE, mWorkMode.getValue());
-        mTask.name = mValidationFieldTaskName.getText();
+        if (mWorkMode == TaskActivity.TypeWorkMode.View) {
+            mTask.name = mTextViewTaskName.getText().toString();
+        } else {
+            mTask.name = mValidationFieldTaskName.getText();
+        }
         outState.putParcelable(KEY_TASK, mTask);
+    }
+
+    /**
+     * Init the recycler view for notifications
+     */
+    private void initRecyclerViewNotifications() {
+        //Change in content will not change the layout size of the recycler view
+        //Of this way, we improve the performance
+        mRecyclerViewNotifies.setHasFixedSize(true);
+        //It will use a LinearLayout
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerViewNotifies.setLayoutManager(layoutManager);
+        mRecyclerViewNotifies.addItemDecoration(new NotificationItemDecoration());
+        mNotificationAdapter = new NotificationAdapter(false);
+        if (mWorkMode == TaskActivity.TypeWorkMode.New) {
+            mRecyclerViewNotifies.setAdapter(mNotificationAdapter);
+        }
     }
 
     /**
      * Init the UI according to the work mode state
      */
     private void initWorkMode() {
+        mTextViewTaskName = (TextView) getView().findViewById(R.id.textViewTaskName);
+        mTextViewTaskDateTime = (TextView) getView().findViewById(R.id.textViewDateTime);
         mValidationFieldTaskName = (ValidationField) getView().findViewById(R.id.validationViewTaskName);
         mValidationFieldDate = (ValidationField) getView().findViewById(R.id.validationViewDate);
         mValidationFieldTime = (ValidationField) getView().findViewById(R.id.validationViewTime);
         mImageViewClear = (ImageView) getView().findViewById(R.id.imageViewClear);
-        createRecyclerViewNotifications();
+        mButtonOk = (Button) getView().findViewById(R.id.buttonOk);
+        initRecyclerViewNotifications();
         if (mWorkMode == TaskActivity.TypeWorkMode.New) {
             //Init Views with initial values
             mValidationFieldTaskName.setText(mTask.name);
@@ -141,16 +164,14 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
             createValidationTaskNameHandler();
             createDateTimeHandlers();
             createClearHandler();
-            //Set initial State
-
+            createButtonOkHandler();
         }
         if (mWorkMode == TaskActivity.TypeWorkMode.View) {
             mValidationFieldTaskName.setVisibility(View.GONE);
             getView().findViewById(R.id.layoutDateTimeFields).setVisibility(View.GONE);
-            mTextViewTaskName = (TextView) getView().findViewById(R.id.textViewTaskName);
-            mTextViewTaskDateTime = (TextView) getView().findViewById(R.id.textViewDateTime);
             getView().findViewById(R.id.layoutTaskName).setVisibility(View.VISIBLE);
             mTextViewTaskDateTime.setVisibility(View.VISIBLE);
+            mButtonOk.setVisibility(View.GONE);
             getView().findViewById(R.id.imageViewEdit).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -159,31 +180,38 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
             });
             getLoaderManager().initLoader(LOADER_ID, null, this);
         }
-        createButtonOkHandler();
+        if (mWorkMode == TaskActivity.TypeWorkMode.Update) {
+            changeToUpdateWorkMode();
+        }
     }
 
     /**
      * Change working mode to update, changing the UI according to it
      */
     private void changeToUpdateWorkMode() {
+        //Enter in update mode
+        mWorkMode = TaskActivity.TypeWorkMode.Update;
         //Create Handlers
         createValidationTaskNameHandler();
         createDateTimeHandlers();
         createClearHandler();
+        createButtonOkHandler();
         //Change UI Views
         mValidationFieldTaskName.setVisibility(View.VISIBLE);
-        mValidationFieldTaskName.setAlpha(0);
-        mValidationFieldTaskName.animate().alpha(1)
+        mValidationFieldTaskName.setAlpha(0f);
+        mValidationFieldTaskName.animate().alpha(1f)
                 .setInterpolator(new LinearInterpolator())
                 .setDuration(1000)
                 .start();
         LinearLayout layout = (LinearLayout) getView().findViewById(R.id.layoutDateTimeFields);
         layout.setVisibility(View.VISIBLE);
-        mValidationFieldDate.animate().alpha(1)
+        mValidationFieldDate.setAlpha(0f);
+        mValidationFieldDate.animate().alpha(1f)
                 .setInterpolator(new LinearInterpolator())
                 .setDuration(1000)
                 .start();
-        mValidationFieldTime.animate().alpha(1)
+        mValidationFieldTime.setAlpha(0f);
+        mValidationFieldTime.animate().alpha(1f)
                 .setInterpolator(new LinearInterpolator())
                 .setDuration(1000)
                 .start();
@@ -192,6 +220,13 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         mTextViewTaskDateTime.setVisibility(View.GONE);
         //Fill data
         mValidationFieldTaskName.setText(mTask.name);
+        //Animate OK button to set it as visible
+        mButtonOk.setAlpha(0);
+        mButtonOk.setVisibility(View.VISIBLE);
+        mButtonOk.animate().alpha(1)
+                .setInterpolator(new LinearInterpolator())
+                .setDuration(1000)
+                .start();
         if (mTask.targetDateTime != null) {
             mValidationFieldDate.setText(mTask.targetDateTime.getDisplayFormatDate());
             if (!mTask.targetDateTime.isTimeNull()) {
@@ -203,7 +238,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
         } else {
             refreshUIStatus(UIState.DateTimeEmpty);
         }
-        mWorkMode = TaskActivity.TypeWorkMode.Update;
     }
 
 
@@ -217,21 +251,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 mValidationFieldTaskName.removeError();
             }
         });
-    }
-
-    /**
-     * Init the recycler view for notifications
-     */
-    private void createRecyclerViewNotifications() {
-        //Change in content will not change the layout size of the recycler view
-        //Of this way, we improve the performance
-        mRecyclerViewNotifies.setHasFixedSize(true);
-        //It will use a LinearLayout
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerViewNotifies.setLayoutManager(layoutManager);
-        mRecyclerViewNotifies.addItemDecoration(new NotificationItemDecoration());
-        mNotificationAdapter = new NotificationAdapter(false);
-        mRecyclerViewNotifies.setAdapter(mNotificationAdapter);
     }
 
     /**
@@ -337,7 +356,9 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
             case DateTimeEmpty:
                 //Notifies and Time must be disabled
                 disableTime();
-                mNotificationAdapter.setEnabled(false);
+                if (mWorkMode != TaskActivity.TypeWorkMode.View) {
+                    mNotificationAdapter.setEnabled(false);
+                }
                 break;
 
             case DateSet:
@@ -345,7 +366,9 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 break;
 
             case TimeSet:
-                mNotificationAdapter.setEnabled(true);
+                if (mWorkMode != TaskActivity.TypeWorkMode.View) {
+                    mNotificationAdapter.setEnabled(true);
+                }
                 break;
         }
     }
@@ -368,7 +391,10 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                         if (date.compareTo(new LocalDate()) >= 0) {
                             mTask.targetDateTime = date;
                             mValidationFieldDate.setText(date.getDisplayFormatDate());
+                            mValidationFieldTime.setText(R.string.hint_edit_task_time);
+                            mTask.removeNotifications();
                             refreshUIStatus(UIState.DateSet);
+                            mNotificationAdapter.setEnabled(false);
                         } else {
                             mTask.targetDateTime = null;
                             mValidationFieldTime.setText(R.string.hint_edit_task_time);
@@ -408,6 +434,8 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                                 mValidationFieldTime.setText(R.string.hint_edit_task_time);
                                 mTask.targetDateTime.removeTime();
                                 mValidationFieldTime.setError(R.string.error_task_time_less_than_today);
+                                mTask.removeNotifications();
+                                mNotificationAdapter.setEnabled(false);
                             }
                         }
 
@@ -480,7 +508,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 mTask = data.get(0);
                 mTextViewTaskName.setText(mTask.name);
                 if (mTask.targetDateTime != null) {
-                    mTextViewTaskDateTime.setText(mTask.targetDateTime.getDisplayFormat(getActivity()));
+                    mTextViewTaskDateTime.setText(mTask.targetDateTime.getDisplayFormatWithToday(getActivity()));
                     if (!mTask.targetDateTime.isTimeNull()) {
                         refreshUIStatus(UIState.TimeSet);
                     } else {
@@ -489,7 +517,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 } else {
                     refreshUIStatus(UIState.DateTimeEmpty);
                 }
-                createRecyclerViewNotifications();
+                mRecyclerViewNotifies.setAdapter(mNotificationAdapter);
             }
         }
     }
@@ -531,50 +559,54 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, final int position) {
+            //Set text for the notification row
             holder.mTextViewNotification.setText(mTypeNotifications[position]);
+
             if (!mEnabled) {
-                holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
                 disableRow(holder);
             } else {
                 if (!mTask.isNotificationAllowed(Notification.TypeNotification.map(position))) {
+                    //Disable, as the notification isn't allowed
                     disableRow(holder);
-                    return;
+                    //Set off as it is not allowed
+                    holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
+                } else {
+                    enableRow(holder);
                 }
-                if (mTask.getNotifications() != null) {
-                    if (mTask.getNotification(Notification.TypeNotification.map(position)) != null) {
-                        holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
-                    } else {
-                        holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
-                    }
+            }
+            if (mTask.getNotifications() != null) {
+                if (mTask.getNotification(Notification.TypeNotification.map(position)) != null) {
+                    holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
                 } else {
                     holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
                 }
-                enableRow(holder);
-                holder.mImageViewCheck.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean isActive = false;
-                        if (mTask.getNotifications() != null) {
-                            isActive = (mTask.getNotification(Notification.TypeNotification.map(position)) != null);
-                        }
-                        if (isActive) {
-                            //currently this notification type is active, so
-                            //the user wants to remove it
-                            holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
-                            mTask.removeNotification(Notification.TypeNotification.map(position));
-                        } else {
-                            //currently this notification type isn't active.
-                            //User wants to active it
-                            holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
-                            //create notification and add it
-                            Notification notification = new Notification();
-                            notification.type = Notification.TypeNotification.map(position);
-                            notification.status = Notification.TypeStatus.Pending;
-                            mTask.addNotification(notification);
-                        }
-                    }
-                });
+            } else {
+                holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
             }
+            holder.mImageViewCheck.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isActive = false;
+                    if (mTask.getNotifications() != null) {
+                        isActive = (mTask.getNotification(Notification.TypeNotification.map(position)) != null);
+                    }
+                    if (isActive) {
+                        //currently this notification type is active, so
+                        //the user wants to remove it
+                        holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
+                        mTask.removeNotification(Notification.TypeNotification.map(position));
+                    } else {
+                        //currently this notification type isn't active.
+                        //User wants to active it
+                        holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
+                        //create notification and add it
+                        Notification notification = new Notification();
+                        notification.type = Notification.TypeNotification.map(position);
+                        notification.status = Notification.TypeStatus.Pending;
+                        mTask.addNotification(notification);
+                    }
+                }
+            });
         }
 
         @Override
@@ -624,7 +656,6 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 }
             });
             holder.mTextViewNotification.setTextColor(getResources().getColor(R.color.button_flat_text_disabled));
-            holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
         }
 
         /**

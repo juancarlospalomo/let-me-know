@@ -117,6 +117,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Set the date part string with a date
+     *
      * @param year
      * @param month
      * @param day
@@ -127,6 +128,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Return the string containing the date part
+     *
      * @return
      */
     public String getDate() {
@@ -135,6 +137,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Set the time part
+     *
      * @param hour
      * @param minute
      */
@@ -144,6 +147,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Return the hour of day
+     *
      * @return hour
      */
     public int getHour() {
@@ -156,6 +160,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Return the minute part
+     *
      * @return minutes of one hour
      */
     public int getMinute() {
@@ -168,6 +173,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Returns the string part containing only the time
+     *
      * @return
      */
     public String getTime() {
@@ -176,6 +182,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Return a date object depicting the date & time stored
+     *
      * @return
      */
     public Date getDateTime() {
@@ -184,6 +191,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Parse a string containing the date and time
+     *
      * @param date
      * @throws ParseException
      */
@@ -214,6 +222,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Parse a date object
+     *
      * @param date
      */
     private void parse(Date date) {
@@ -366,6 +375,22 @@ public class LocalDate implements Comparable<LocalDate> {
     }
 
     /**
+     * Format the Date/Time, including Today label if the date is today
+     * @param context
+     * @return the string with the formatted date
+     */
+    public String getDisplayFormatWithToday(Context context) {
+        TypeDay typeDay = when();
+        String result = "";
+
+        if (typeDay == TypeDay.Today) {
+            result = context.getResources().getString(R.string.text_today) + " ";
+        }
+        result += getDisplayFormat(context);
+        return result;
+    }
+
+    /**
      * Generates the date in a display format based on Material Design date formats
      *
      * @param context
@@ -376,7 +401,7 @@ public class LocalDate implements Comparable<LocalDate> {
         String result = "";
 
         if (typeDay == TypeDay.Today) {
-            //Don't show the day, only time
+            //Don't show the date, only time
             if (!isTimeNull()) {
                 result = DateFormat.getTimeFormat(context).format(getDateTime());
             }
@@ -426,6 +451,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Format a date as MEDIUM in the default locale
+     *
      * @return String containing the date formatted
      */
     public String getDisplayFormatDate() {

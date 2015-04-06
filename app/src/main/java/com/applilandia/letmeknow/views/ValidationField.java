@@ -9,6 +9,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -166,10 +167,25 @@ public class ValidationField extends LinearLayout {
         addView(mValidationView);
     }
 
+    /**
+     * Convert dp to pixels
+     * @param dpValue
+     * @return
+     */
     private int getPixels(int dpValue) {
         DisplayMetrics metrics;
         metrics = getResources().getDisplayMetrics();
         return (int) (metrics.density * dpValue);
+    }
+
+    @Override
+    public void setAlpha(float alpha) {
+        mContentView.setAlpha(alpha);
+    }
+
+    @Override
+    public ViewPropertyAnimator animate() {
+        return mContentView.animate();
     }
 
     /**

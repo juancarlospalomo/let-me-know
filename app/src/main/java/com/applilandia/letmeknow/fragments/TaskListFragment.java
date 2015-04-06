@@ -456,7 +456,11 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             holder.mTextPrimaryText.setText(task.name);
             if (task.targetDateTime != null) {
                 holder.mTextSecondaryText.setVisibility(View.VISIBLE);
-                holder.mTextSecondaryText.setText(task.targetDateTime.getDisplayFormat(getActivity()));
+                if (mTypeTask == Task.TypeTask.All) {
+                    holder.mTextSecondaryText.setText(task.targetDateTime.getDisplayFormatWithToday(getActivity()));
+                } else {
+                    holder.mTextSecondaryText.setText(task.targetDateTime.getDisplayFormat(getActivity()));
+                }
             } else {
                 holder.mTextSecondaryText.setVisibility(View.GONE);
             }
