@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.cross.Settings;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
 
@@ -64,6 +65,10 @@ public class BootService extends IntentService {
         //Always close the cursor
         cursor.close();
 
-        //TODO: Restore daily alarm if it is activated
+        //Restore daily alarm if it is activated
+        if (Settings.getDailyNotificationValue(this)) {
+            NotificationSet.Alarm alarm = new NotificationSet(this).new Alarm();
+            alarm.create(null);
+        }
     }
 }

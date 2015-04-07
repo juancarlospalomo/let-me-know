@@ -89,6 +89,7 @@
     <string name="notification_title_tasks">New Task Notifications</string>
     <string name="notification_content_tasks">Tasks</string>
     <string name="notifications_tracker_details">Task details:</string>
+    <string name="notification_title_today_tasks">Tasks for Today</string>
 
     <!-- Recognizer Intent Error Dialog -->
     <string name="voice_intent_error_title">Error</string>

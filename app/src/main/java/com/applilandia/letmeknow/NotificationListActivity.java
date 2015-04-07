@@ -7,10 +7,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
-import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.fragments.NotificationListFragment;
 import com.applilandia.letmeknow.fragments.TaskFragment;
 import com.applilandia.letmeknow.models.Task;
+import com.applilandia.letmeknow.usecases.UseCaseNotification;
 
 
 public class NotificationListActivity extends ActionBarActivity {
@@ -127,7 +127,9 @@ public class NotificationListActivity extends ActionBarActivity {
      */
     private void cancelNotification() {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(NotificationSet.LET_ME_KNOW_NOTIFICATION_ID);
+        notificationManager.cancel(UseCaseNotification.LET_ME_KNOW_NOTIFICATION_ID);
+        //Remove daily notification
+        notificationManager.cancel(UseCaseNotification.LET_ME_KNOW_DAILY_NOTIFICATION);
     }
 
 }

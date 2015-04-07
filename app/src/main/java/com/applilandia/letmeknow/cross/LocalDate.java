@@ -136,6 +136,14 @@ public class LocalDate implements Comparable<LocalDate> {
     }
 
     /**
+     * Set the time in String format
+     * @param time time in HH:mm format
+     */
+    public void setTime(String time) {
+        mTime = time;
+    }
+
+    /**
      * Set the time part
      *
      * @param hour

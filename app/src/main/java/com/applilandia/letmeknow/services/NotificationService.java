@@ -8,6 +8,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import com.applilandia.letmeknow.NotificationListActivity;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.models.Task;
+import com.applilandia.letmeknow.usecases.UseCaseNotification;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 
 /**
@@ -93,6 +94,6 @@ public class NotificationService extends IntentService {
      */
     private void cancelNotification() {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(NotificationSet.LET_ME_KNOW_NOTIFICATION_ID);
+        notificationManager.cancel(UseCaseNotification.LET_ME_KNOW_NOTIFICATION_ID);
     }
 }

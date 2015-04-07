@@ -10,8 +10,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
 
-import com.applilandia.letmeknow.data.NotificationSet;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -23,6 +21,8 @@ import java.util.Locale;
  * Class for Time Preference
  */
 public class TimePreference extends DialogPreference {
+
+    private OnPreferenceChangeListener mOnPreferenceChangeListener;
 
     private String mDefaultValue;
     private String mCurrentValue;
@@ -42,6 +42,11 @@ public class TimePreference extends DialogPreference {
     protected String onGetDefaultValue(TypedArray a, int index) {
         mDefaultValue = a.getString(index);
         return mDefaultValue;
+    }
+
+    @Override
+    public void setOnPreferenceChangeListener(OnPreferenceChangeListener onPreferenceChangeListener) {
+        mOnPreferenceChangeListener = onPreferenceChangeListener;
     }
 
     /**
@@ -75,9 +80,12 @@ public class TimePreference extends DialogPreference {
             calendar.set(Calendar.MINUTE, minutes.intValue());
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
             mCurrentValue = simpleDateFormat.format(calendar.getTime());
-            persistString(mCurrentValue);
-            NotificationSet.Alarm alarm = new NotificationSet(getContext()).new Alarm();
-            alarm.create(calendar.getTimeInMillis());
+            if (mOnPreferenceChangeListener!=null) {
+                if (mOnPreferenceChangeListener.onPreferenceChange(this, mCurrentValue)) {
+                    persistString(mCurrentValue);
+                }
+            }
+
         }
     }
 

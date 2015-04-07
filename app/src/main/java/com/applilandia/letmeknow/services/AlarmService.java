@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.applilandia.letmeknow.data.NotificationSet;
+import com.applilandia.letmeknow.usecases.UseCaseNotification;
 
 /**
  * Created by JuanCarlos on 20/02/2015.
@@ -12,6 +13,7 @@ import com.applilandia.letmeknow.data.NotificationSet;
 public class AlarmService extends IntentService {
     //Service name for the worker thread.
     private final static String SERVICE_NAME = AlarmService.class.getSimpleName();
+
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      */
@@ -29,16 +31,16 @@ public class AlarmService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent!=null) {
+        if (intent != null) {
             Bundle bundle = intent.getExtras();
-            if (bundle!=null) {
+            if (bundle != null) {
                 int id = bundle.getInt(NotificationSet.Alarm.NOTIFICATION_ID);
-                if (id!=0) {
-                    NotificationSet notificationSet = new NotificationSet(this);
-                    notificationSet.send(id);
+                UseCaseNotification useCaseNotification = new UseCaseNotification(this);
+                if (id != 0) {
+                    useCaseNotification.send(id);
                 } else {
                     //It is a daily notification
-                    //TODO: Generate notification
+                    useCaseNotification.sendTodayTaskNotifications();
                 }
             }
         }

@@ -11,7 +11,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.applilandia.letmeknow.cross.Settings;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.fragments.HomeFragment;
 import com.applilandia.letmeknow.fragments.NotificationListFragment;
@@ -46,12 +46,27 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //The first operation is init the App
+        initApp();
+        //Configure the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.taskToolBar);
         setSupportActionBar(toolbar);
         createNavigationDrawer();
         addHomeFragment();
         addIfNotificationFragment();
+    }
+
+    /**
+     * Configure the app for the first time is executed
+     */
+    private void initApp() {
+        if (!Settings.existPreferenceFile(this)) {
+            //It´s the first time the app is executed
+            //Create the preference file and daily alarm
+            Settings.createPreferenceFile(this);
+            NotificationSet.Alarm alarm = new NotificationSet(this).new Alarm();
+            alarm.create(null);
+        }
     }
 
     /**
@@ -108,10 +123,9 @@ public class MainActivity extends ActionBarActivity {
      * If there are any notification sent, add Fragment to show the notification list
      */
     private void addIfNotificationFragment() {
-        Log.e(LOG_TAG, String.valueOf(LetMeKnowApp.anySentNotification()));
         if (LetMeKnowApp.anySentNotification()) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-            notificationManager.cancel(NotificationSet.LET_ME_KNOW_NOTIFICATION_ID);
+            notificationManager.cancel(UseCaseNotification.LET_ME_KNOW_NOTIFICATION_ID);
             NotificationListFragment fragment = new NotificationListFragment();
             fragment.setOnNotificationListListener(new NotificationListFragment.OnNotificationListListener() {
                 @Override

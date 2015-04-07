@@ -6,21 +6,19 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.applilandia.letmeknow.NotificationListActivity;
-import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.cross.Settings;
 import com.applilandia.letmeknow.exceptions.AlarmException;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.receiver.AlarmReceiver;
-import com.applilandia.letmeknow.services.NotificationService;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -30,8 +28,6 @@ import java.util.List;
 public class NotificationSet extends DbSet<Notification> {
 
     private final static String LOG_TAG = NotificationSet.class.getSimpleName();
-
-    public final static int LET_ME_KNOW_NOTIFICATION_ID = 1;
 
     public NotificationSet(Context context) {
         super(context);
@@ -152,7 +148,7 @@ public class NotificationSet extends DbSet<Notification> {
      * @param notificationId
      * @return
      */
-    private Notification get(int notificationId) {
+    public Notification get(int notificationId) {
         Notification notification = null;
         Cursor cursor = mUnitOfWork.get(TaskContract.NotificationEntry.TABLE_NAME,
                 TaskContract.NotificationEntry._ID + "=?",
@@ -214,7 +210,7 @@ public class NotificationSet extends DbSet<Notification> {
      * @param taskId
      * @return
      */
-    private Task getTask(int taskId) {
+    public Task getTask(int taskId) {
         Task task = null;
         Cursor cursor = mUnitOfWork.get(TaskContract.TaskEntry.TABLE_NAME,
                 TaskContract.TaskEntry._ID + "=?", new String[]{String.valueOf(taskId)},
@@ -262,7 +258,7 @@ public class NotificationSet extends DbSet<Notification> {
      *
      * @return
      */
-    private int getSentNotificationCount() {
+    public int getSentNotificationCount() {
         String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME +
                 " FROM " + TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " + TaskContract.NotificationEntry.TABLE_NAME +
                 " ON " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
@@ -277,44 +273,13 @@ public class NotificationSet extends DbSet<Notification> {
         return 0;
     }
 
-    /**
-     * Build an pending intent for an activity
-     *
-     * @param actionId
-     * @param taskId
-     * @return
-     */
-    private PendingIntent getActivityContentIntent(int actionId, int taskId) {
-        Intent intent = new Intent(mContext, NotificationListActivity.class);
-        intent.putExtra(NotificationListActivity.INTENT_ACTION, actionId);
-        intent.putExtra(NotificationListActivity.EXTRA_TASK_ID, taskId);
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext,
-                actionId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        return pendingIntent;
-    }
-
-    /**
-     * Build a Pending Intent for a service
-     *
-     * @param actionId
-     * @param taskId
-     * @return
-     */
-    private PendingIntent getServiceContentIntent(int actionId, int taskId) {
-        Intent intent = new Intent(mContext, NotificationService.class);
-        intent.putExtra(NotificationService.INTENT_ACTION, actionId);
-        intent.putExtra(NotificationService.EXTRA_TASK_ID, taskId);
-        PendingIntent pendingIntent = PendingIntent.getService(mContext,
-                actionId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        return pendingIntent;
-    }
 
     /**
      * Build a query to get the task name of the notifications sent
      *
      * @return Cursor with the Task names
      */
-    private Cursor getSentNotificationsTaskName() {
+    public Cursor getSentNotificationsTaskName() {
         String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME +
                 " FROM " + TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " + TaskContract.NotificationEntry.TABLE_NAME +
                 " ON " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
@@ -324,95 +289,6 @@ public class NotificationSet extends DbSet<Notification> {
                 " GROUP BY " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME;
         return mUnitOfWork.mDatabase.rawQuery(sql, null);
     }
-
-    /**
-     * Send a multiple view notification
-     */
-    private void sendMultiple(int number) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(mContext.getString(R.string.notification_title_tasks))
-                .setContentText(mContext.getString(R.string.notification_content_tasks))
-                .setNumber(number)
-                .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, 0))
-                .setAutoCancel(true);
-
-        Cursor cursor = getSentNotificationsTaskName();
-        if ((cursor != null) && (cursor.moveToFirst())) {
-            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-            // Sets a title for the Inbox in expanded layout
-            inboxStyle.setBigContentTitle(mContext.getResources().getString(R.string.notifications_tracker_details));
-            // Moves events into the expanded layout
-            while (!cursor.isAfterLast()) {
-                String line = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
-                inboxStyle.addLine(line);
-                cursor.moveToNext();
-            }
-            // Moves the expanded layout object into the notification object.
-            builder.setStyle(inboxStyle);
-        }
-        cursor.close();
-        // Now, issue the notification
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
-        notificationManager.notify(LET_ME_KNOW_NOTIFICATION_ID, builder.build());
-    }
-
-    /**
-     * Send a single notification for a specific one
-     *
-     * @param id notification identifier
-     */
-    private void sendSingle(int id, int taskId) {
-        Task task = null;
-        task = getTask(taskId);
-        if (task != null) {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(task.name)
-                    .setContentText(task.targetDateTime.getDisplayFormat(mContext))
-                    .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, task._id))
-                    .setAutoCancel(true);
-
-            builder.addAction(R.drawable.ic_alarm_on, "",
-                    getActivityContentIntent(NotificationListActivity.ACTION_VIEW,
-                            task._id));
-
-            builder.addAction(R.drawable.ic_check_off, "",
-                    getServiceContentIntent(NotificationService.ACTION_END_TASK,
-                            task._id));
-
-            builder.addAction(R.drawable.ic_clear, "",
-                    getServiceContentIntent(NotificationService.ACTION_DISMISS,
-                            task._id));
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
-            notificationManager.notify(LET_ME_KNOW_NOTIFICATION_ID, builder.build());
-        }
-    }
-
-
-    /**
-     * Send a notification to the notification bar
-     * // Refer to: http://developer.android.com/guide/topics/ui/notifiers/notifications.html
-     * // http://developer.android.com/design/patterns/notifications.html
-     *
-     * @param id notification identifier
-     */
-    public void send(int id) {
-        initWork();
-        changeStatus(id, Notification.TypeStatus.Sent);
-        int count = getSentNotificationCount();
-        Notification notification = get(id);
-        if (notification != null) {
-            if (count == 1) {
-                sendSingle(id, notification.taskId);
-            } else {
-                sendMultiple(count);
-            }
-        }
-        endWork(true);
-    }
-
 
     /**
      * Class to set and cancel the alarms
@@ -451,11 +327,29 @@ public class NotificationSet extends DbSet<Notification> {
         public void create(long timeInMillis) {
             AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(mContext, AlarmReceiver.class);
-            intent.putExtra(NOTIFICATION_ID, 0);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent,
+            intent.putExtra(NOTIFICATION_ID, Settings.DAILY_NOTIFICATION_ID);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, Settings.DAILY_NOTIFICATION_ID, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, timeInMillis,
                     AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
+
+        /**
+         * Create a repetitive alarm based on the passed time
+         * @param time if the passed time is null, it will take the value from the setting
+         */
+        public void create(String time) {
+            if (TextUtils.isEmpty(time)) {
+                time = Settings.getDailyTriggerNotificationValue(mContext);
+            }
+            LocalDate date = new LocalDate();
+            date.setTime(time);
+            int hour = date.getHour();
+            int minute = date.getMinute();
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+            create(calendar.getTimeInMillis());
         }
 
         /**
