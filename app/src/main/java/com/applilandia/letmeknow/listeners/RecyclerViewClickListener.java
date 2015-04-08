@@ -1,11 +1,14 @@
 package com.applilandia.letmeknow.listeners;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+
+import com.applilandia.letmeknow.R;
 
 /**
  * Created by JuanCarlos on 16/03/2015.
@@ -16,6 +19,9 @@ public class RecyclerViewClickListener implements RecyclerView.OnItemTouchListen
 
     public interface RecyclerViewOnItemClickListener {
         public void onItemClick(View view, int position);
+
+        public void onItemSecondaryActionClick(View view, int position);
+
         public void onItemLongClick(View view, int position);
     }
 
@@ -30,7 +36,24 @@ public class RecyclerViewClickListener implements RecyclerView.OnItemTouchListen
 
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                mListener.onItemClick(mView, mPosition);
+                ImageView secondaryActionIcon = (ImageView) mView.findViewById(R.id.image_secondary_action_icon);
+                if (secondaryActionIcon != null) {
+                    //This is a workaround to get the icon coordinates
+                    //because secondaryActionIcon is always the placed on the first raw, I don't know why
+                    //If it worked as expected, we obtain the Rect using getHitRect(outRect)
+                    int left = secondaryActionIcon.getLeft();
+                    int right = secondaryActionIcon.getRight();
+                    int top = mView.getTop();
+                    int bottom = mView.getBottom();
+                    Rect outRect = new Rect(left, top, right, bottom);
+                    if (outRect.contains((int) e.getX(), (int) e.getY())) {
+                        mListener.onItemSecondaryActionClick(secondaryActionIcon, mPosition);
+                    } else {
+                        mListener.onItemClick(mView, mPosition);
+                    }
+                } else {
+                    mListener.onItemClick(mView, mPosition);
+                }
                 return true;
             }
 
@@ -46,7 +69,6 @@ public class RecyclerViewClickListener implements RecyclerView.OnItemTouchListen
         mView = recyclerView.findChildViewUnder(event.getX(), event.getY());
         if ((mView != null) && (mListener != null)) {
             mPosition = recyclerView.getChildPosition(mView);
-            Log.v(LOG_TAG, String.valueOf(mPosition));
             return mGestureDetector.onTouchEvent(event);
         }
         return false;

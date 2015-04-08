@@ -33,5 +33,5 @@
     <dimen name="validation_text_view_field_metric">64dp</dimen>
     <!-- Snack bar -->
     <dimen name="snack_bar_single_line_height">48dp</dimen>
-
+    <dimen name="snack_bar_padding">24dp</dimen>
 </resources>

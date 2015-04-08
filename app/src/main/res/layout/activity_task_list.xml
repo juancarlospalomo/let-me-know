@@ -14,10 +14,10 @@
             android:id="@+id/taskToolBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            letmeknow:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            letmeknow:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+            android:minHeight="?attr/actionBarSize"
+            letmeknow:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            letmeknow:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
             <Spinner
                 android:id="@+id/spinnerTypeTasks"
@@ -42,12 +42,6 @@
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-        <com.applilandia.letmeknow.views.SnackBar
-            android:id="@+id/snackBarTasks"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/snack_bar_single_line_height"
-            android:layout_gravity="bottom" />
     </FrameLayout>
 
 </LinearLayout>

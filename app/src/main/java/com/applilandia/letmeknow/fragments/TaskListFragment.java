@@ -50,12 +50,16 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface OnTaskListFragmentListener {
         public void onTaskSelected(int id);
+
         public void onTaskLongPressed();
+
         public void onTaskDeleted();
     }
 
     //LoaderId for task loader
     private static final int TASK_LOADER_ID = 1;
+    //Save if the task is being ended now
+    private boolean mEndingTask = false;
     //Variables to state the init recyclerview scroll
     private int mShowRowPosition = -1;
     private int mShowRowTask = -1; //Task Id of the row
@@ -136,6 +140,79 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                     deactivateToolbarActions();
                                 }
                             }
+                        }
+                    }
+
+                    private void animEndTask(final View view, final int position) {
+                        final ViewGroup.LayoutParams lp = view.getLayoutParams();
+                        final int originalHeight = view.getHeight();
+
+                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
+
+                        animator.addListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                ViewGroup.LayoutParams lp;
+                                // Reset view presentation
+                                view.setAlpha(1f);
+                                view.setTranslationX(0);
+                                lp = view.getLayoutParams();
+                                lp.height = originalHeight;
+                                view.setLayoutParams(lp);
+                                mAdapter.mTaskList.remove(position);
+//                                mAdapter.notifyItemRemoved(position);
+//                                mAdapter.notifyItemRangeRemoved(position, mAdapter.mTaskList.size());
+                                // Send a cancel event
+                                long time = SystemClock.uptimeMillis();
+                                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+                                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                                mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
+                            }
+                        });
+
+                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                lp.height = (Integer) valueAnimator.getAnimatedValue();
+                                view.setLayoutParams(lp);
+                            }
+                        });
+                        animator.start();
+                    }
+
+                    @Override
+                    public void onItemSecondaryActionClick(final View view, final int position) {
+                        if (!mEndingTask) {
+                            mEndingTask = true;
+                            ((ImageView) view).setImageResource(R.drawable.ic_check_on);
+                            SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
+                            //SnackBar snackBar = (SnackBar) getActivity().findViewById(R.id.snackBarTasks);
+                            snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
+                                @Override
+                                public void onClose() {
+                                    mEndingTask = false;
+                                    Task task = mAdapter.mTaskList.get(position);
+                                    if (task != null) {
+                                        UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                                        if (useCaseTask.setTaskAsCompleted(task)) {
+                                            animEndTask((LinearLayout)view.getParent(), position);
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onUndo() {
+                                    ((ImageView) view).setImageResource(R.drawable.ic_check_off);
+                                    mEndingTask = false;
+                                }
+                            });
+                            snackBar.show(R.string.snack_bar_task_completed_text);
+                        } else {
+                            //Undo and set the task is not being ended yet
+                            ((ImageView) view).setImageResource(R.drawable.ic_check_off);
+                            SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
+                            snackBar.hide();
+                            mEndingTask = false;
                         }
                     }
 
@@ -464,26 +541,6 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             } else {
                 holder.mTextSecondaryText.setVisibility(View.GONE);
             }
-            holder.mIconView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    holder.mIconView.setImageResource(R.drawable.ic_check_on);
-                    SnackBar snackBar = (SnackBar) getActivity().findViewById(R.id.snackBarTasks);
-                    snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
-                        @Override
-                        public void onClose() {
-                            UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-                            if (useCaseTask.setTaskAsCompleted(task)) {
-                                //Remove it from Recycler View
-                                mTaskList.remove(position);
-                                notifyItemRemoved(position);
-                                notifyItemRangeRemoved(position, mTaskList.size());
-                            }
-                        }
-                    });
-                    snackBar.show(R.string.snack_bar_task_completed_text);
-                }
-            });
             holder.itemView.setBackgroundResource(R.drawable.list_row_background);
             holder.mLayoutPrimaryAction.setBackgroundResource(R.drawable.list_row_background);
             if (position == mShowRowPosition) {

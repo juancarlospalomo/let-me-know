@@ -261,6 +261,11 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                                     }
                                 }
                             }
+
+                            @Override
+                            public void onUndo() {
+
+                            }
                         });
                         snackBar.show(R.string.snack_bar_task_completed_text);
                     }
