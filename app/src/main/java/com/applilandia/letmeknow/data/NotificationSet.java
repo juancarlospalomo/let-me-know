@@ -280,7 +280,8 @@ public class NotificationSet extends DbSet<Notification> {
      * @return Cursor with the Task names
      */
     public Cursor getSentNotificationsTaskName() {
-        String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME +
+        String sql = "SELECT " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME + "," +
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME +
                 " FROM " + TaskContract.TaskEntry.TABLE_NAME + " INNER JOIN " + TaskContract.NotificationEntry.TABLE_NAME +
                 " ON " + TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "=" +
                 TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_TASK_ID +

@@ -10,12 +10,14 @@ import android.support.v4.app.NotificationManagerCompat;
 import com.applilandia.letmeknow.LetMeKnowApp;
 import com.applilandia.letmeknow.NotificationListActivity;
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.services.NotificationService;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -82,6 +84,7 @@ public class UseCaseNotification {
         notificationSet.changeStatus(id, Notification.TypeStatus.Sent);
         int count = notificationSet.getSentNotificationCount();
         Notification notification = notificationSet.get(id);
+        notificationSet.endWork(true);
         if (notification != null) {
             if (count == 1) {
                 sendSingle(notification.taskId);
@@ -89,7 +92,6 @@ public class UseCaseNotification {
                 sendMultiple(count);
             }
         }
-        notificationSet.endWork(true);
     }
 
     /**
@@ -127,26 +129,6 @@ public class UseCaseNotification {
     }
 
     /**
-     * Send a daily notification for a single task
-     *
-     * @param task today task
-     */
-    private void sendSingleTodayNotification(Task task) {
-        NotificationSet notificationSet = new NotificationSet(mContext);
-        if (task != null) {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(task.name)
-                    .setContentText(task.targetDateTime.getDisplayFormat(mContext))
-                    .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, task._id))
-                    .setAutoCancel(true);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
-            notificationManager.notify(LET_ME_KNOW_DAILY_NOTIFICATION, builder.build());
-        }
-    }
-
-    /**
      * Send a multiple view notification
      */
     private void sendMultiple(int number) {
@@ -167,6 +149,14 @@ public class UseCaseNotification {
             // Moves events into the expanded layout
             while (!cursor.isAfterLast()) {
                 String line = cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME));
+                try {
+                    LocalDate date = new LocalDate(cursor.getString(cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME)));
+                    if (!date.isNull()) {
+                        line += "    " + date.getDisplayFormat(mContext);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 inboxStyle.addLine(line);
                 cursor.moveToNext();
             }
@@ -202,7 +192,7 @@ public class UseCaseNotification {
                 Task task = taskList.get(index);
                 String line = task.name;
                 if (task.targetDateTime != null) {
-                    line += "" + task.targetDateTime.getDisplayFormat(mContext);
+                    line += "    " + task.targetDateTime.getDisplayFormat(mContext);
                     inboxStyle.addLine(line);
                 }
             }

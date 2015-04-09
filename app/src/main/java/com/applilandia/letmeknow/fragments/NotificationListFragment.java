@@ -42,7 +42,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
 
         /**
          * Trigger when an item has been removed from List
-         * @param count numbers of current items
+         * @param count number of current items
          */
         public void onItemRemoved(int count);
     }
@@ -73,7 +73,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setItemAnimator(new RecyclerNoficationsItemAnimator());
+        mRecyclerView.setItemAnimator(new RecyclerNotificationsItemAnimator());
     }
 
     /**
@@ -103,7 +103,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
         mAdapter = null;
     }
 
-    private class RecyclerNoficationsItemAnimator extends RecyclerView.ItemAnimator {
+    private class RecyclerNotificationsItemAnimator extends RecyclerView.ItemAnimator {
 
         @Override
         public void runPendingAnimations() {

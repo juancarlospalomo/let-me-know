@@ -143,7 +143,12 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         }
                     }
 
-                    private void animEndTask(final View view, final int position) {
+                    /**
+                     * Remove List item applying an animation
+                     * @param view Row
+                     * @param task task to remove
+                     */
+                    private void animEndTask(final View view, final Task task) {
                         final ViewGroup.LayoutParams lp = view.getLayoutParams();
                         final int originalHeight = view.getHeight();
 
@@ -152,16 +157,12 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         animator.addListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animation) {
-                                ViewGroup.LayoutParams lp;
-                                // Reset view presentation
-                                view.setAlpha(1f);
-                                view.setTranslationX(0);
-                                lp = view.getLayoutParams();
-                                lp.height = originalHeight;
-                                view.setLayoutParams(lp);
-                                mAdapter.mTaskList.remove(position);
-//                                mAdapter.notifyItemRemoved(position);
-//                                mAdapter.notifyItemRangeRemoved(position, mAdapter.mTaskList.size());
+                                UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                                if (!useCaseTask.setTaskAsCompleted(task)) {
+                                    AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(getString(R.string.error_title),
+                                            getString(R.string.unit_of_work_exception), null, getString(R.string.error_button_ok));
+                                    alertDialogFragment.show(getFragmentManager(), "errorDialog");
+                                }
                                 // Send a cancel event
                                 long time = SystemClock.uptimeMillis();
                                 MotionEvent cancelEvent = MotionEvent.obtain(time, time,
@@ -186,17 +187,13 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                             mEndingTask = true;
                             ((ImageView) view).setImageResource(R.drawable.ic_check_on);
                             SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
-                            //SnackBar snackBar = (SnackBar) getActivity().findViewById(R.id.snackBarTasks);
                             snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
                                 @Override
                                 public void onClose() {
                                     mEndingTask = false;
                                     Task task = mAdapter.mTaskList.get(position);
                                     if (task != null) {
-                                        UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-                                        if (useCaseTask.setTaskAsCompleted(task)) {
-                                            animEndTask((LinearLayout)view.getParent(), position);
-                                        }
+                                        animEndTask((LinearLayout)view.getParent(), task);
                                     }
                                 }
 
@@ -211,7 +208,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                             //Undo and set the task is not being ended yet
                             ((ImageView) view).setImageResource(R.drawable.ic_check_off);
                             SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
-                            snackBar.hide();
+                            snackBar.undo();
                             mEndingTask = false;
                         }
                     }
@@ -391,6 +388,22 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     /**
+     * Show the Empty List Image
+     */
+    private void showEmptyList() {
+        ImageView view = (ImageView) getView().findViewById(R.id.imageEmptyList);
+        view.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Hide the Empty List Image
+     */
+    private void hideEmptyList() {
+        ImageView view = (ImageView) getView().findViewById(R.id.imageEmptyList);
+        view.setVisibility(View.GONE);
+    }
+
+    /**
      * Triggered by Loader Manager after init the loaded when it doesn't exist
      * or when restartLoader is called
      *
@@ -414,12 +427,19 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
         if (loader.getId() == TASK_LOADER_ID) {
             if (data != null) {
+                if (data.size()>0) {
+                    hideEmptyList();
+                } else {
+                    showEmptyList();
+                }
                 mAdapter = new TaskAdapter(data);
                 mTaskRecyclerView.setAdapter(mAdapter);
                 if (mShowRowTask != -1) {
                     convertTaskIdToPosition();
                     mTaskRecyclerView.scrollToPosition(mShowRowPosition);
                 }
+            } else {
+                showEmptyList();
             }
         }
         mProgressBar.setVisibility(View.GONE);

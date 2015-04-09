@@ -121,6 +121,14 @@ public class SnackBar extends RelativeLayout {
     }
 
     /**
+     * Set the action as Undone
+     */
+    public void undo() {
+        mUndo = true;
+        hide();
+    }
+
+    /**
      * Set the listener
      * @param l
      */

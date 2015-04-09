@@ -89,8 +89,12 @@ public class TaskProvider extends ContentProvider {
         String selection = TaskContract.NotificationEntry.TABLE_NAME + "." + TaskContract.NotificationEntry.COLUMN_STATUS + "=?";
         String[] args = new String[]{String.valueOf(status)};
 
+        String groupBy = TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry._ID + "," +
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TASK_NAME + "," +
+                TaskContract.TaskEntry.TABLE_NAME + "." + TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME;
+
         return sqLiteQueryBuilder.query(mDbHelper.getReadableDatabase(),
-                fields, selection, args, null, null, orderBy);
+                fields, selection, args, groupBy, null, orderBy);
     }
 
     /**

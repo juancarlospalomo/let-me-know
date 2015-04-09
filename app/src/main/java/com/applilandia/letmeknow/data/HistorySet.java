@@ -21,7 +21,9 @@ public class HistorySet extends DbSet<History> {
     public long create(History history) {
         ContentValues values = new ContentValues();
         values.put(TaskContract.HistoryEntry.COLUMN_TASK_NAME, history.name);
-        values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, history.targetDate.toString());
+        if (history.targetDate != null) {
+            values.put(TaskContract.HistoryEntry.COLUMN_TARGET_DATE_TIME, history.targetDate.toString());
+        }
         values.put(TaskContract.HistoryEntry.COLUMN_COMPLETED_DATE_TIME, history.completedDate.toString());
         long rowId = mUnitOfWork.add(TaskContract.HistoryEntry.TABLE_NAME, null, values);
         if (rowId > 0) {

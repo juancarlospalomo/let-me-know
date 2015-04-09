@@ -46,14 +46,16 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //The first operation is init the App
-        initApp();
         //Configure the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.taskToolBar);
         setSupportActionBar(toolbar);
         createNavigationDrawer();
-        addHomeFragment();
-        addIfNotificationFragment();
+        if (savedInstanceState == null) {
+            //The first operation is init the App
+            initApp();
+            addHomeFragment();
+            addIfNotificationFragment();
+        }
     }
 
     /**
