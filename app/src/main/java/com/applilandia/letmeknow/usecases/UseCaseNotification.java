@@ -4,6 +4,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -109,6 +111,8 @@ public class UseCaseNotification {
                     .setContentTitle(task.name)
                     .setContentText(task.targetDateTime.getDisplayFormat(mContext))
                     .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, task._id))
+                    .setSound(getSound())
+                    .setVibrate(getVibratePattern())
                     .setAutoCancel(true);
 
             builder.addAction(R.drawable.ic_alarm_on, "",
@@ -139,6 +143,8 @@ public class UseCaseNotification {
                 .setContentText(mContext.getString(R.string.notification_content_tasks))
                 .setNumber(number)
                 .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, 0))
+                .setSound(getSound())
+                .setVibrate(getVibratePattern())
                 .setAutoCancel(true);
 
         Cursor cursor = notificationSet.getSentNotificationsTaskName();
@@ -182,6 +188,8 @@ public class UseCaseNotification {
                     .setContentText(mContext.getString(R.string.notification_content_tasks))
                     .setNumber(taskList.size())
                     .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, 0))
+                    .setSound(getSound())
+                    .setVibrate(getVibratePattern())
                     .setAutoCancel(true);
 
             NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
@@ -236,5 +244,22 @@ public class UseCaseNotification {
         return pendingIntent;
     }
 
+
+    /**
+     * Obtain a vibrate pattern
+     *
+     * @return long array pattern
+     */
+    private long[] getVibratePattern() {
+        return new long[]{0, 200, 100, 300, 400};
+    }
+
+    /**
+     * Get the sound for the notification
+     * @return return Uri of the ringtone
+     */
+    private Uri getSound() {
+        return RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    }
 
 }
