@@ -14,12 +14,14 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -251,6 +253,16 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 mValidationFieldTaskName.removeError();
             }
         });
+        //Set handler to hide the keyboard with the user press on Done key
+        mValidationFieldTaskName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    hideSoftKeyboard();
+                }
+                return false;
+            }
+        });
     }
 
     /**
@@ -430,7 +442,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                             if (mTask.targetDateTime.compareTo(new LocalDate()) >= 0) {
                                 if (mTask.hasNotifications()) {
                                     //Update the date & time of notifications
-                                    for(int index = 0; index < Notification.TypeNotification.values().length; index++) {
+                                    for (int index = 0; index < Notification.TypeNotification.values().length; index++) {
                                         mTask.updateNotification(mTask.getNotification(Notification.TypeNotification.map(index)));
                                     }
                                 }

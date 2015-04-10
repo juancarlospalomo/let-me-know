@@ -275,4 +275,14 @@ public class ValidationField extends LinearLayout {
         });
     }
 
+    /**
+     * Set the editor action listener
+     * @param l
+     */
+    public void setOnEditorActionListener(EditText.OnEditorActionListener l) {
+        if (mViewType == TypeView.EditText) {
+            ((EditText)mContentView).setOnEditorActionListener(l);
+        }
+    }
+
 }

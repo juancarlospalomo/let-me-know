@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.applilandia.letmeknow.cross.LocalDate;
 import com.applilandia.letmeknow.fragments.TaskFragment;
 import com.applilandia.letmeknow.fragments.TaskListFragment;
 import com.applilandia.letmeknow.models.Task;
@@ -219,6 +220,11 @@ public class TaskListActivity extends ActionBarActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(TaskListActivity.this, TaskActivity.class);
                 intent.putExtra(TaskActivity.EXTRA_WORK_MODE, TaskActivity.TypeWorkMode.New.getValue());
+                if (mTypeTask == Task.TypeTask.Today) {
+                    LocalDate today = new LocalDate();
+                    today.removeTime();
+                    intent.putExtra(TaskActivity.EXTRA_TASK_DATE, today.toString());
+                }
                 startActivityForResult(intent, REQUEST_CODE_TASK);
             }
         });
