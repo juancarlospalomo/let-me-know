@@ -5,6 +5,7 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.content.AsyncTaskLoader;
+
 import com.applilandia.letmeknow.data.TaskContract;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -22,13 +23,15 @@ public class TaskNotificationStatusLoader extends AsyncTaskLoader<List<Task>> {
     private List<Task> mTaskList;
     private NotificationObserver mObserver;
 
-    public TaskNotificationStatusLoader(Context context, Notification.TypeStatus typeStatus) {
+    public TaskNotificationStatusLoader(Context context, Notification.TypeStatus typeStatus, boolean watch) {
         super(context);
         mContext = context;
         mTypeStatus = typeStatus;
-        mObserver = new NotificationObserver(new Handler());
-        mContext.getContentResolver().registerContentObserver(TaskContract.NotificationEntry.CONTENT_URI,
-                true, mObserver);
+        if (watch) {
+            mObserver = new NotificationObserver(new Handler());
+            mContext.getContentResolver().registerContentObserver(TaskContract.NotificationEntry.CONTENT_URI,
+                    true, mObserver);
+        }
     }
 
     @Override
@@ -96,7 +99,7 @@ public class TaskNotificationStatusLoader extends AsyncTaskLoader<List<Task>> {
      * with an actively loaded data set.
      */
     protected void onReleaseResources(List<Task> data) {
-        if (data!=null) {
+        if (data != null) {
             data.clear();
         }
         //Unregister the observer to avoid GC doesn't eliminate the class object

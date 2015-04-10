@@ -141,6 +141,11 @@ public class MainActivity extends ActionBarActivity {
                         getSupportFragmentManager().popBackStack();
                     }
                 }
+
+                @Override
+                public void onListEmpty() {
+
+                }
             });
             getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
                 @Override

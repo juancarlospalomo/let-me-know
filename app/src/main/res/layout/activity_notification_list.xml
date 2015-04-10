@@ -19,12 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.applilandia.letmeknow.views.SnackBar
-            android:id="@+id/snackBarNotifications"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/snack_bar_single_line_height"
-            android:layout_gravity="bottom" />
-
     </FrameLayout>
 
 </LinearLayout>

@@ -1,13 +1,11 @@
 package com.applilandia.letmeknow.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -31,23 +29,33 @@ import java.util.List;
  */
 public class NotificationListFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Task>> {
 
+    private final static String LOG_TAG = NotificationListFragment.class.getSimpleName();
+
     private static final int LOADER_ID = 1;
 
     public interface OnNotificationListListener {
         /**
          * Trigger when a task has been selected
+         *
          * @param id task identifier of the selected task
          */
         public void onSelectedTask(int id);
 
         /**
          * Trigger when an item has been removed from List
+         *
          * @param count number of current items
          */
         public void onItemRemoved(int count);
+
+        /**
+         * Trigger when the list has not any more element
+         */
+        public void onListEmpty();
     }
 
     private OnNotificationListListener mOnNotificationListListener;
+    private SnackBar mSnackBar;
     private RecyclerView mRecyclerView;
     private TaskAdapter mAdapter;
 
@@ -61,6 +69,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        mSnackBar = (SnackBar) getView().findViewById(R.id.snackBarNotifications);
         initRecyclerView();
         getLoaderManager().initLoader(LOADER_ID, null, this);
     }
@@ -73,7 +82,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setItemAnimator(new RecyclerNotificationsItemAnimator());
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     }
 
     /**
@@ -87,87 +96,26 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
 
     @Override
     public Loader<List<Task>> onCreateLoader(int id, Bundle args) {
-        return new TaskNotificationStatusLoader(getActivity(), Notification.TypeStatus.Sent);
+        return new TaskNotificationStatusLoader(getActivity(), Notification.TypeStatus.Sent, false);
     }
 
     @Override
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
         if (loader.getId() == LOADER_ID) {
-            mAdapter = new TaskAdapter(data);
-            mRecyclerView.setAdapter(mAdapter);
+            if ((data != null) && (data.size() > 0)) {
+                mAdapter = new TaskAdapter(data);
+                mRecyclerView.setAdapter(mAdapter);
+            } else {
+                if (mOnNotificationListListener != null) {
+                    mOnNotificationListListener.onListEmpty();
+                }
+            }
         }
     }
 
     @Override
     public void onLoaderReset(Loader<List<Task>> loader) {
         mAdapter = null;
-    }
-
-    private class RecyclerNotificationsItemAnimator extends RecyclerView.ItemAnimator {
-
-        @Override
-        public void runPendingAnimations() {
-        }
-
-        @Override
-        public boolean animateRemove(final RecyclerView.ViewHolder holder) {
-            final ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
-            final int originalHeight = holder.itemView.getHeight();
-
-            ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(holder.itemView.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
-
-            animator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    ViewGroup.LayoutParams lp;
-                    // Reset view presentation
-                    holder.itemView.setAlpha(1f);
-                    holder.itemView.setTranslationX(0);
-                    lp = holder.itemView.getLayoutParams();
-                    lp.height = originalHeight;
-                    holder.itemView.setLayoutParams(lp);
-                    dispatchRemoveFinished(holder);
-                }
-            });
-
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    lp.height = (Integer) valueAnimator.getAnimatedValue();
-                    holder.itemView.setLayoutParams(lp);
-                }
-            });
-            animator.start();
-            return false;
-        }
-
-        @Override
-        public boolean animateAdd(RecyclerView.ViewHolder holder) {
-            return false;
-        }
-
-        @Override
-        public boolean animateMove(RecyclerView.ViewHolder holder, int fromX, int fromY, int toX, int toY) {
-            return false;
-        }
-
-        @Override
-        public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromLeft, int fromTop, int toLeft, int toTop) {
-            return false;
-        }
-
-        @Override
-        public void endAnimation(RecyclerView.ViewHolder item) {
-        }
-
-        @Override
-        public void endAnimations() {
-        }
-
-        @Override
-        public boolean isRunning() {
-            return false;
-        }
     }
 
     /**
@@ -232,9 +180,8 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                     public void onClick(View v) {
                         NotificationSet notificationSet = new NotificationSet(getActivity());
                         notificationSet.deleteSentNotification(task._id);
-                        mTaskList.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeRemoved(position, mTaskList.size());
+                        mTaskList.remove(task);
+                        notifyItemRangeRemoved(position, 1);
                         if (mOnNotificationListListener != null) {
                             //Notify one item has been removed from the list
                             mOnNotificationListListener.onItemRemoved(mTaskList.size());
@@ -244,30 +191,34 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                 holder.mImageViewCheck.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
-                        SnackBar snackBar = (SnackBar) getActivity().findViewById(R.id.snackBarNotifications);
-                        snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
-                            @Override
-                            public void onClose() {
-                                UseCaseTask useCaseTask = new UseCaseTask(getActivity());
-                                if (useCaseTask.setTaskAsCompleted(task)) {
-                                    //Remove it from Recycler View
-                                    mTaskList.remove(position);
-                                    notifyItemRemoved(position);
-                                    notifyItemRangeRemoved(position, mTaskList.size());
-                                    if (mOnNotificationListListener != null) {
-                                        //Notify an item has been removed
-                                        mOnNotificationListListener.onItemRemoved(mTaskList.size());
+                        if (mSnackBar.getVisibility() == View.GONE) {
+                            holder.mImageViewCheck.setImageResource(R.drawable.ic_check_on);
+                            mSnackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
+                                @Override
+                                public void onClose() {
+                                    UseCaseTask useCaseTask = new UseCaseTask(getActivity());
+                                    if (useCaseTask.setTaskAsCompleted(task)) {
+                                        //Remove it from Recycler View
+                                        mTaskList.remove(task);
+                                        notifyItemRangeRemoved(position, 1);
+                                        if (mOnNotificationListListener != null) {
+                                            //Notify an item has been removed
+                                            mOnNotificationListListener.onItemRemoved(mTaskList.size());
+                                        }
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onUndo() {
-
-                            }
-                        });
-                        snackBar.show(R.string.snack_bar_task_completed_text);
+                                @Override
+                                public void onUndo() {
+                                    mSnackBar.undo();
+                                    holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
+                                }
+                            });
+                            mSnackBar.show(R.string.snack_bar_task_completed_text);
+                        } else {
+                            mSnackBar.undo();
+                            holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
+                        }
                     }
                 });
                 holder.mImageViewNotifications.setOnClickListener(new View.OnClickListener() {
