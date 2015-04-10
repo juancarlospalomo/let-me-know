@@ -283,6 +283,12 @@ public class TaskListActivity extends ActionBarActivity {
                     refreshUIState(INDEX_FRAGMENT_LIST);
                 }
             }
+
+            @Override
+            public void onToolbarActionClose() {
+                refreshToolbarState(false);
+                refreshUIState(INDEX_FRAGMENT_LIST);
+            }
         });
     }
 

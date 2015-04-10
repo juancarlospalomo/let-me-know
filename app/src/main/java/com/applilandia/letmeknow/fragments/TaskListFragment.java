@@ -49,11 +49,27 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private final static String LOG_TAG = TaskListFragment.class.getSimpleName();
 
     public interface OnTaskListFragmentListener {
+        /**
+         * Triggered when a Task has been clicked and action bar is not activated
+         *
+         * @param id task identifier
+         */
         public void onTaskSelected(int id);
 
+        /**
+         * Triggered when the user does a long press on a row
+         */
         public void onTaskLongPressed();
 
+        /**
+         * Triggered when a task has been deleted
+         */
         public void onTaskDeleted();
+
+        /**
+         * Triggered when the actions are removed from the toolbar
+         */
+        public void onToolbarActionClose();
     }
 
     //LoaderId for task loader
@@ -64,7 +80,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private int mShowRowPosition = -1;
     private int mShowRowTask = -1; //Task Id of the row
     //ActionBar status
-    private boolean mActionBarActived = false;
+    private boolean mActionBarActivated = false;
     //Type task to be loaded in the fragment
     private Task.TypeTask mTypeTask;
     private ProgressBar mProgressBar;
@@ -116,7 +132,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                 new RecyclerViewClickListener.RecyclerViewOnItemClickListener() {
                     @Override
                     public void onItemClick(View view, final int position) {
-                        if (!mActionBarActived) {
+                        if (!mActionBarActivated) {
                             AnimatorSet animatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.touch_feedback_animator);
                             animatorSet.setTarget(view);
                             animatorSet.start();
@@ -138,6 +154,9 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                 view.findViewById(R.id.layout_primary_action_content).setBackgroundResource(R.drawable.item_background);
                                 if (mAdapter.getSelectedCount() == 0) {
                                     deactivateToolbarActions();
+                                    if (mOnTaskListFragmentListener != null) {
+                                        mOnTaskListFragmentListener.onToolbarActionClose();
+                                    }
                                 }
                             }
                         }
@@ -193,7 +212,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                     mEndingTask = false;
                                     Task task = mAdapter.mTaskList.get(position);
                                     if (task != null) {
-                                        animEndTask((LinearLayout)view.getParent(), task);
+                                        animEndTask((LinearLayout) view.getParent(), task);
                                     }
                                 }
 
@@ -325,7 +344,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (mActionBarActived) {
+        if (mActionBarActivated) {
             inflater.inflate(R.menu.menu_task_list, menu);
         } else {
             super.onCreateOptionsMenu(menu, inflater);
@@ -347,7 +366,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      * Activate the action icons in the toolbar
      */
     public void activateToolbarActions() {
-        mActionBarActived = true;
+        mActionBarActivated = true;
         getActivity().invalidateOptionsMenu();
     }
 
@@ -355,7 +374,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      * Deactivate the action bar to remove the actions
      */
     public void deactivateToolbarActions() {
-        mActionBarActived = false;
+        mActionBarActivated = false;
         getActivity().invalidateOptionsMenu();
         mAdapter.resetSelected();
     }
@@ -427,7 +446,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
         if (loader.getId() == TASK_LOADER_ID) {
             if (data != null) {
-                if (data.size()>0) {
+                if (data.size() > 0) {
                     hideEmptyList();
                 } else {
                     showEmptyList();
@@ -730,7 +749,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             if (mOnTaskListFragmentListener != null) {
                 mOnTaskListFragmentListener.onTaskDeleted();
             }
-            if (mActionBarActived) {
+            if (mActionBarActivated) {
                 deactivateToolbarActions();
             }
         }
