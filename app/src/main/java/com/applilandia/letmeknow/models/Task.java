@@ -180,7 +180,6 @@ public class Task implements IValidatable, Parcelable {
 
     /**
      * Add a notification to the list of them
-     *
      * @param notification to add
      */
     public void addNotification(Notification notification) {
@@ -202,6 +201,32 @@ public class Task implements IValidatable, Parcelable {
         }
         notification.dateTime = notificationDateTime.getDateTime();
         mNotifications.put(notification.type.getValue(), notification);
+    }
+
+    /**
+     * Update notification date time
+     * @param notification notification to get updated the date & time
+     */
+    public void updateNotification(Notification notification) {
+        if (mNotifications != null) {
+            if (notification != null) {
+                LocalDate notificationDateTime = new LocalDate(targetDateTime);
+                if (notification.type == Notification.TypeNotification.FiveMinutesBefore) {
+                    notificationDateTime.addMinutes(-5);
+                }
+                if (notification.type == Notification.TypeNotification.OneHourBefore) {
+                    notificationDateTime.addHours(-1);
+                }
+                if (notification.type == Notification.TypeNotification.OneDayBefore) {
+                    notificationDateTime.addDays(-1);
+                }
+                if (notification.type == Notification.TypeNotification.OneWeekBefore) {
+                    notificationDateTime.addDays(-7);
+                }
+                notification.dateTime = notificationDateTime.getDateTime();
+                mNotifications.put(notification.type.getValue(), notification);
+            }
+        }
     }
 
     /**

@@ -428,6 +428,12 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                         public void onOk(int hour, int minute) {
                             mTask.targetDateTime.setTime(hour, minute);
                             if (mTask.targetDateTime.compareTo(new LocalDate()) >= 0) {
+                                if (mTask.hasNotifications()) {
+                                    //Update the date & time of notifications
+                                    for(int index = 0; index < Notification.TypeNotification.values().length; index++) {
+                                        mTask.updateNotification(mTask.getNotification(Notification.TypeNotification.map(index)));
+                                    }
+                                }
                                 mValidationFieldTime.setText(mTask.targetDateTime.getDisplayFormatTime(getActivity()));
                                 refreshUIStatus(UIState.TimeSet);
                             } else {
