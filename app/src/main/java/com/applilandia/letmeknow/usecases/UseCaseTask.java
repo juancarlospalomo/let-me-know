@@ -267,7 +267,7 @@ public class UseCaseTask {
         currentDate.setTime(23, 59);
         String endingDateTime = currentDate.toString();
         String[] args = new String[]{currentDate.getDate(), beginningDateTime, endingDateTime};
-        String orderBy = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " DESC LIMIT 1";
+        String orderBy = TaskContract.TaskEntry.COLUMN_TARGET_DATE_TIME + " LIMIT 1";
 
         Cursor cursor = mContext.getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI,
                 null, selection, args, orderBy);
@@ -569,7 +569,6 @@ public class UseCaseTask {
             //It was created in history
             TaskSet taskSet = new TaskSet(mContext, historySet.getUnitOfWork());
             result = taskSet.delete(task);
-        } else {
         }
         historySet.endWork(result);
         return result;

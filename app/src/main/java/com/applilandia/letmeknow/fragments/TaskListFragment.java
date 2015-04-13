@@ -74,8 +74,6 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
     //LoaderId for task loader
     private static final int TASK_LOADER_ID = 1;
-    //Save if the task is being ended now
-    private boolean mEndingTask = false;
     //Variables to state the init recyclerview scroll
     private int mShowRowPosition = -1;
     private int mShowRowTask = -1; //Task Id of the row
@@ -84,6 +82,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     //Type task to be loaded in the fragment
     private Task.TypeTask mTypeTask;
     private ProgressBar mProgressBar;
+    private SnackBar mSnackBar;
     private RecyclerView mTaskRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private TaskAdapter mAdapter;
@@ -114,6 +113,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         View view = getView();
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressActivityTask);
+        mSnackBar = (SnackBar) view.findViewById(R.id.snackBarTasks);
         initRecyclerView();
         //Init loader.  Data will be set to Adapter in onLoadFinished()
         getLoaderManager().initLoader(TASK_LOADER_ID, null, this);
@@ -171,11 +171,12 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         final ViewGroup.LayoutParams lp = view.getLayoutParams();
                         final int originalHeight = view.getHeight();
 
-                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
+                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 0).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
 
                         animator.addListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animation) {
+                                view.setVisibility(View.INVISIBLE);
                                 UseCaseTask useCaseTask = new UseCaseTask(getActivity());
                                 if (!useCaseTask.setTaskAsCompleted(task)) {
                                     AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(getString(R.string.error_title),
@@ -202,14 +203,11 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
 
                     @Override
                     public void onItemSecondaryActionClick(final View view, final int position) {
-                        if (!mEndingTask) {
-                            mEndingTask = true;
+                        if (mSnackBar.getVisibility() == View.GONE) {
                             ((ImageView) view).setImageResource(R.drawable.ic_check_on);
-                            SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
-                            snackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
+                            mSnackBar.setOnSnackBarListener(new SnackBar.OnSnackBarListener() {
                                 @Override
                                 public void onClose() {
-                                    mEndingTask = false;
                                     Task task = mAdapter.mTaskList.get(position);
                                     if (task != null) {
                                         animEndTask((LinearLayout) view.getParent(), task);
@@ -219,16 +217,13 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                 @Override
                                 public void onUndo() {
                                     ((ImageView) view).setImageResource(R.drawable.ic_check_off);
-                                    mEndingTask = false;
                                 }
                             });
-                            snackBar.show(R.string.snack_bar_task_completed_text);
+                            mSnackBar.show(R.string.snack_bar_task_completed_text);
                         } else {
                             //Undo and set the task is not being ended yet
                             ((ImageView) view).setImageResource(R.drawable.ic_check_off);
-                            SnackBar snackBar = (SnackBar) getView().findViewById(R.id.snackBarTasks);
-                            snackBar.undo();
-                            mEndingTask = false;
+                            mSnackBar.undo();
                         }
                     }
 

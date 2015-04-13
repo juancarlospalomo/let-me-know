@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.applilandia.letmeknow" >
+    package="com.applilandia.letmeknow">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
         android:name=".LetMeKnowApp"
+        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppProductivityTheme" >
+        android:theme="@style/AppProductivityTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,7 +26,7 @@
             android:name=".data.TaskProvider"
             android:authorities="com.applilandia.letmeknow" />
 
-        <receiver android:name=".receiver.BootReceiver" >
+        <receiver android:name=".receiver.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -39,7 +40,7 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.applilandia.letmeknow.MainActivity" />
@@ -47,7 +48,7 @@
         <activity
             android:name=".TaskListActivity"
             android:label="@string/title_activity_task_list"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
 
             <!--
                 <meta-data
@@ -57,12 +58,10 @@
         </activity>
         <activity
             android:name=".TaskActivity"
-            android:label="@string/title_activity_task" >
-        </activity>
+            android:label="@string/title_activity_task"></activity>
         <activity
             android:name=".NotificationListActivity"
-            android:label="@string/title_activity_notification_list" >
-        </activity>
+            android:label="@string/title_activity_notification_list"></activity>
     </application>
 
 </manifest>

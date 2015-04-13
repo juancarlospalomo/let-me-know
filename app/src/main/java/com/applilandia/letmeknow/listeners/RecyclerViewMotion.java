@@ -105,9 +105,14 @@ public class RecyclerViewMotion implements View.OnTouchListener {
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
-                                    mDownPosition = ListView.INVALID_POSITION;
-                                    if (mOnRecyclerViewMotion != null) {
-                                        mOnRecyclerViewMotion.onDismiss(downView, position);
+                                    if (mDownPosition != ListView.INVALID_POSITION) {
+                                        //Only send the event the position is valid
+                                        //This fix the Android v4.x issue regarding to
+                                        //onAnimationEnd is called twice
+                                        mDownPosition = ListView.INVALID_POSITION;
+                                        if (mOnRecyclerViewMotion != null) {
+                                            mOnRecyclerViewMotion.onDismiss(downView, position);
+                                        }
                                     }
                                 }
                             })
@@ -120,10 +125,10 @@ public class RecyclerViewMotion implements View.OnTouchListener {
                                         .getInteger(android.R.integer.config_shortAnimTime))
                                 .start();
                     }
+                    mDownPosition = ListView.INVALID_POSITION;
                 }
                 mDownX = 0;
                 mDownView = null;
-                mDownPosition = ListView.INVALID_POSITION;
                 mSwiping = false;
                 break;
 
@@ -170,58 +175,5 @@ public class RecyclerViewMotion implements View.OnTouchListener {
 
         return false;
     }
-
-/*
-    public void performDismiss(final RecyclerView recyclerView, final View dismissView, final int dismissPosition) {
-
-        if (dismissView != null) {
-            AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(recyclerView.getResources().getString(R.string.delete_task_dialog_title),
-                    "", recyclerView.getResources().getString(R.string.delete_task_dialog_cancel_text),
-                    recyclerView.getResources().getString(R.string.delete_task_dalog_ok_text));
-            alertDialog.setButtonOnClickListener(new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (which == AlertDialogFragment.INDEX_BUTTON_YES) {
-                        final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
-                        final int originalHeight = dismissView.getHeight();
-
-                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(dismissView.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
-
-                        animator.addListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                mDownPosition = ListView.INVALID_POSITION;
-                                ViewGroup.LayoutParams lp;
-                                // Reset view presentation
-                                dismissView.setAlpha(1f);
-                                dismissView.setTranslationX(0);
-                                lp = dismissView.getLayoutParams();
-                                lp.height = originalHeight;
-                                dismissView.setLayoutParams(lp);
-                                mOnRecyclerViewMotion.onDismiss(dismissPosition);
-                                // Send a cancel event
-                                long time = SystemClock.uptimeMillis();
-                                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
-                                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                                recyclerView.dispatchTouchEvent(cancelEvent);
-                            }
-                        });
-
-                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                                dismissView.setLayoutParams(lp);
-                            }
-                        });
-                        animator.start();
-
-                    }
-                }
-            });
-        }
-    }
-*/
-
 
 }

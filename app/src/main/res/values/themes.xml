@@ -5,9 +5,10 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="windowActionBar">false</item>
+        <!-- colorPrimary is used for the default action bar background -->
+        <item name="colorPrimary">@color/color_toolbar_background</item>
         <!-- Tile attributes -->
         <item name="tileStyle">@style/Widget.Tile</item>
-        <item name="colorPrimary">@color/color_toolbar_background</item>
         <!-- List attributes -->
         <item name="textAppearanceListItem">@style/AppProductivityTheme.TextAppearance.Material.Subhead</item>
         <item name="textAppearanceListItemSecondary">@style/AppProductivityTheme.TextAppearance.Material.Body1</item>

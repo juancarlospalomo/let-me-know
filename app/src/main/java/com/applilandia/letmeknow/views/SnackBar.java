@@ -23,6 +23,7 @@ public class SnackBar extends RelativeLayout {
 
     public interface OnSnackBarListener {
         public void onClose();
+
         public void onUndo();
     }
 
@@ -48,6 +49,7 @@ public class SnackBar extends RelativeLayout {
 
     /**
      * Create the TextView to show the Text for snack bar
+     *
      * @param context
      */
     private void createSnackBarText(Context context) {
@@ -62,6 +64,7 @@ public class SnackBar extends RelativeLayout {
 
     /**
      * Create the TextView for the action
+     *
      * @param context
      */
     private void createSnackBarAction(Context context) {
@@ -88,6 +91,7 @@ public class SnackBar extends RelativeLayout {
 
     /**
      * Show snack bar
+     *
      * @param messageResId message resource to show as the text
      */
     public void show(int messageResId) {
@@ -96,13 +100,15 @@ public class SnackBar extends RelativeLayout {
         mText.setText(messageResId);
         setVisibility(View.VISIBLE);
         setAlpha(1);
+
         animate().setDuration(2000)
                 .setInterpolator(new AccelerateInterpolator())
                 .alpha(0f)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (!mUndo) {
+                        //To avoid this event is called twice in Android v4.x
+                        if ((!mUndo) && (getVisibility() == View.VISIBLE)) {
                             hide();
                             if (mOnSnackBarListener != null) {
                                 mOnSnackBarListener.onClose();
@@ -130,6 +136,7 @@ public class SnackBar extends RelativeLayout {
 
     /**
      * Set the listener
+     *
      * @param l
      */
     public void setOnSnackBarListener(OnSnackBarListener l) {
@@ -138,6 +145,7 @@ public class SnackBar extends RelativeLayout {
 
     /**
      * Convert dp´s to pixels
+     *
      * @param dpValue
      * @return
      */
