@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.data.NotificationSet;
+import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.loaders.TaskNotificationStatusLoader;
 import com.applilandia.letmeknow.models.Notification;
 import com.applilandia.letmeknow.models.Task;
@@ -55,6 +56,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     }
 
     private OnNotificationListListener mOnNotificationListListener;
+    private boolean mSourceDaily = false;
     private SnackBar mSnackBar;
     private RecyclerView mRecyclerView;
     private TaskAdapter mAdapter;
@@ -68,10 +70,17 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         mSnackBar = (SnackBar) getView().findViewById(R.id.snackBarNotifications);
         initRecyclerView();
         getLoaderManager().initLoader(LOADER_ID, null, this);
+    }
+
+    /**
+     * Set if the fragment has be show the tasks based on the notifications or on the day tasks
+     * @param value daily source = true
+     */
+    public void setDailySource(boolean value) {
+        mSourceDaily = value;
     }
 
     /**
@@ -96,7 +105,11 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
 
     @Override
     public Loader<List<Task>> onCreateLoader(int id, Bundle args) {
-        return new TaskNotificationStatusLoader(getActivity(), Notification.TypeStatus.Sent, false);
+        if (!mSourceDaily) {
+            return new TaskNotificationStatusLoader(getActivity(), Notification.TypeStatus.Sent, false);
+        } else {
+            return new TaskLoader(getActivity(), Task.TypeTask.Today);
+        }
     }
 
     @Override

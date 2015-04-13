@@ -161,6 +161,14 @@ public class Tile extends LinearLayout {
     }
 
     /**
+     * Set footer enabled or disabled
+     * @param enabled true to enable
+     */
+    public void setFooterEnabled(boolean enabled) {
+        mFooter.setEnabled(enabled);
+    }
+
+    /**
      * Content View of the Tile
      */
     private class Content extends FrameLayout implements OnClickListener {
@@ -442,6 +450,12 @@ public class Tile extends LinearLayout {
             mIcon.setPadding(padding, padding, padding, padding);
             mIcon.setBackgroundResource(mBackgroundResId);
             addView(mIcon);
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            mTextLayout.setEnabled(enabled);
+            mIcon.setEnabled(enabled);
         }
 
         /**

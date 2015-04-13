@@ -381,6 +381,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             viewHolder.tile.setContentBackground(getBackground(position));
             final Task task = mSummaryList.get(position).task;
             if (task != null) {
+                viewHolder.tile.setFooterEnabled(true);
                 viewHolder.tile.setFooterPrimaryLine(task.name);
                 if (position != INDEX_TILE_ANYTIME) {
                     if ((task.targetDateTime != null) && (!task.targetDateTime.isNull())) {
@@ -397,6 +398,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 }
             } else {
                 String[] textDefaults = getResources().getStringArray(R.array.text_defaults_primary_line);
+                viewHolder.tile.setFooterEnabled(false);
                 viewHolder.tile.setFooterPrimaryLine(textDefaults[position]);
             }
             viewHolder.tile.setContentOnClickListener(new View.OnClickListener() {

@@ -23,12 +23,12 @@ public class NotificationListActivity extends ActionBarActivity {
     private final static int FRAGMENT_NOTIFICATION_LIST = 0;
     private final static int FRAGMENT_TASK = 1;
 
-
     public final static String INTENT_ACTION = "action";
     public final static String EXTRA_TASK_ID = "task_id";
 
     public final static int ACTION_NONE = 0;
     public final static int ACTION_VIEW = 1;
+    public final static int ACTION_VIEW_TODAY = 2;
 
     private int mAction = ACTION_NONE;
     private int mTaskId = 0;
@@ -50,6 +50,10 @@ public class NotificationListActivity extends ActionBarActivity {
             case ACTION_VIEW:
                 createTaskFragment(mTaskId);
                 cancelNotification();
+                break;
+
+            case ACTION_VIEW_TODAY:
+                initFragment();
                 break;
 
             default:
@@ -111,6 +115,9 @@ public class NotificationListActivity extends ActionBarActivity {
      */
     private void createNotificationsFragment() {
         NotificationListFragment fragment = new NotificationListFragment();
+        if (mAction == ACTION_VIEW_TODAY) {
+            fragment.setDailySource(true);
+        }
         fragment.setOnNotificationListListener(new NotificationListFragment.OnNotificationListListener() {
             @Override
             public void onSelectedTask(int id) {

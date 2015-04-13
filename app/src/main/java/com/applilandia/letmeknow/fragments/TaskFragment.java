@@ -339,6 +339,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 mValidationFieldTime.setText(R.string.hint_edit_task_time);
                 mValidationFieldTime.removeError();
                 mTask.targetDateTime = null;
+                mTask.removeNotifications();
                 refreshUIStatus(UIState.DateTimeEmpty);
             }
         });
@@ -409,6 +410,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                             mNotificationAdapter.setEnabled(false);
                         } else {
                             mTask.targetDateTime = null;
+                            mTask.removeNotifications();
                             mValidationFieldTime.setText(R.string.hint_edit_task_time);
                             mValidationFieldDate.setText(R.string.hint_edit_task_date);
                             mValidationFieldDate.setError(R.string.error_task_date_less_than_today);

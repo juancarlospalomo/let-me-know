@@ -187,7 +187,7 @@ public class UseCaseNotification {
                     .setContentTitle(mContext.getString(R.string.notification_title_today_tasks))
                     .setContentText(mContext.getString(R.string.notification_content_tasks))
                     .setNumber(taskList.size())
-                    .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_NONE, 0))
+                    .setContentIntent(getActivityContentIntent(NotificationListActivity.ACTION_VIEW_TODAY, 0))
                     .setSound(getSound())
                     .setVibrate(getVibratePattern())
                     .setAutoCancel(true);
@@ -208,7 +208,7 @@ public class UseCaseNotification {
             builder.setStyle(inboxStyle);
             // Now, issue the notification
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
-            notificationManager.notify(LET_ME_KNOW_NOTIFICATION_ID, builder.build());
+            notificationManager.notify(LET_ME_KNOW_DAILY_NOTIFICATION, builder.build());
         }
     }
 
