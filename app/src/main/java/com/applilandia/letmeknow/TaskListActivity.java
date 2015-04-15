@@ -27,7 +27,9 @@ public class TaskListActivity extends ActionBarActivity {
 
     private final static int INDEX_FRAGMENT_LIST = 0;
     private final static int INDEX_FRAGMENT_TASK = 1;
-
+    //Keys for saving state
+    private final static String KEY_TASK_TYPE = "taskType";
+    private final static String KEY_CONTENT_FRAGMENT = "contentFragment";
     public final static String EXTRA_TYPE_TASK = "TypeTask";
     //Request Codes
     private final static int REQUEST_CODE_TASK = 1;
@@ -40,6 +42,10 @@ public class TaskListActivity extends ActionBarActivity {
     private int mSpinnerInitialized = 0;
     //Flag stating if the activity is being re-created after a configuration change
     private boolean mRestoringInstanceState = false;
+    //This is to fix state lost, that is produced when a FragmentTransaction commit is done
+    //before the state has been restored.  It´s not sure the state has been restored
+    //when onActivityResult is executed (See http://www.androiddesignpatterns.com/2013/08/fragment-transaction-commit-state-loss.html)
+    private boolean mReturningWithResult = false;
     //Some task id to highlight?
     private int mSelectTaskId = -1;
     //Toolbar
@@ -60,8 +66,16 @@ public class TaskListActivity extends ActionBarActivity {
             loadExtras();
             initValues();
         } else {
-            restoreFragmentState();
+            restoreFragmentState(savedInstanceState);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        getSupportFragmentManager().putFragment(outState, KEY_CONTENT_FRAGMENT, fragment);
+        outState.putInt(KEY_TASK_TYPE, mTypeTask.getValue());
     }
 
     /**
@@ -117,13 +131,31 @@ public class TaskListActivity extends ActionBarActivity {
                     if (outArgs != null) {
                         int value = outArgs.getInt(TaskActivity.EXTRA_TASK_TYPE);
                         mSelectTaskId = outArgs.getInt(TaskActivity.EXTRA_TASK_ID);
-                        mSpinnerType.setSelection(value);
+                        mTypeTask = Task.TypeTask.map(value);
+                        //Flag to be checked in onPostResume
+                        mReturningWithResult = true;
                     }
                 }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public void onPostResume() {
+        super.onPostResume();
+        //It is executed after onResume, and this method ensure the state has already been restored
+        if (mReturningWithResult) {
+            if (mTypeTask.getValue() != mSpinnerType.getSelectedItemPosition()) {
+                mSpinnerType.setSelection(mTypeTask.getValue());
+            } else {
+                createTaskListFragment();
+            }
+
+        }
+        //Reset flag for the next time
+        mReturningWithResult = false;
     }
 
     @Override
@@ -141,7 +173,7 @@ public class TaskListActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (!mShowedToolbarMenu) {
-                    int backStackEntry = getFragmentNumber();
+                    int backStackEntry = getFragmentNumber(null);
                     if (backStackEntry > 0) {
                         popFragmentBackStack();
                         backStackEntry--;
@@ -165,7 +197,7 @@ public class TaskListActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-        int backStackEntry = getFragmentNumber();
+        int backStackEntry = getFragmentNumber(null);
         if (backStackEntry > 0) {
             popFragmentBackStack();
             backStackEntry--;
@@ -259,6 +291,7 @@ public class TaskListActivity extends ActionBarActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
     }
@@ -341,6 +374,12 @@ public class TaskListActivity extends ActionBarActivity {
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved(Task task) {
+                mTypeTask = task.typeTask;
+                mSelectTaskId = task._id;
+                if (mTypeTask.getValue() != mSpinnerType.getSelectedItemPosition()) {
+                    mSpinnerInitialized = 0;
+                    mSpinnerType.setSelection(mTypeTask.getValue());
+                }
                 popFragmentBackStack();
             }
 
@@ -354,15 +393,16 @@ public class TaskListActivity extends ActionBarActivity {
     /**
      * Restore the state for current fragment
      */
-    private void restoreFragmentState() {
+    private void restoreFragmentState(Bundle savedInstanceState) {
         mRestoringInstanceState = true;
-        int fragmentIndex = getFragmentNumber();
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, KEY_CONTENT_FRAGMENT);
+        int fragmentIndex = getFragmentNumber(fragment);
         if (fragmentIndex == INDEX_FRAGMENT_LIST) {
             setTaskListFragmentHandlers((TaskListFragment) fragment);
         } else {
             setTaskFragmentHandlers((TaskFragment) fragment);
         }
+        mTypeTask = Task.TypeTask.map(savedInstanceState.getInt(KEY_TASK_TYPE));
         refreshUIState(fragmentIndex);
     }
 
@@ -381,8 +421,10 @@ public class TaskListActivity extends ActionBarActivity {
      *
      * @return number depicts the fragment number
      */
-    private int getFragmentNumber() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+    private int getFragmentNumber(Fragment fragment) {
+        if (fragment == null) {
+            fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        }
         if (fragment instanceof TaskListFragment) {
             return INDEX_FRAGMENT_LIST;
         } else {

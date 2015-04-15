@@ -290,6 +290,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                             } else if (mWorkMode == TaskActivity.TypeWorkMode.Update) {
                                 resultOk = useCaseTask.updateTask(mTask);
                             }
+                            mTask.typeTask = useCaseTask.getTypeTask(mTask.targetDateTime);
                             if (resultOk) {
                                 if (mOnTaskFragmentListener != null) {
                                     mOnTaskFragmentListener.onTaskSaved(mTask);

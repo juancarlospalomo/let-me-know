@@ -80,6 +80,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private final static String KEY_LIST_SCROLL_POSITION_OFFSET = "scrollPositionOffset";
     private final static String KEY_TASKS_LIST_SELECTED = "tasksSelected";
     private final static String KEY_TOOLBAR_STATE = "toolBarState";
+    private final static String KEY_TASK_TYPE = "taskType";
     //Variables to state the init recyclerview scroll
     private int mShowRowPosition = -1;
     private int mShowRowTask = -1; //Task Id of the row
@@ -135,6 +136,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             mListFirstPositionOffset = savedInstanceState.getInt(KEY_LIST_SCROLL_POSITION_OFFSET);
             mTaskListSelectedInstanceState = savedInstanceState.getParcelableArrayList(KEY_TASKS_LIST_SELECTED);
             mActionBarActivated = savedInstanceState.getBoolean(KEY_TOOLBAR_STATE, false);
+            mTypeTask = Task.TypeTask.map(savedInstanceState.getInt(KEY_TASK_TYPE));
             if (mActionBarActivated) {
                 activateToolbarActions();
                 if (mOnTaskListFragmentListener != null) {
@@ -153,19 +155,22 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(KEY_LIST_SCROLL_POSITION, ((LinearLayoutManager) mTaskRecyclerView.getLayoutManager()).findFirstVisibleItemPosition());
-        View view = mTaskRecyclerView.getChildAt(0);
-        if (view != null) {
-            mListFirstPositionOffset = view.getTop();
+        if (mAdapter != null) {
+            outState.putInt(KEY_LIST_SCROLL_POSITION, ((LinearLayoutManager) mTaskRecyclerView.getLayoutManager()).findFirstVisibleItemPosition());
+            View view = mTaskRecyclerView.getChildAt(0);
+            if (view != null) {
+                mListFirstPositionOffset = view.getTop();
+            }
+            outState.putInt(KEY_LIST_SCROLL_POSITION_OFFSET, mListFirstPositionOffset);
+            List<Task> selectedList = mAdapter.getSelectedList();
+            if (selectedList != null) {
+                mTaskListSelectedInstanceState = new ArrayList<>(selectedList.size());
+                mTaskListSelectedInstanceState.addAll(selectedList);
+            }
+            outState.putParcelableArrayList(KEY_TASKS_LIST_SELECTED, mTaskListSelectedInstanceState);
+            outState.putBoolean(KEY_TOOLBAR_STATE, mActionBarActivated);
+            outState.putInt(KEY_TASK_TYPE, mTypeTask.getValue());
         }
-        outState.putInt(KEY_LIST_SCROLL_POSITION_OFFSET, mListFirstPositionOffset);
-        List<Task> selectedList = mAdapter.getSelectedList();
-        if (selectedList != null) {
-            mTaskListSelectedInstanceState = new ArrayList<>(selectedList.size());
-            mTaskListSelectedInstanceState.addAll(selectedList);
-        }
-        outState.putParcelableArrayList(KEY_TASKS_LIST_SELECTED, mTaskListSelectedInstanceState);
-        outState.putBoolean(KEY_TOOLBAR_STATE, mActionBarActivated);
     }
 
     private void initRecyclerView() {
@@ -690,7 +695,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          */
         private void animateRowEmergence(final View view) {
             view.setAlpha(0f);
-            view.animate().alpha(1f).setDuration(3000)
+            view.animate().alpha(1f).setDuration(1000)
                     .start();
         }
 

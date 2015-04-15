@@ -9,7 +9,6 @@ import android.view.MenuItem;
 
 import com.applilandia.letmeknow.fragments.TaskFragment;
 import com.applilandia.letmeknow.models.Task;
-import com.applilandia.letmeknow.usecases.UseCaseTask;
 
 
 public class TaskActivity extends ActionBarActivity {
@@ -106,8 +105,6 @@ public class TaskActivity extends ActionBarActivity {
             public void onTaskSaved(Task task) {
                 Intent intent = null;
                 if (task != null) {
-                    UseCaseTask useCaseTask = new UseCaseTask(TaskActivity.this);
-                    task.typeTask = useCaseTask.getTypeTask(task.targetDateTime);
                     intent = new Intent();
                     intent.putExtra(EXTRA_TASK_TYPE, task.typeTask.getValue());
                     intent.putExtra(EXTRA_TASK_ID, task._id);
