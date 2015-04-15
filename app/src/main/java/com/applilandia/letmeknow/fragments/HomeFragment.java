@@ -190,7 +190,9 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
                 mEditTextTask.setText("");
                 hideSoftKeyboardFromWindow();
             } else {
-                //TODO: Show Error Dialog
+                AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(getString(R.string.error_title),
+                        getString(R.string.unit_of_work_exception), null, getString(R.string.error_button_ok));
+                alertDialogFragment.show(getFragmentManager(), "errorDialog");
             }
         } else {
             for (ValidationResult validationResult : validationResults) {
