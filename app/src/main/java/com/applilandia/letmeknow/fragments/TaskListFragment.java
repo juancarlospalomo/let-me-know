@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -73,10 +74,27 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     //LoaderId for task loader
-    private static final int TASK_LOADER_ID = 1;
+    private final static int TASK_LOADER_ID = 1;
+    //State KEYS
+    private final static String KEY_LIST_SCROLL_POSITION = "scrollPosition";
+    private final static String KEY_LIST_SCROLL_POSITION_OFFSET = "scrollPositionOffset";
+    private final static String KEY_TASKS_LIST_SELECTED = "tasksSelected";
+    private final static String KEY_TOOLBAR_STATE = "toolBarState";
     //Variables to state the init recyclerview scroll
     private int mShowRowPosition = -1;
     private int mShowRowTask = -1; //Task Id of the row
+    //State before configuration changed
+    private int mListFirstPosition = ListView.INVALID_POSITION;
+    private int mListFirstPositionOffset = 0;
+    private ArrayList<Task> mTaskListSelectedInstanceState = null;
+    //There is an issue with LoaderManager in Fragments when orientation changes:
+    //      - loader is retained
+    //      - If initLoader is called in onActivityCreated or onStart, onLoadFinished is called twice.
+    //              One inside InitLoaded and the other on finishRetain.
+    //   See source code of LoaderManager
+    //   We did a workaround to avoid the two loads, detecting if an orientation change was produced
+    //   and if data has been already delivered after an orientation change
+    private boolean mDeliveredData = false;
     //ActionBar status
     private boolean mActionBarActivated = false;
     //Type task to be loaded in the fragment
@@ -112,11 +130,42 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         setHasOptionsMenu(true);
         View view = getView();
 
+        if (savedInstanceState != null) {
+            mListFirstPosition = savedInstanceState.getInt(KEY_LIST_SCROLL_POSITION);
+            mListFirstPositionOffset = savedInstanceState.getInt(KEY_LIST_SCROLL_POSITION_OFFSET);
+            mTaskListSelectedInstanceState = savedInstanceState.getParcelableArrayList(KEY_TASKS_LIST_SELECTED);
+            mActionBarActivated = savedInstanceState.getBoolean(KEY_TOOLBAR_STATE, false);
+            if (mActionBarActivated) {
+                activateToolbarActions();
+                if (mOnTaskListFragmentListener != null) {
+                    mOnTaskListFragmentListener.onTaskLongPressed();
+                }
+            }
+        }
+
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressActivityTask);
         mSnackBar = (SnackBar) view.findViewById(R.id.snackBarTasks);
         initRecyclerView();
         //Init loader.  Data will be set to Adapter in onLoadFinished()
         getLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_LIST_SCROLL_POSITION, ((LinearLayoutManager) mTaskRecyclerView.getLayoutManager()).findFirstVisibleItemPosition());
+        View view = mTaskRecyclerView.getChildAt(0);
+        if (view != null) {
+            mListFirstPositionOffset = view.getTop();
+        }
+        outState.putInt(KEY_LIST_SCROLL_POSITION_OFFSET, mListFirstPositionOffset);
+        List<Task> selectedList = mAdapter.getSelectedList();
+        if (selectedList != null) {
+            mTaskListSelectedInstanceState = new ArrayList<>(selectedList.size());
+            mTaskListSelectedInstanceState.addAll(selectedList);
+        }
+        outState.putParcelableArrayList(KEY_TASKS_LIST_SELECTED, mTaskListSelectedInstanceState);
+        outState.putBoolean(KEY_TOOLBAR_STATE, mActionBarActivated);
     }
 
     private void initRecyclerView() {
@@ -439,22 +488,20 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      */
     @Override
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
-        if (loader.getId() == TASK_LOADER_ID) {
-            if (data != null) {
-                if (data.size() > 0) {
-                    hideEmptyList();
-                } else {
-                    showEmptyList();
-                }
-                mAdapter = new TaskAdapter(data);
-                mTaskRecyclerView.setAdapter(mAdapter);
-                if (mShowRowTask != -1) {
-                    convertTaskIdToPosition();
-                    mTaskRecyclerView.scrollToPosition(mShowRowPosition);
-                }
+        if (mListFirstPosition != ListView.INVALID_POSITION) {
+            //Configuration orientation change occurred
+            if (!mDeliveredData) {
+                //Data has not been already loaded (or delivered)
+                mDeliveredData = true;
+                loadData(loader, data);
             } else {
-                showEmptyList();
+                //It has already been delivered, so reset the position saved
+                //to forget it was an orientation change
+                mListFirstPosition = ListView.INVALID_POSITION;
             }
+        } else {
+            //It doesn't come from an orientation change
+            loadData(loader, data);
         }
         mProgressBar.setVisibility(View.GONE);
     }
@@ -468,6 +515,31 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<List<Task>> loader) {
         if (loader.getId() == TASK_LOADER_ID) {
             mTaskRecyclerView.setAdapter(null);
+        }
+    }
+
+    private void loadData(Loader<List<Task>> loader, List<Task> data) {
+        if (loader.getId() == TASK_LOADER_ID) {
+            if (data != null) {
+                if (data.size() > 0) {
+                    hideEmptyList();
+                } else {
+                    showEmptyList();
+                }
+                mAdapter = new TaskAdapter(data, mTaskListSelectedInstanceState);
+                mTaskRecyclerView.setAdapter(mAdapter);
+                if (mShowRowTask != -1) {
+                    convertTaskIdToPosition();
+                    mTaskRecyclerView.scrollToPosition(mShowRowPosition);
+                } else {
+                    if (mListFirstPosition != ListView.INVALID_POSITION) {
+                        ((LinearLayoutManager) mTaskRecyclerView.getLayoutManager())
+                                .scrollToPositionWithOffset(mListFirstPosition, mListFirstPositionOffset);
+                    }
+                }
+            } else {
+                showEmptyList();
+            }
         }
     }
 
@@ -529,8 +601,11 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          *
          * @param data
          */
-        public TaskAdapter(List<Task> data) {
+        public TaskAdapter(List<Task> data, ArrayList<Task> selectedList) {
             this.mTaskList = data;
+            if (selectedList != null) {
+                setSelectedList(selectedList);
+            }
         }
 
         /**
@@ -575,8 +650,13 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             } else {
                 holder.mTextSecondaryText.setVisibility(View.GONE);
             }
-            holder.itemView.setBackgroundResource(R.drawable.list_row_background);
-            holder.mLayoutPrimaryAction.setBackgroundResource(R.drawable.list_row_background);
+            if (isSelected(position)) {
+                holder.itemView.setBackgroundResource(R.drawable.list_row_background_selected);
+                holder.mLayoutPrimaryAction.setBackgroundResource(R.drawable.list_row_background_selected);
+            } else {
+                holder.itemView.setBackgroundResource(R.drawable.list_row_background);
+                holder.mLayoutPrimaryAction.setBackgroundResource(R.drawable.list_row_background);
+            }
             if (position == mShowRowPosition) {
                 animateRowEmergence(holder.itemView);
                 //After use it, reset values for avoiding using them again
@@ -630,7 +710,11 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          * @return true or false
          */
         public boolean isSelected(int position) {
-            return mTasksSelected.get(position);
+            if (mTasksSelected != null) {
+                return mTasksSelected.get(position);
+            } else {
+                return false;
+            }
         }
 
         /**
@@ -658,17 +742,40 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
          */
         public List<Task> getSelectedList() {
             List<Task> result = null;
-            int position = 0;
-            for (Task task : mTaskList) {
-                if (mTasksSelected.get(position)) {
-                    if (result == null) {
-                        result = new ArrayList<>();
+            if (mTasksSelected != null) {
+                int position = 0;
+                for (Task task : mTaskList) {
+                    if (mTasksSelected.get(position)) {
+                        if (result == null) {
+                            result = new ArrayList<>();
+                        }
+                        result.add(task);
                     }
-                    result.add(task);
+                    position++;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Fill the SparseBooleanArray with the tasks selected in selectedList
+         *
+         * @param selectedList subset of selected tasks
+         */
+        public void setSelectedList(ArrayList<Task> selectedList) {
+            int position = 0;
+            if (mTasksSelected == null) {
+                mTasksSelected = new SparseBooleanArray();
+            }
+            for (Task task : mTaskList) {
+                if (selectedList.contains(task)) {
+                    mTasksSelected.put(position, true);
+                    mSelectedCountRef++;
                 }
                 position++;
             }
-            return result;
+            selectedList.clear();
+            selectedList = null;
         }
 
         /**

@@ -136,11 +136,13 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(KEY_FIRST_VISIBLE_POSITION, mGridView.getFirstVisiblePosition());
-        outState.putParcelable(KEY_GRID_STATE, mGridView.onSaveInstanceState());
-        View view = mGridView.getChildAt(0);
-        mItemPosition = view == null ? 0 : view.getTop();
-        outState.putInt(KEY_ITEM_POSITION, mItemPosition);
+        if (mGridView != null) {
+            outState.putInt(KEY_FIRST_VISIBLE_POSITION, mGridView.getFirstVisiblePosition());
+            outState.putParcelable(KEY_GRID_STATE, mGridView.onSaveInstanceState());
+            View view = mGridView.getChildAt(0);
+            mItemPosition = view == null ? 0 : view.getTop();
+            outState.putInt(KEY_ITEM_POSITION, mItemPosition);
+        }
     }
 
     /**

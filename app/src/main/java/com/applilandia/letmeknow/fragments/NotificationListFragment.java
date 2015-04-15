@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.applilandia.letmeknow.R;
@@ -31,6 +32,10 @@ import java.util.List;
 public class NotificationListFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Task>> {
 
     private final static String LOG_TAG = NotificationListFragment.class.getSimpleName();
+    //State keys
+    private final static String KEY_LIST_FIRST_POSITION = "firstPosition";
+    private final static String KEY_FIRST_POSITION_OFFSET = "firstPositionOffset";
+    private final static String KEY_DAILY_SOURCE = "dailySource";
 
     private static final int LOADER_ID = 1;
 
@@ -56,6 +61,11 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     }
 
     private OnNotificationListListener mOnNotificationListListener;
+    //State instance variables
+    private int mFirstVisiblePosition = ListView.INVALID_POSITION;
+    private int mFirstPositionOffset;
+    private boolean mDeliveredData = false;
+    //Flag source daily
     private boolean mSourceDaily = false;
     private SnackBar mSnackBar;
     private RecyclerView mRecyclerView;
@@ -70,13 +80,34 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mFirstVisiblePosition = savedInstanceState.getInt(KEY_LIST_FIRST_POSITION);
+            mFirstPositionOffset = savedInstanceState.getInt(KEY_FIRST_POSITION_OFFSET);
+            mSourceDaily = savedInstanceState.getBoolean(KEY_DAILY_SOURCE);
+        }
+
         mSnackBar = (SnackBar) getView().findViewById(R.id.snackBarNotifications);
         initRecyclerView();
         getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mFirstVisiblePosition = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        View view = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).findViewByPosition(mFirstVisiblePosition);
+        if (view != null) {
+            mFirstPositionOffset = view.getTop();
+        }
+        outState.putInt(KEY_LIST_FIRST_POSITION, mFirstVisiblePosition);
+        outState.putInt(KEY_FIRST_POSITION_OFFSET, mFirstPositionOffset);
+        outState.putBoolean(KEY_DAILY_SOURCE, mSourceDaily);
+    }
+
     /**
      * Set if the fragment has be show the tasks based on the notifications or on the day tasks
+     *
      * @param value daily source = true
      */
     public void setDailySource(boolean value) {
@@ -116,8 +147,18 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
     public void onLoadFinished(Loader<List<Task>> loader, List<Task> data) {
         if (loader.getId() == LOADER_ID) {
             if ((data != null) && (data.size() > 0)) {
-                mAdapter = new TaskAdapter(data);
-                mRecyclerView.setAdapter(mAdapter);
+                if (mFirstVisiblePosition != ListView.INVALID_POSITION) {
+                    if (!mDeliveredData) {
+                        mAdapter = new TaskAdapter(data);
+                        mRecyclerView.setAdapter(mAdapter);
+                        ((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(mFirstVisiblePosition, mFirstPositionOffset);
+                    } else {
+                        mFirstVisiblePosition = ListView.INVALID_POSITION;
+                    }
+                } else {
+                    mAdapter = new TaskAdapter(data);
+                    mRecyclerView.setAdapter(mAdapter);
+                }
             } else {
                 if (mOnNotificationListListener != null) {
                     mOnNotificationListListener.onListEmpty();
@@ -170,6 +211,10 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
         public void onBindViewHolder(final ViewHolder holder, final int position) {
             final Task task = mTaskList.get(position);
             if (task != null) {
+                if (task.typeTask == Task.TypeTask.Expired) {
+                    holder.mTextViewHeadLine.setText(getResources().getStringArray(R.array.text_tile_content)[0]);
+                    holder.mTextViewHeadLine.setBackgroundColor(getColor(0));
+                }
                 if (task.typeTask == Task.TypeTask.Today) {
                     holder.mTextViewHeadLine.setText(getResources().getStringArray(R.array.text_tile_content)[1]);
                     holder.mTextViewHeadLine.setBackgroundColor(getColor(1));

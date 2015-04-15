@@ -35,6 +35,11 @@ public class TaskListActivity extends ActionBarActivity {
     //Keep track on the toolbar menu is showed or not
     private boolean mShowedToolbarMenu = false;
     private Task.TypeTask mTypeTask = Task.TypeTask.All;
+    //Spinner issue.  It is triggered before the user do it
+    private int mSpinnerCount = 1;
+    private int mSpinnerInitialized = 0;
+    //Flag stating if the activity is being re-created after a configuration change
+    private boolean mRestoringInstanceState = false;
     //Some task id to highlight?
     private int mSelectTaskId = -1;
     //Toolbar
@@ -50,7 +55,7 @@ public class TaskListActivity extends ActionBarActivity {
         initTaskTypeSpinner();
         //Create handlers for the views
         createViewsHandlers();
-        //Load parameters
+        //Set fragment
         if (savedInstanceState == null) {
             loadExtras();
             initValues();
@@ -97,6 +102,9 @@ public class TaskListActivity extends ActionBarActivity {
      * Set initial values for the views
      */
     private void initValues() {
+        //To init values, we set the spinner initialized number to the total.
+        //In this activity the total spinner number is 1
+        mSpinnerInitialized = 1;
         mSpinnerType.setSelection(mTypeTask.getValue());
     }
 
@@ -237,8 +245,16 @@ public class TaskListActivity extends ActionBarActivity {
         mSpinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mTypeTask = Task.TypeTask.map(position);
-                createTaskListFragment();
+                if (mSpinnerInitialized < mSpinnerCount) {
+                    mSpinnerInitialized++;
+                } else {
+                    if (!mRestoringInstanceState) {
+                        mTypeTask = Task.TypeTask.map(position);
+                        createTaskListFragment();
+                    }
+                    //It has been restoring
+                    mRestoringInstanceState = false;
+                }
             }
 
             @Override
@@ -265,6 +281,7 @@ public class TaskListActivity extends ActionBarActivity {
 
     /**
      * Set the event handlers for task list fragment
+     *
      * @param taskListFragment
      */
     private void setTaskListFragmentHandlers(TaskListFragment taskListFragment) {
@@ -317,6 +334,7 @@ public class TaskListActivity extends ActionBarActivity {
 
     /**
      * Set event handlers for task fragment
+     *
      * @param taskFragment
      */
     private void setTaskFragmentHandlers(TaskFragment taskFragment) {
@@ -337,6 +355,7 @@ public class TaskListActivity extends ActionBarActivity {
      * Restore the state for current fragment
      */
     private void restoreFragmentState() {
+        mRestoringInstanceState = true;
         int fragmentIndex = getFragmentNumber();
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
         if (fragmentIndex == INDEX_FRAGMENT_LIST) {

@@ -46,21 +46,37 @@ public class NotificationListActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        switch (mAction) {
-            case ACTION_VIEW:
-                createTaskFragment(mTaskId);
-                cancelNotification();
-                break;
+        if (savedInstanceState != null) {
+            restoreInstanceState();
+        } else {
+            switch (mAction) {
+                case ACTION_VIEW:
+                    createTaskFragment(mTaskId);
+                    cancelNotification();
+                    break;
 
-            case ACTION_VIEW_TODAY:
-                initFragment();
-                break;
+                case ACTION_VIEW_TODAY:
+                    initFragment();
+                    break;
 
-            default:
-                initFragment();
-                break;
+                default:
+                    initFragment();
+                    break;
+            }
         }
 
+    }
+
+    /**
+     * Restore the fragment handlers after an orientation change
+     */
+    private void restoreInstanceState() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (fragment instanceof NotificationListFragment) {
+            setNotificationFragmentListener((NotificationListFragment) fragment);
+        } else {
+            setTaskFragmentListener((TaskFragment) fragment);
+        }
     }
 
     /**
@@ -118,6 +134,20 @@ public class NotificationListActivity extends ActionBarActivity {
         if (mAction == ACTION_VIEW_TODAY) {
             fragment.setDailySource(true);
         }
+        setNotificationFragmentListener(fragment);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, fragment)
+                .commit();
+        //Save the current visible fragment
+        mCurrentFragment = FRAGMENT_NOTIFICATION_LIST;
+    }
+
+    /**
+     * Set the event listener for the notification list fragment
+     *
+     * @param fragment notification list fragment
+     */
+    private void setNotificationFragmentListener(NotificationListFragment fragment) {
         fragment.setOnNotificationListListener(new NotificationListFragment.OnNotificationListListener() {
             @Override
             public void onSelectedTask(int id) {
@@ -138,12 +168,8 @@ public class NotificationListActivity extends ActionBarActivity {
                 goBack();
             }
         });
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit();
-        //Save the current visible fragment
-        mCurrentFragment = FRAGMENT_NOTIFICATION_LIST;
     }
+
 
     /**
      * Create a fragment to display the task stated
@@ -153,6 +179,24 @@ public class NotificationListActivity extends ActionBarActivity {
     private void createTaskFragment(int id) {
         TaskFragment taskFragment = new TaskFragment();
         taskFragment.setWorkMode(TaskActivity.TypeWorkMode.View, id, "", "");
+        setTaskFragmentListener(taskFragment);
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
+                .replace(R.id.content_frame, taskFragment)
+                .commit();
+        //Remove the notification from database
+        NotificationSet notificationSet = new NotificationSet(this);
+        notificationSet.deleteSentNotification(id);
+        //Save the current visible fragment
+        mCurrentFragment = FRAGMENT_TASK;
+    }
+
+    /**
+     * Set the events listener for the TaskFragment
+     *
+     * @param taskFragment current task fragment
+     */
+    private void setTaskFragmentListener(TaskFragment taskFragment) {
         taskFragment.setOnTaskFragmentListener(new TaskFragment.OnTaskFragmentListener() {
             @Override
             public void onTaskSaved(Task task) {
@@ -164,15 +208,6 @@ public class NotificationListActivity extends ActionBarActivity {
                 Log.v(LOG_TAG, "onClose");
             }
         });
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fragment_slide_in, R.anim.fragment_slide_out)
-                .replace(R.id.content_frame, taskFragment)
-                .commit();
-        //Remove the notification from database
-        NotificationSet notificationSet = new NotificationSet(this);
-        notificationSet.deleteSentNotification(id);
-        //Save the current visible fragment
-        mCurrentFragment = FRAGMENT_TASK;
     }
 
     /**
