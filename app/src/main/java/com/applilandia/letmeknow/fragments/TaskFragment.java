@@ -14,6 +14,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.TaskActivity;
 import com.applilandia.letmeknow.cross.LocalDate;
+import com.applilandia.letmeknow.cross.Settings;
 import com.applilandia.letmeknow.exceptions.UnitOfWorkException;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Notification;
@@ -593,6 +595,20 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                     holder.mImageViewCheck.setImageResource(R.drawable.ic_check_off);
                 } else {
                     enableRow(holder);
+                    if (Settings.getCreateDefaultNotificationValue(getActivity())) {
+                        if ((mTask._id == 0) && (!mTask.hasNotifications())) {
+                            Log.v(LOG_TAG, String.valueOf(mTask._id));
+                            //Only set the default notification if:
+                            //   - Task has not notifications
+                            //   - Is activated the default notification
+                            //   - It´s a new task (_id==0)
+                            //Add five minutes before default notification
+                            Notification notification = new Notification();
+                            notification.type = Notification.TypeNotification.FiveMinutesBefore;
+                            notification.status = Notification.TypeStatus.Pending;
+                            mTask.addNotification(notification);
+                        }
+                    }
                 }
             }
             if (mTask.getNotifications() != null) {
