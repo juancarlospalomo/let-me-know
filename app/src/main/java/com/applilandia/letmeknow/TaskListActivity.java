@@ -232,11 +232,13 @@ public class TaskListActivity extends ActionBarActivity {
                 //and spinner must be shown
                 mFloatingActionButton.setVisibility(View.VISIBLE);
                 mSpinnerType.setVisibility(View.VISIBLE);
+                mToolbar.setTitle("");
             } else {
                 //We are not in the main fragment, so we hide Floating Action Button
                 //and spinner
                 mFloatingActionButton.setVisibility(View.INVISIBLE);
                 mSpinnerType.setVisibility(View.GONE);
+                mToolbar.setTitle(R.string.title_activity_task);
             }
         }
     }

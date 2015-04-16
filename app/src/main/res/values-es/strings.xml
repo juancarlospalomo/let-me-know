@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">AvisaMe</string>
+    <!-- Activity titles -->
+    <string name="title_activity_settings">Ajustes</string>
+    <string name="title_activity_task_list">Lista de Tareas</string>
+    <string name="title_activity_task">Tarea</string>
+    <!-- Settings Titles -->
+    <string name="title_notification_group">NOTIFICACIÓN</string>
+    <string name="title_trigger_daily_time">Hora diaria</string>
+    <string name="title_trigger_daily_notification">Notificación diaria</string>
+    <string name="title_create_default_notification">Crea notificación por defecto</string>
+    <!-- Settings Summary -->
+    <string name="summary_trigger_daily_time">Hora de aviso de tareas del día</string>
+    <string name="summary_trigger_daily_notification">Aviso con las tareas del día</string>
+    <string name="summary_create_default_notification">Crea notificación por defecto cuando la tarea es creada con hora</string>
+    <!-- Text for Tiles -->
+    <string-array name="text_tile_content">
+        <item>EXPIRADAS</item>
+        <item>HOY</item>
+        <item>FUTURO</item>
+        <item>SIN FECHA</item>
+    </string-array>
+    <string-array name="text_defaults_primary_line">
+        <item>Última tarea expirada</item>
+        <item>Siguiente tarea hoy</item>
+        <item>Siguiente futura tarea</item>
+        <item>Última tarea creada</item>
+    </string-array>
+    <string name="text_date_label">Fecha</string>
+    <string name="text_today">Hoy</string>
+    <string name="text_tomorrow">Mañana</string>
+    <string name="text_yesterday">Ayer</string>
+
+    <!-- Text for Navigation Drawer -->
+    <string name="menu_settings">Ajustes</string>
+
+    <!-- Home Screen -->
+    <string name="hint_edit_text_task_name">Nombre de Tarea</string>
+
+    <!-- Validation Error Messages -->
+    <string name="error_task_name_greater_than_max">Longitud máxima es 50</string>
+    <string name="error_task_name_empty">No puede estar vacío</string>
+    <string name="error_task_date_less_than_today">Mínimo valor es hoy</string>
+    <string name="error_task_time_less_than_today">Hora mínima es ahora</string>
+
+    <!-- Values for Task Type Spinner -->
+    <string-array name="type_task_array">
+        <item>Todas</item>
+        <item>Expiradas</item>
+        <item>Hoy</item>
+        <item>Futuro</item>
+        <item>Sin Fecha</item>
+    </string-array>
+
+    <!-- Task Activity -->
+    <string name="hint_edit_task_date">Fecha</string>
+    <string name="hint_edit_task_time">Hora</string>
+    <string name="button_ok">OK</string>
+
+    <!-- Type Notifications Array -->
+    <string-array name="type_notifications_array">
+        <item>5 minutos antes</item>
+        <item>1 hora antes</item>
+        <item>1 día antes</item>
+        <item>1 semana antes</item>
+    </string-array>
+
+    <!-- SnackBar -->
+    <string name="snack_bar_task_completed_text">Completada</string>
+    <string name="snack_bar_action_text">DESHACER</string>
+
+    <!-- Task List Activity -->
+    <string name="title_menu_item_delete">Eliminar</string>
+
+    <!-- Delete Task Dialog -->
+    <string name="delete_task_dialog_title">¿Eliminar Tarea?</string>
+    <string name="delete_task_dialog_cancel_text">Cancelar</string>
+    <string name="delete_task_dalog_ok_text">Eliminar</string>
+    <string name="delete_tasks_dialog_title">¿Eliminar Tareas?</string>
+    <string name="title_activity_notification_list">Lista de Notificaciones</string>
+
+    <!-- Notification -->
+    <string name="notification_title_tasks">Notificaciones de Tareas</string>
+    <string name="notification_content_tasks">Tareas</string>
+    <string name="notifications_tracker_details">Detalles de Tarea:</string>
+    <string name="notification_title_today_tasks">Tareas para Hoy</string>
+
+    <!-- Recognizer Intent Error Dialog -->
+    <string name="voice_intent_error_title">Error</string>
+    <string name="voice_intent_error_content">Reconocimiento de voz no está disponible en tu dispositivo</string>
+    <string name="voice_intent_error_ok">OK</string>
+
+    <!-- CalendarView buttons -->
+    <string name="calendar_view_ok">OK</string>
+    <string name="calendar_view_cancel">Cancelar</string>
+
+    <!-- Common -->
+    <string name="error_title">Error</string>
+    <string name="error_button_ok">OK</string>
+
+    <!-- UnitOfWorkException Messages -->
+    <string name="unit_of_work_exception">Error de acceso a datos</string>
+    <string name="unit_of_work_locked_exception">Base de datos no puede ser leída. Se cerrará la aplicación</string>
+    <string name="unit_of_work_io_exception">Error de acceso a disco</string>
+
+</resources>

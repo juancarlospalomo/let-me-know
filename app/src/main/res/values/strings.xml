@@ -36,8 +36,8 @@
     <string name="text_yesterday">Yesterday</string>
 
     <!-- Text for Navigation Drawer -->
-    <string name="drawer_open">drawer open</string>
-    <string name="drawer_close">drawer close</string>
+    <string name="drawer_open" translatable="false">drawer open</string>
+    <string name="drawer_close" translatable="false">drawer close</string>
     <string name="menu_settings">Settings</string>
 
     <!-- Home Screen -->

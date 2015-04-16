@@ -54,7 +54,7 @@ public class TaskActivity extends ActionBarActivity {
         //Configure Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.taskToolBar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
