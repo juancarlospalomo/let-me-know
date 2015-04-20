@@ -1,5 +1,7 @@
 package com.applilandia.letmeknow.cross;
 
+import java.util.Locale;
+
 /**
  * Created by JuanCarlos on 20/03/2015.
  * This class is used to parse a phrase received by an intent recognizer
@@ -21,6 +23,12 @@ public class VoiceInputToken {
      */
     private void parseTaskName() {
         mTaskName = mPhrase;
+        if (mPhrase.length() > 0) {
+            mTaskName = mPhrase.substring(0, 1).toUpperCase(Locale.getDefault());
+            if (mPhrase.length() > 1) {
+                mTaskName += mPhrase.substring(1);
+            }
+        }
     }
 
     /**
@@ -32,6 +40,7 @@ public class VoiceInputToken {
 
     /**
      * Return the task name obtained from the voice phrase
+     *
      * @return
      */
     public String getTaskName() {

@@ -137,6 +137,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Set the time in String format
+     *
      * @param time time in HH:mm format
      */
     public void setTime(String time) {
@@ -350,18 +351,20 @@ public class LocalDate implements Comparable<LocalDate> {
     }
 
     /**
-     * Returns the week day name
+     * Returns the capitalized week day name
      *
      * @return String with the name
      */
     private String getDisplayWeekDay(boolean shortFormat) {
+        String weekDay;
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(getDateTime());
         if (shortFormat) {
-            return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
+            weekDay = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
         } else {
-            return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+            weekDay = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
         }
+        return weekDay.substring(0, 1).toUpperCase(Locale.getDefault()) + weekDay.substring(1);
     }
 
     /**
@@ -384,6 +387,7 @@ public class LocalDate implements Comparable<LocalDate> {
 
     /**
      * Format the Date/Time, including Today label if the date is today
+     *
      * @param context
      * @return the string with the formatted date
      */

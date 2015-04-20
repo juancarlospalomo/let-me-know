@@ -68,7 +68,7 @@ public class testNotification extends AndroidTestCase {
         Task resultTask = useCaseTask.getTask(expectedTask._id);
         int notificationId = resultTask.getNotifications().get(Notification.TypeNotification.FiveMinutesBefore.getValue())._id;
         NotificationSet notificationSet = new NotificationSet(mContext);
-        notificationSet.send(notificationId);
+        //notificationSet.send(notificationId);
 
         date = new LocalDate();
         date.addMinutes(10);

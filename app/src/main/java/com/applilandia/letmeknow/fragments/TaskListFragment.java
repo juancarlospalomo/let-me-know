@@ -543,6 +543,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                     }
                 }
             } else {
+                mTaskRecyclerView.setAdapter(null);
                 showEmptyList();
             }
         }

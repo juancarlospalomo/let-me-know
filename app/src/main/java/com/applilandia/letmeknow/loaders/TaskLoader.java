@@ -109,8 +109,6 @@ public class TaskLoader extends AsyncTaskLoader<List<Task>> {
     public void onCanceled(List<Task> data) {
         //Attempt to cancel the asynchronous load
         super.onCanceled(data);
-        //Release resources
-        onReleaseResources(data);
     }
 
     @Override

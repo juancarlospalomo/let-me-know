@@ -372,6 +372,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
             case DateTimeEmpty:
                 //Notifies and Time must be disabled
                 disableTime();
+                disableClearIcon();
                 if (mWorkMode != TaskActivity.TypeWorkMode.View) {
                     mNotificationAdapter.setEnabled(false);
                 }
@@ -379,6 +380,7 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
 
             case DateSet:
                 enableTime();
+                enableClearIcon();
                 break;
 
             case TimeSet:
@@ -387,6 +389,22 @@ public class TaskFragment extends Fragment implements LoaderManager.LoaderCallba
                 }
                 break;
         }
+    }
+
+    /**
+     * Disable the clear icon
+     */
+    private void disableClearIcon() {
+        mImageViewClear.setAlpha(0.2f);
+        mImageViewClear.setEnabled(false);
+    }
+
+    /**
+     * Enable the clear icon
+     */
+    private void enableClearIcon() {
+        mImageViewClear.setAlpha(1f);
+        mImageViewClear.setEnabled(true);
     }
 
     /**
