@@ -29,7 +29,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.applilandia.letmeknow.R;
 import com.applilandia.letmeknow.listeners.RecyclerViewClickListener;
 import com.applilandia.letmeknow.listeners.RecyclerViewMotion;
@@ -37,7 +36,6 @@ import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.SnackBar;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +104,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView.LayoutManager mLayoutManager;
     private TaskAdapter mAdapter;
     private OnTaskListFragmentListener mOnTaskListFragmentListener;
+    private RecyclerViewMotion mRecyclerViewMotion;
 
     /**
      * Creates and returns the view hierarchy associated with the fragment
@@ -292,78 +291,77 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                         }
                     }
                 }));
-        mTaskRecyclerView.setOnTouchListener(new RecyclerViewMotion(mTaskRecyclerView,
-                new RecyclerViewMotion.OnRecyclerViewMotion() {
-                    @Override
-                    public boolean canDismiss(int position) {
-                        return true;
-                    }
+        mRecyclerViewMotion = new RecyclerViewMotion(mTaskRecyclerView, new RecyclerViewMotion.OnRecyclerViewMotion() {
+            @Override
+            public boolean canDismiss(int position) {
+                return true;
+            }
 
-                    @Override
-                    public void onDismiss(final View view, final int position) {
-                        if (view != null) {
-                            AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(getResources().getString(R.string.delete_task_dialog_title),
-                                    "", getResources().getString(R.string.delete_task_dialog_cancel_text),
-                                    getResources().getString(R.string.delete_task_dalog_ok_text));
-                            alertDialog.setButtonOnClickListener(new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (which == AlertDialogFragment.INDEX_BUTTON_YES) {
-                                        final ViewGroup.LayoutParams lp = view.getLayoutParams();
-                                        final int originalHeight = view.getHeight();
+            @Override
+            public void onDismiss(final View view, final int position) {
+                if (view != null) {
+                    AlertDialogFragment alertDialog = AlertDialogFragment.newInstance(getResources().getString(R.string.delete_task_dialog_title),
+                            "", getResources().getString(R.string.delete_task_dialog_cancel_text),
+                            getResources().getString(R.string.delete_task_dalog_ok_text));
+                    alertDialog.setButtonOnClickListener(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (which == AlertDialogFragment.INDEX_BUTTON_YES) {
+                                final ViewGroup.LayoutParams lp = view.getLayoutParams();
+                                final int originalHeight = view.getHeight();
 
-                                        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
+                                ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(view.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime));
 
-                                        animator.addListener(new AnimatorListenerAdapter() {
-                                            @Override
-                                            public void onAnimationEnd(Animator animation) {
-                                                ViewGroup.LayoutParams lp;
-                                                // Reset view presentation
-                                                view.setAlpha(1f);
-                                                view.setTranslationX(0);
-                                                lp = view.getLayoutParams();
-                                                lp.height = originalHeight;
-                                                view.setLayoutParams(lp);
-                                                mAdapter.toggle(position);
-                                                AsyncTaskList asyncTaskList = new AsyncTaskList();
-                                                asyncTaskList.execute(mAdapter.getSelectedList());
-                                                mAdapter.mTaskList.remove(position);
-                                                // Send a cancel event
-                                                long time = SystemClock.uptimeMillis();
-                                                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
-                                                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                                                mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
-                                            }
-                                        });
-
-                                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                                            @Override
-                                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                                                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                                                view.setLayoutParams(lp);
-                                            }
-                                        });
-                                        animator.start();
-
-                                    } else {
-                                        view.animate()
-                                                .translationX(0)
-                                                .alpha(1)
-                                                .setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime))
-                                                .setListener(null);
+                                animator.addListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        ViewGroup.LayoutParams lp;
+                                        // Reset view presentation
+                                        view.setAlpha(1f);
+                                        view.setTranslationX(0);
+                                        lp = view.getLayoutParams();
+                                        lp.height = originalHeight;
+                                        view.setLayoutParams(lp);
+                                        mAdapter.toggle(position);
+                                        AsyncTaskList asyncTaskList = new AsyncTaskList();
+                                        asyncTaskList.execute(mAdapter.getSelectedList());
+                                        mAdapter.mTaskList.remove(position);
                                         // Send a cancel event
                                         long time = SystemClock.uptimeMillis();
                                         MotionEvent cancelEvent = MotionEvent.obtain(time, time,
                                                 MotionEvent.ACTION_CANCEL, 0, 0, 0);
                                         mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
                                     }
-                                }
-                            });
-                            alertDialog.show(getFragmentManager(), "dialog");
-                        }
-                    }
-                }));
+                                });
 
+                                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                    @Override
+                                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                        lp.height = (Integer) valueAnimator.getAnimatedValue();
+                                        view.setLayoutParams(lp);
+                                    }
+                                });
+                                animator.start();
+
+                            } else {
+                                view.animate()
+                                        .translationX(0)
+                                        .alpha(1)
+                                        .setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime))
+                                        .setListener(null);
+                                // Send a cancel event
+                                long time = SystemClock.uptimeMillis();
+                                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+                                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                                mTaskRecyclerView.dispatchTouchEvent(cancelEvent);
+                            }
+                        }
+                    });
+                    alertDialog.show(getFragmentManager(), "dialog");
+                }
+            }
+        });
+        mTaskRecyclerView.setOnTouchListener(mRecyclerViewMotion);
     }
 
     /**
@@ -416,6 +414,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      */
     public void activateToolbarActions() {
         mActionBarActivated = true;
+        mRecyclerViewMotion.setEnabled(false);
         getActivity().invalidateOptionsMenu();
     }
 
@@ -424,6 +423,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
      */
     public void deactivateToolbarActions() {
         mActionBarActivated = false;
+        mRecyclerViewMotion.setEnabled(true);
         getActivity().invalidateOptionsMenu();
         mAdapter.resetSelected();
     }
