@@ -14,7 +14,7 @@ android {
         applicationId "com.applilandia.letmeknow"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 1
+        versionCode 2
         versionName "1.0"
         signingConfig signingConfigs.debug
     }
@@ -22,11 +22,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-/*            applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-                    output.outputFile = new File("letmeknow.apk")
-                }
-            }*/
+//            applicationVariants.all { variant ->
+//                variant.outputs.each { output ->
+//                    output.outputFile = new File("letmeknow.apk")
+//                }
+//            }
         }
         debug {
             signingConfig signingConfigs.debug

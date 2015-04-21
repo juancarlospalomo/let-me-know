@@ -376,6 +376,7 @@ public class LocalDate implements Comparable<LocalDate> {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(getDateTime());
         String monthName = calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault());
+        monthName = monthName.substring(0,1).toUpperCase(Locale.getDefault()) + monthName.substring(1);
         String time = DateFormat.getTimeFormat(context).format(getDateTime());
         if (isTimeNull()) time = "";
         if (Locale.getDefault().toString() == "en_US") {
