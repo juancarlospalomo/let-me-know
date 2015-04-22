@@ -2,11 +2,13 @@ package com.applilandia.letmeknow;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -84,20 +86,33 @@ public class TaskListActivity extends ActionBarActivity {
     private void inflateViews() {
         //Inflate views
         mToolbar = (Toolbar) findViewById(R.id.taskToolBar);
-        mSpinnerType = (Spinner) findViewById(R.id.spinnerTypeTasks);
         mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab_add_task);
         //Init toolbar
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //In layout-v21 is declared a spinner inside the toolbar
+            mSpinnerType = (Spinner) findViewById(R.id.spinnerTypeTasks);
+        } else {
+            //Workaround for showing dropdown icon in white color instead black in android versions 4.x:
+            //To solve the issue, the spinner has to be created programmatically in the theme context of actionbar.
+            //If we instance a new spinner, we cannot set the popupBackground in API 14 and 15.
+            //The only way is set it in the xml definition.
+            //That's why, we create the layout toolbar_spinner_layout.xml with the spinner definition
+            //and inflate it form getSupportActionBar().getThemedContext()
+            mSpinnerType = (Spinner) LayoutInflater.from(getSupportActionBar().getThemedContext()).inflate(R.layout.toolbar_spinner_layout, null);
+            mToolbar.addView(mSpinnerType);
+        }
     }
 
     /**
      * Init the task spinner with data
      */
     private void initTaskTypeSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getSupportActionBar().getThemedContext(),
                 R.array.type_task_array, android.R.layout.simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerType.setAdapter(adapter);
