@@ -12,54 +12,64 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:layout_gravity="center"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/textViewHeadline"
+            style="@style/Widget.CardHead"
             android:layout_width="match_parent"
             android:layout_height="@dimen/card_headline_height"
-            android:gravity="center"
-            style="@style/Widget.CardHead"/>
+            android:gravity="center" />
 
         <TextView
             android:id="@+id/textViewBody"
+            style="@style/Widget.CardBody"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.CardBody"/>
+            android:layout_height="wrap_content" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center" >
+            android:gravity="center">
+
             <ImageView
                 android:id="@+id/imageViewNotifications"
                 android:layout_width="?attr/touchableAssetLayoutWidth"
                 android:layout_height="?attr/touchableAssetLayoutHeight"
-                android:padding="@dimen/padding_action_icon"
                 android:layout_marginLeft="@dimen/card_margin_action_icons"
-                android:src="@drawable/ic_alarm_off"/>
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_alarm_off" />
+
+            <ImageView
+                android:id="@+id/imageViewActionShare"
+                android:layout_width="?attr/touchableAssetLayoutWidth"
+                android:layout_height="?attr/touchableAssetLayoutHeight"
+                android:layout_marginLeft="@dimen/card_margin_action_icons"
+                android:layout_toRightOf="@id/imageViewNotifications"
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_action_share_black" />
 
             <ImageView
                 android:id="@+id/imageViewCheck"
                 android:layout_width="?attr/touchableAssetLayoutWidth"
                 android:layout_height="?attr/touchableAssetLayoutHeight"
-                android:padding="@dimen/padding_action_icon"
-                android:src="@drawable/ic_check_off"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="@dimen/card_margin_action_icons"
-                android:layout_toRightOf="@id/imageViewNotifications"/>
+                android:layout_toRightOf="@id/imageViewActionShare"
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_check_off" />
 
             <ImageView
                 android:id="@+id/imageViewClose"
                 android:layout_width="?attr/touchableAssetLayoutWidth"
                 android:layout_height="?attr/touchableAssetLayoutHeight"
-                android:padding="@dimen/padding_action_icon"
-                android:src="@drawable/ic_clear"
-                android:clickable="true"
+                android:layout_alignParentRight="true"
                 android:layout_gravity="center_vertical"
-                android:layout_alignParentRight="true"/>
+                android:clickable="true"
+                android:padding="@dimen/padding_action_icon"
+                android:src="@drawable/ic_clear" />
         </RelativeLayout>
 
     </LinearLayout>

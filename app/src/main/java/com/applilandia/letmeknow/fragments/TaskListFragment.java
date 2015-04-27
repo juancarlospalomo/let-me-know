@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -14,8 +15,10 @@ import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,13 +32,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.cross.Message;
 import com.applilandia.letmeknow.listeners.RecyclerViewClickListener;
 import com.applilandia.letmeknow.listeners.RecyclerViewMotion;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseTask;
 import com.applilandia.letmeknow.views.SnackBar;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,6 +111,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
     private TaskAdapter mAdapter;
     private OnTaskListFragmentListener mOnTaskListFragmentListener;
     private RecyclerViewMotion mRecyclerViewMotion;
+    private ShareActionProvider mShareActionProvider;
 
     /**
      * Creates and returns the view hierarchy associated with the fragment
@@ -136,12 +143,6 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
             mTaskListSelectedInstanceState = savedInstanceState.getParcelableArrayList(KEY_TASKS_LIST_SELECTED);
             mActionBarActivated = savedInstanceState.getBoolean(KEY_TOOLBAR_STATE, false);
             mTypeTask = Task.TypeTask.map(savedInstanceState.getInt(KEY_TASK_TYPE));
-            if (mActionBarActivated) {
-                activateToolbarActions();
-                if (mOnTaskListFragmentListener != null) {
-                    mOnTaskListFragmentListener.onTaskLongPressed();
-                }
-            }
         }
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressActivityTask);
@@ -149,6 +150,14 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         initRecyclerView();
         //Init loader.  Data will be set to Adapter in onLoadFinished()
         getLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+
+        //If it comes from a orientation change, mActionBarActivated could be true
+        if (mActionBarActivated) {
+            activateToolbarActions();
+            if (mOnTaskListFragmentListener != null) {
+                mOnTaskListFragmentListener.onTaskLongPressed();
+            }
+        }
     }
 
     @Override
@@ -212,6 +221,7 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
                                     }
                                 }
                             }
+                            setShareIntent();
                         }
                     }
 
@@ -389,10 +399,25 @@ public class TaskListFragment extends Fragment implements LoaderManager.LoaderCa
         alertDialog.show(getFragmentManager(), "dialog");
     }
 
+    /**
+     * Update the share intent
+     */
+    private void setShareIntent() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        Message message = new Message(getActivity());
+        intent.putExtra(Intent.EXTRA_TEXT, message.getFormattedTaskMessage(mAdapter.getSelectedList()));
+        mShareActionProvider.setShareIntent(intent);
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (mActionBarActivated) {
             inflater.inflate(R.menu.menu_task_list, menu);
+
+            MenuItem menuItem = menu.findItem(R.id.menu_item_share);
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            setShareIntent();
         } else {
             super.onCreateOptionsMenu(menu, inflater);
         }

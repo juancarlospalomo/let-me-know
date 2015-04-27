@@ -1,5 +1,6 @@
 package com.applilandia.letmeknow.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.applilandia.letmeknow.R;
+import com.applilandia.letmeknow.cross.Message;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.loaders.TaskLoader;
 import com.applilandia.letmeknow.loaders.TaskNotificationStatusLoader;
@@ -188,6 +190,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
             private TextView mTextViewHeadLine;
             private TextView mTextViewBody;
             private ImageView mImageViewNotifications;
+            private ImageView mImageActionShare;
             private ImageView mImageViewCheck;
             private ImageView mImageClose;
 
@@ -196,6 +199,7 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                 mTextViewHeadLine = (TextView) itemView.findViewById(R.id.textViewHeadline);
                 mTextViewBody = (TextView) itemView.findViewById(R.id.textViewBody);
                 mImageViewNotifications = (ImageView) itemView.findViewById(R.id.imageViewNotifications);
+                mImageActionShare = (ImageView) itemView.findViewById(R.id.imageViewActionShare);
                 mImageViewCheck = (ImageView) itemView.findViewById(R.id.imageViewCheck);
                 mImageClose = (ImageView) itemView.findViewById(R.id.imageViewClose);
             }
@@ -244,6 +248,16 @@ public class NotificationListFragment extends Fragment implements LoaderManager.
                             //Notify one item has been removed from the list
                             mOnNotificationListListener.onItemRemoved(mTaskList.size());
                         }
+                    }
+                });
+                holder.mImageActionShare.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+                        intent.setType("text/plain");
+                        Message message = new Message(getActivity());
+                        intent.putExtra(Intent.EXTRA_TEXT, message.getFormattedTaskMessage(task));
+                        startActivity(intent);
                     }
                 });
                 holder.mImageViewCheck.setOnClickListener(new View.OnClickListener() {

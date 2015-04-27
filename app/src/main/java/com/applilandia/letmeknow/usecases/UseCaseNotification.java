@@ -119,6 +119,9 @@ public class UseCaseNotification {
                     getActivityContentIntent(NotificationListActivity.ACTION_VIEW,
                             task._id));
 
+            builder.addAction(R.drawable.ic_action_share_black,"",
+                    getServiceContentIntent(NotificationService.ACTION_SHARE, task._id));
+
             builder.addAction(R.drawable.ic_check_off, "",
                     getServiceContentIntent(NotificationService.ACTION_END_TASK,
                             task._id));

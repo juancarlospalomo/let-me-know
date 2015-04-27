@@ -71,6 +71,7 @@
 
     <!-- Task List Activity -->
     <string name="title_menu_item_delete">Eliminar</string>
+    <string name="title_menu_item_share">Compartir</string>
 
     <!-- Delete Task Dialog -->
     <string name="delete_task_dialog_title">¿Eliminar Tarea?</string>

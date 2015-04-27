@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 
 import com.applilandia.letmeknow.NotificationListActivity;
+import com.applilandia.letmeknow.cross.Message;
 import com.applilandia.letmeknow.data.NotificationSet;
 import com.applilandia.letmeknow.models.Task;
 import com.applilandia.letmeknow.usecases.UseCaseNotification;
@@ -27,7 +28,7 @@ public class NotificationService extends IntentService {
     public final static int ACTION_NONE = 0;
     public final static int ACTION_END_TASK = 2;
     public final static int ACTION_DISMISS = 3;
-
+    public final static int ACTION_SHARE = 4;
 
     private int mAction = ACTION_NONE;
     private int mTaskId = 0;
@@ -44,6 +45,11 @@ public class NotificationService extends IntentService {
         loadIntent(intent);
 
         switch (mAction) {
+
+            case ACTION_SHARE:
+                shareTask(mTaskId);
+                cancelNotification();
+                break;
 
             case ACTION_END_TASK:
                 endTask(mTaskId);
@@ -77,6 +83,23 @@ public class NotificationService extends IntentService {
         Task task = useCaseTask.getTask(id);
         if (task != null) {
             useCaseTask.setTaskAsCompleted(task);
+        }
+    }
+
+    /**
+     * Share a task by means an intent that matches ACTION_SEND
+     * @param id task id
+     */
+    private void shareTask(int id) {
+        UseCaseTask useCaseTask = new UseCaseTask(this);
+        Task task = useCaseTask.getTask(id);
+        if (task != null) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            Message message = new Message(this);
+            intent.putExtra(Intent.EXTRA_TEXT, message.getFormattedTaskMessage(task));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         }
     }
 
