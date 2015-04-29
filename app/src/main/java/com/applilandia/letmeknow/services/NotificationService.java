@@ -48,6 +48,7 @@ public class NotificationService extends IntentService {
 
             case ACTION_SHARE:
                 shareTask(mTaskId);
+                dismissNotification(mTaskId);
                 cancelNotification();
                 break;
 
